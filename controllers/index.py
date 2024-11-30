@@ -35,3 +35,10 @@ def inicio(request):
     except Exception as e:
         print(f"Error en inicio: {e}")
         return "Se produjo un error en la aplicación.", 500
+
+
+def principal():
+   if "id" in session:
+      return render_template("/views/principal.html")
+   else:
+      return redirect(url_for("index"))
