@@ -19,7 +19,9 @@ def after_request(response):
 def index():
     return indx.inicio(request)
 
-
+@app.route('/salir',methods=["GET"])
+def salir():
+    return indx.salir()
 
 @app.route('/principal',methods=["GET"])
 def principal():
