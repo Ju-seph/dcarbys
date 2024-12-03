@@ -31,7 +31,7 @@
                     <div class="d-flex justify-content-center">
                         <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                             <button class="nav-link active" id="v-pills-user-tab" data-bs-toggle="pill" data-bs-target="#v-pills-user" type="button" role="tab" aria-controls="v-pills-user" aria-selected="true">Usuarios</button>
-                            <button class="nav-link" id="v-pills-inventario-tab" data-bs-toggle="pill" data-bs-target="#v-pills-inventario" type="button" role="tab" aria-controls="v-pills-inventario" aria-selected="false">Inventario</button>
+                            <button class="nav-link" id="v-pills-menus-tab" data-bs-toggle="pill" data-bs-target="#v-pills-menus" type="button" role="tab" aria-controls="v-pills-menus" aria-selected="false">Menus</button>
                         </div>
                     </div>
                 </div>
@@ -40,6 +40,29 @@
                     <a class="btn btn-danger btn-block" href="/salir">Cerrar Sesion</a>
                 </div>
 
+            </div>
+        </div>
+
+        <div class="col col-12 col-md12 col-sm12 col-lg-10 mb-3">
+            <div class="card border border-dark">
+
+
+                <div class="card-header">
+                    <h5 class="text-center"><b>Gestion</b></h5>
+                </div>
+
+                <div class="card-body">
+                    <div class="tab-content" id="v-pills-tabContent">
+                        {% include 'views/tabs/user.html' %}
+                        
+                       
+                    </div>
+
+                </div>
+
+                <div class="card-footer">
+
+                </div>
             </div>
         </div>
 
