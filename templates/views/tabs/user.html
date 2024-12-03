@@ -1,0 +1,75 @@
+<div class="tab-pane fade show active" id="v-pills-user" role="tabpanel" aria-labelledby="v-pills-user-tab"
+    tabindex="0">
+
+
+
+    <div class="row">
+        <div class="col">
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#userModal">
+                Agregar Usuario
+            </button>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col">
+            {% include '/views/tables/table_users.html' %}
+        </div>
+    </div>
+
+    <div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalLabel">Agregar Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="POST" id="form_usuario">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-12 mb-4">
+                                <label class="form-label fw-bold fs-5">Cédula:</label>
+                                <input type="text" class="form-control fs-5" id="u_cedula" name="u_cedula" placeholder="Cédula de Identidad">
+                            </div>
+                            <div class="col-12 mb-4">
+                                <label class="form-label fw-bold fs-5">Nombre:</label>
+                                <input type="text" class="form-control fs-5" id="u_nombre" name="u_nombre" placeholder="Nombre Completo">
+                            </div>
+                            <div class="col-12 mb-4">
+                                <label class="form-label fw-bold fs-5">Usuario:</label>
+                                <input type="text" class="form-control fs-5" id="u_usuario" name="u_usuario" placeholder="Nombre de Usuario">
+                            </div>
+                            <div class="col-12 mb-4">
+                                <label class="form-label fw-bold fs-5">Clave:</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control fs-5" id="u_clave" name="u_clave" placeholder="Contraseña">
+                                    <span class="input-group-text">
+                                        <i class="fa fa-eye fs-5" id="eyeIcon"></i>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-12 mb-4">
+                                <label class="form-label fw-bold fs-5">Rol:</label>
+                                <select class="form-control fs-5" id="u_rol" name="u_rol" required>
+                                    <option disabled selected value="">SELECCIONA</option>
+                                    <option>ADMINISTRADOR</option>
+                                    <option>CLIENTE</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" id="btn-guardar-usuario" class="btn btn-primary">Guardar Cambios</button>
+                        <button type="submit" id="btn-editar-usuario" class="btn btn-success">Editar Campo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/usuarios.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+
+</div>
