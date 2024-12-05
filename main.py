@@ -3,10 +3,8 @@ import controllers.index as indx
 from dotenv import load_dotenv
 import os
 
-# Cargar las variables de entorno
 load_dotenv()
 
-# Configuración de la aplicación Flask
 app = Flask(__name__, static_folder='public', static_url_path='')
 app.secret_key = os.getenv("KEY")  # Clave secreta desde el archivo .env
 
@@ -16,6 +14,10 @@ def after_request(response):
     return response
 
 @app.route('/',methods=["GET", "POST"])
+def begin():
+    return indx.begin(request)
+
+@app.route('/login',methods=["GET", "POST"])
 def index():
     return indx.inicio(request)
 

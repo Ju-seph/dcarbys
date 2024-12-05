@@ -2,56 +2,82 @@
 
 {% block body %}
 
-
 <div class="container">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Dcarbys</a>  <!-- Nombre de tu sitio -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Menús</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Contactos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Nosotros</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login">Iniciar sesión</a>
 
-    <div class="row align-items-center justify-content-center vh-100">
-
-        <div class="col col-12 col-md-12 col-sm-12 col-lg-7 text-center">
-
-            <img src="{{ url_for('static', filename= 'img/img.png') }}" class="w-50">
-            <h5 class="text-center mt-2"><b>D carbys</b></h5>
-
-        </div>
-
-        <div class="col col-12 col-md-12 col-sm-12 col-lg-5">
-
-            <div class="card p-3 border border-primary" style="box-shadow: 0 2px 10px rgba(0,0,0,.075);">
-
-                <h4 class="text-center"><b>Ingreso al Sistema</b></h4>
-
-                <div class="card-body">
-
-                    <form class="row g-3" method="POST">
-
-                        <div class="col-md-12">
-                            <input type="text" class="form-control fs-5 border border-dark" name="usuario" placeholder="Usuario" value=""
-                                required>
-                        </div>
-                        <div class="col-md-12">
-
-                            <input type="password" class="form-control fs-5 border border-dark" name="clave"
-                                placeholder="Clave de seguridad" value="" required>
-                        </div>
-
-                        <div class="d-grid gap-2">
-                            <button class="btn btn-primary btn-block fs-4" type="submit">Iniciar Sesión</button>
-                        </div>
-
-                    </form>
-
-                </div>
-
+                    </li>
+                </ul>
             </div>
-
-           
-
         </div>
+    </nav>
 
+    <!-- Jumbotron de bienvenida -->
+    <div class="jumbotron bg-primary text-white text-center py-5">
+        <h1 class="display-4">Bienvenidos a Dcarbys</h1>
+        <p class="lead">¡Deliciosos platillos a solo un clic de distancia! Explora nuestros menús y haz tu pedido hoy.</p>
     </div>
 
+    <!-- Sección principal de contenido -->
+    <div class="container my-5">
+        <h2 class="text-center">Sobre Nosotros</h2>
+        <p class="text-center">En Dcarbys, nos apasiona ofrecerte lo mejor en comida rápida y deliciosa. Nos comprometemos a brindarte un servicio rápido y una experiencia inolvidable. ¡Estamos aquí para satisfacer tus antojos!</p>
+        
+        <!-- Cards de ejemplos de platillos -->
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <img src="https://via.placeholder.com/300?text=Hamburguesa" class="card-img-top" alt="Hamburguesa">
+                    <div class="card-body">
+                        <h5 class="card-title">Hamburguesa Especial</h5>
+                        <p class="card-text">Una hamburguesa jugosa con todos los ingredientes frescos que te encantarán.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <img src="https://via.placeholder.com/300?text=Pizzas" class="card-img-top" alt="Pizza">
+                    <div class="card-body">
+                        <h5 class="card-title">Pizza Dcarbys</h5>
+                        <p class="card-text">Pizza artesanal con una base crujiente y los mejores ingredientes.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <img src="https://via.placeholder.com/300?text=Ensalada" class="card-img-top" alt="Ensalada fresca">
+                    <div class="card-body">
+                        <h5 class="card-title">Ensalada Fresca</h5>
+                        <p class="card-text">Una opción saludable con verduras frescas y un aderezo delicioso.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-3">
+        <p>&copy; 2024 Dcarbys. Todos los derechos reservados.</p>
+    </footer>
+
 </div>
-
-
 
 {% endblock %}

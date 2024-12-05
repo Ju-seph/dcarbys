@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+
+<div class="container">
+
+    <div class="row align-items-center justify-content-center vh-100">
+
+        <div class="col col-12 col-md-12 col-sm-12 col-lg-7 text-center">
+
+            <img src="{{ url_for('static', filename= 'img/img.png') }}" class="w-50">
+            <h5 class="text-center mt-2"><b>D carbys</b></h5>
+
+        </div>
+
+        <div class="col col-12 col-md-12 col-sm-12 col-lg-5">
+
+            <div class="card p-3 border border-primary" style="box-shadow: 0 2px 10px rgba(0,0,0,.075);">
+
+                <h4 class="text-center"><b>Ingreso al Sistema</b></h4>
+
+                <div class="card-body">
+
+                    <form class="row g-3" method="POST">
+
+                        <div class="col-md-12">
+                            <input type="text" class="form-control fs-5 border border-dark" name="usuario" placeholder="Usuario" value=""
+                                required>
+                        </div>
+                        <div class="col-md-12">
+
+                            <input type="password" class="form-control fs-5 border border-dark" name="clave"
+                                placeholder="Clave de seguridad" value="" required>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary btn-block fs-4" type="submit">Iniciar Sesión</button>
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+           
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+{% endblock %}

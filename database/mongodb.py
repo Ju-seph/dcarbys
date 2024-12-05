@@ -4,7 +4,7 @@ import os
 
 load_dotenv()
 
-## Class to connect to MongoDB
+
 class Mongodb():
 
     db_name = os.getenv("DB_NAME")

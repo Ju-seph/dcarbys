@@ -6,6 +6,9 @@ from bson.objectid import ObjectId
 # Inicializar conexión a MongoDB
 db = Mongodb().db()
 
+def begin(request):
+    return render_template("views/index.html")
+
 def inicio(request):
     """
     Función para manejar la página de inicio.
@@ -17,7 +20,7 @@ def inicio(request):
                 return redirect(url_for("principal"))
 
             # Si no hay sesión activa, muestra la página de inicio
-            return render_template("views/index.html")
+            return render_template("views/login.html")
         
         elif request.method == "POST":
             # Procesa los datos enviados en el formulario
@@ -57,9 +60,7 @@ def inicio(request):
 
 
 def principal():
-    """
-    Función para la página principal.
-    """
+
     if "id" in session:
         return render_template("views/principal.html")
     else:
@@ -67,9 +68,7 @@ def principal():
 
 
 def salir():
-    """
-    Función para cerrar sesión.
-    """
+
     if "id" in session:
         session.pop("id", None)
         session.pop("rol", None)
