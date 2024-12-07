@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template
 import controllers.index as indx
+import controllers.ctl_usuarios as usu
 from dotenv import load_dotenv
 import os
 
@@ -12,6 +13,15 @@ app.secret_key = os.getenv("KEY")  # Clave secreta desde el archivo .env
 def after_request(response):
     response.headers["cache-control"]= "no-cache, no-store, must-revalidate"
     return response
+
+@app.route('/usuarios_login',methods=["GET"])
+def inicio_usuarios():
+    return usu.inicio_usuarios(request)
+
+@app.route('/registro_usuarios',methods=["GET", "POST"])
+def registrar_usuario():
+    return usu.registrar_usuario(request)
+
 
 @app.route('/',methods=["GET", "POST"])
 def begin():

@@ -2,9 +2,9 @@
 
 {% block body %}
 
-<div class="container">
+<div class="container-fluid">
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">Dcarbys</a>  <!-- Nombre de tu sitio -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,8 +22,13 @@
                         <a class="nav-link" href="#">Nosotros</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/login">Iniciar sesión</a>
+                        <a class="nav-link" href="/usuarios_login">Iniciar sesión</a>
+                    </li>
 
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16">
+                            <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l1.313 7h8.17l1.313-7zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                          </svg></a>
                     </li>
                 </ul>
             </div>
@@ -31,20 +36,21 @@
     </nav>
 
     <!-- Jumbotron de bienvenida -->
-    <div class="jumbotron bg-primary text-white text-center py-5">
+    <div class="jumbotron text-white text-center" style="background-image: url('https://via.placeholder.com/1500x600?text=Bienvenidos'); background-size: cover; background-position: center; padding: 100px 0;">
         <h1 class="display-4">Bienvenidos a Dcarbys</h1>
         <p class="lead">¡Deliciosos platillos a solo un clic de distancia! Explora nuestros menús y haz tu pedido hoy.</p>
+        <a href="#menu" class="btn btn-primary btn-lg">Explorar Menú</a>
     </div>
 
     <!-- Sección principal de contenido -->
-    <div class="container my-5">
-        <h2 class="text-center">Sobre Nosotros</h2>
-        <p class="text-center">En Dcarbys, nos apasiona ofrecerte lo mejor en comida rápida y deliciosa. Nos comprometemos a brindarte un servicio rápido y una experiencia inolvidable. ¡Estamos aquí para satisfacer tus antojos!</p>
+    <div class="container my-5" id="menu">
+        <h2 class="text-center mb-4">Nuestros Menús</h2>
+        <p class="text-center mb-5">En Dcarbys, tenemos una variedad de opciones deliciosas para todos los gustos. ¡Descubre nuestros platillos y haz tu pedido!</p>
         
         <!-- Cards de ejemplos de platillos -->
-        <div class="row">
+        <div class="row g-4">
             <div class="col-md-4">
-                <div class="card">
+                <div class="card shadow-sm border-light rounded">
                     <img src="https://via.placeholder.com/300?text=Hamburguesa" class="card-img-top" alt="Hamburguesa">
                     <div class="card-body">
                         <h5 class="card-title">Hamburguesa Especial</h5>
@@ -53,7 +59,7 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card">
+                <div class="card shadow-sm border-light rounded">
                     <img src="https://via.placeholder.com/300?text=Pizzas" class="card-img-top" alt="Pizza">
                     <div class="card-body">
                         <h5 class="card-title">Pizza Dcarbys</h5>
@@ -62,7 +68,7 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card">
+                <div class="card shadow-sm border-light rounded">
                     <img src="https://via.placeholder.com/300?text=Ensalada" class="card-img-top" alt="Ensalada fresca">
                     <div class="card-body">
                         <h5 class="card-title">Ensalada Fresca</h5>
@@ -73,9 +79,41 @@
         </div>
     </div>
 
+    <!-- Testimonios -->
+    <div class="container my-5">
+        <h2 class="text-center mb-4">Lo que dicen nuestros clientes</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card border-light shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Carlos M.</h5>
+                        <p class="card-text">"¡La mejor pizza que he probado! El servicio es rápido y siempre llega a tiempo. Definitivamente pediré más." </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-light shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Laura G.</h5>
+                        <p class="card-text">"Una experiencia increíble. La hamburguesa especial es deliciosa y las ensaladas son súper frescas. ¡Recomendados!" </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-light shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Jorge R.</h5>
+                        <p class="card-text">"Me encanta cómo Dcarbys ha reinventado la comida rápida. Siempre disfruto de su variedad y la calidad de los ingredientes."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
-    <footer class="bg-dark text-white text-center py-3">
+    <footer class="bg-dark text-white text-center py-3 mt-5">
         <p>&copy; 2024 Dcarbys. Todos los derechos reservados.</p>
+        <p>Hecho con ❤️ para todos los amantes de la comida.</p>
     </footer>
 
 </div>
