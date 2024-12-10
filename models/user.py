@@ -2,14 +2,11 @@ from datetime import datetime
 
 class User:
 
-    def __init__(self, ced, name,lastName, username,password , rol, direction,status):
+    def __init__(self, ced, name ,password , rol,status):
         self.ced= ced
         self.name= name
-        self.lastName= lastName
-        self.username= username
         self.password= password
         self.rol= rol
-        self.direction= direction
         self.status= status
 
     def getUser(self):
