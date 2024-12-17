@@ -3,16 +3,18 @@
 {% block body %}
 
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#">Dcarbys</a> <!-- Nombre del sitio -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <span class="fw-bold text-primary">D</span><span class="fw-bold">carbys</span>
+        </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" href="/">Menús</a>
+                    <a class="nav-link" href="/">Menús</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#">Contactos</a>
@@ -21,13 +23,15 @@
                     <a class="nav-link" href="#">Nosotros</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/usuarios_login">Iniciar sesión</a>
+                    <a class="nav-link active" href="/usuarios_login">Iniciar sesión</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16">
-                            <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l1.313 7h8.17l1.313-7zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
-                        </svg>
+                    <a class="nav-link position-relative" href="#">
+                        <i class="bi bi-cart-fill fs-5"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary">
+                            0
+                            <span class="visually-hidden">items en el carrito</span>
+                        </span>
                     </a>
                 </li>
             </ul>
@@ -36,49 +40,150 @@
 </nav>
 
 <!-- Formulario de Registro -->
-<div class="container mt-5 pt-5">
-    <h2 class="text-center mb-5 font-weight-bold text-primary">Registro de Usuario</h2>
+<div class="container-fluid min-vh-100 d-flex align-items-center bg-light py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-8 col-sm-10">
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                    <div class="card-body p-5">
+                        <h2 class="text-center mb-4 fw-bold text-primary">Crea tu cuenta</h2>
+                        <p class="text-center text-muted mb-4">Únete a Dcarbys y disfruta de deliciosas comidas</p>
+                        
+                        <form method="POST" action="/registro_usuarios">
+                            <div class="mb-4">
+                                <label for="username" class="form-label text-muted">Nombre de usuario</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-person-fill text-primary"></i></span>
+                                    <input type="text" class="form-control border-start-0 ps-0" id="username" name="username" required placeholder="Ingresa tu nombre de usuario">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="email" class="form-label text-muted">Correo electrónico</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-envelope-fill text-primary"></i></span>
+                                    <input type="email" class="form-control border-start-0 ps-0" id="email" name="email" required placeholder="Ingresa tu correo electrónico">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="password" class="form-label text-muted">Contraseña</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-lock-fill text-primary"></i></span>
+                                    <input type="password" class="form-control border-start-0 ps-0" id="password" name="password" required placeholder="Crea una contraseña segura">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="confirm_password" class="form-label text-muted">Confirmar contraseña</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-shield-lock-fill text-primary"></i></span>
+                                    <input type="password" class="form-control border-start-0 ps-0" id="confirm_password" name="confirm_password" required placeholder="Confirma tu contraseña">
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2 mb-4">
+                                <button type="submit" class="btn btn-primary btn-lg rounded-pill">Crear cuenta</button>
+                            </div>
+                        </form>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-5 col-md-6 col-sm-8">
-            <div class="card shadow-lg border-0 rounded-4">
-                <div class="card-body p-5">
-                    <form method="POST" action="/registro_usuarios">
-                        
-                        <div class="mb-4">
-                            <label for="username" class="form-label fs-5 text-muted">Nombre de usuario</label>
-                            <input type="text" class="form-control form-control-lg rounded-3 border-0 shadow-sm" id="username" name="username" required>
+                        <div class="text-center">
+                            <p class="text-muted">¿Ya tienes cuenta? <a href="/login" class="text-decoration-none text-primary fw-bold">Iniciar sesión</a></p>
                         </div>
-                        
-                        <div class="mb-4">
-                            <label for="email" class="form-label fs-5 text-muted">Correo electrónico</label>
-                            <input type="email" class="form-control form-control-lg rounded-3 border-0 shadow-sm" id="email" name="email" required>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="password" class="form-label fs-5 text-muted">Contraseña</label>
-                            <input type="password" class="form-control form-control-lg rounded-3 border-0 shadow-sm" id="password" name="password" required>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="confirm_password" class="form-label fs-5 text-muted">Confirmar contraseña</label>
-                            <input type="password" class="form-control form-control-lg rounded-3 border-0 shadow-sm" id="confirm_password" name="confirm_password" required>
-                        </div>
-                        
-                        <!-- Botón de registro -->
-                        <div class="d-grid gap-2 mb-4">
-                            <button type="submit" class="btn btn-primary btn-lg rounded-3">Registrar</button>
-                        </div>
-                    </form>
-
-                    <!-- Enlace para iniciar sesión -->
-                    <div class="mt-4 text-center">
-                        <p class="text-muted">¿Ya tienes cuenta? <a href="/login" class="text-decoration-none text-primary fw-bold">Iniciar sesión</a></p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Footer -->
+<footer class="bg-dark text-white py-4">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 mb-3 mb-md-0">
+                <h5 class="mb-3 text-primary">Dcarbys</h5>
+                <p class="text-muted mb-0">Ofrecemos la mejor comida a domicilio, con ingredientes frescos y sabores únicos.</p>
+            </div>
+            <div class="col-md-4 mb-3 mb-md-0">
+                <h5 class="mb-3">Enlaces rápidos</h5>
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-muted text-decoration-none">Política de privacidad</a></li>
+                    <li><a href="#" class="text-muted text-decoration-none">Términos y condiciones</a></li>
+                    <li><a href="#" class="text-muted text-decoration-none">Preguntas frecuentes</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h5 class="mb-3">Síguenos</h5>
+                <div class="d-flex">
+                    <a href="#" class="text-white me-3"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="text-white me-3"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="text-white"><i class="bi bi-twitter"></i></a>
+                </div>
+            </div>
+        </div>
+        <hr class="my-4 bg-secondary">
+        <div class="text-center">
+            <p class="mb-0">&copy; 2024 Dcarbys. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    :root {
+        --primary-color: #FF6B35;
+        --secondary-color: #ffc72c;
+    }
+    
+    body {
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    .navbar-light .navbar-nav .nav-link {
+        color: rgba(0,0,0,.7);
+    }
+    
+    .navbar-light .navbar-nav .nav-link:hover,
+    .navbar-light .navbar-nav .nav-link:focus,
+    .navbar-light .navbar-nav .nav-link.active {
+        color: var(--primary-color);
+    }
+    
+    .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .btn-primary:hover,
+    .btn-primary:focus {
+        background-color: #c5001f;
+        border-color: #c5001f;
+    }
+    
+    .text-primary {
+        color: var(--primary-color) !important;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(228, 0, 43, 0.25);
+    }
+    
+    .input-group-text {
+        border-right: none;
+    }
+    
+    .form-control {
+        border-left: none;
+    }
+    
+    .card {
+        transition: transform 0.3s ease-in-out;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+    }
+</style>
 
 {% endblock %}
