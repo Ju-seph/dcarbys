@@ -2,9 +2,10 @@ from datetime import datetime
 
 class User:
 
-    def __init__(self, ced, name ,password , rol,status):
-        self.ced= ced
-        self.name= name
+    def __init__(self, idUser,nombreUsuario ,correo,password , rol,status):
+        self.idUser= idUser
+        self.nombreUsuario= nombreUsuario
+        self.correo= correo
         self.password= password
         self.rol= rol
         self.status= status

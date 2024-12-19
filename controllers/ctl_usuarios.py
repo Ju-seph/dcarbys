@@ -65,3 +65,41 @@ def registrar_usuario(request):
     # Si la solicitud no es POST, simplemente renderiza el formulario de registro
     return render_template("views/usuarios/usuarios_login.html")
 
+
+def iniciar_sesion(request):
+    if request.method == 'POST':
+        correo = request.form.get('correo')
+        contrasena = request.form.get('contrasena')
+
+        if not correo or not contrasena:
+            flash("Por favor complete ambos campos.", "error")
+            return redirect(url_for('inicio_usuarios'))  # Redirigir al formulario de login
+
+        # Conectar a la base de datos
+        db = Mongodb()
+        coleccion_usuarios = db.get_collection('usuarios')
+
+        # Buscar el usuario en la base de datos por correo
+        usuario = coleccion_usuarios.find_one({"correo": correo})
+        if not usuario:
+            flash("Correo no encontrado.", "error")
+            return redirect(url_for('inicio_usuarios'))  # Redirigir al formulario de login
+
+        # Comparar la contraseña encriptada
+        contrasena_encriptada = encrypt(contrasena)  # Encriptar la contraseña ingresada
+        if usuario['contrasena'] != contrasena_encriptada:
+            flash("Contraseña incorrecta.", "error")
+            return redirect(url_for('inicio_usuarios'))  # Redirigir al formulario de login
+
+        # Si el usuario y contraseña son correctos, se inicia sesión
+        session['user_id'] = str(usuario['_id'])
+        session['nombre'] = usuario['nombre']
+        session['correo'] = usuario['correo']
+
+        flash("Inicio de sesión exitoso.", "success")
+
+        # Redirigir a la página principal (o donde sea necesario)
+        return redirect(url_for('pagina_principal'))  # Redirigir a la página principal después de iniciar sesión
+
+    # Si no es un POST, simplemente renderiza el formulario de login
+    return render_template("views/usuarios/usuarios_login.html")
