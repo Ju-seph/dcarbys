@@ -22,9 +22,11 @@ def inicio_usuarios():
 def registrar_usuario():
     return usu.registrar_usuario(request)
 
-@app.route('/iniciar_sesion',methods=["GET", "POST"])
+@app.route('/login_usuarios',methods=["GET", "POST"])
 def iniciar_sesion():
     return usu.iniciar_sesion(request)
+
+
 
 @app.route('/',methods=["GET", "POST"])
 def begin():

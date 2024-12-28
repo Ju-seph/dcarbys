@@ -6,7 +6,7 @@ import re
 
 
 def inicio_usuarios(request):
-    return render_template("views/usuarios/usuarios_login.html")
+    return render_template("views/usuarios/registro_usuarios.html")
 
 
 
@@ -16,15 +16,15 @@ def registrar_usuario(request):
         # Recibir los datos del formulario
         nombre = request.form.get('nombre')
         correo = request.form.get('correo')
-        contrasena = request.form.get('contrasena')
-        confirmar_contrasena = request.form.get('confirmar_contrasena')
+        contraseña = request.form.get('contraseña')
+        confirmar_contraseña = request.form.get('confirmar_contraseña')
         
         # Validación básica
-        if not nombre or not correo or not contrasena or not confirmar_contrasena:
+        if not nombre or not correo or not contraseña or not confirmar_contraseña:
             flash("Por favor complete todos los campos.", "error")
             return redirect(url_for('registrar_usuario'))  # Redirigir al formulario de registro
 
-        if contrasena != confirmar_contrasena:
+        if contraseña != confirmar_contraseña:
             flash("Las contraseñas no coinciden.", "error")
             return redirect(url_for('registrar_usuario'))  # Redirigir al formulario de registro
         
@@ -34,12 +34,9 @@ def registrar_usuario(request):
             flash("El correo electrónico no tiene un formato válido.", "error")
             return redirect(url_for('registrar_usuario'))  # Redirigir al formulario de registro
 
-        # Encriptar la contraseña
-        contrasena_encriptada = encrypt(contrasena)
-
-        # Conectar a la base de datos
-        db = Mongodb()
-        coleccion_usuarios = db.get_collection('usuarios')
+        # Conectar a la base de datos con MongoDB
+        db = Mongodb()  # Instanciar la clase Mongodb
+        coleccion_usuarios = db['usuarios']  # Acceder a la colección "usuarios"
 
         # Verificar si el correo ya existe
         usuario_existente = coleccion_usuarios.find_one({"correo": correo})
@@ -47,11 +44,14 @@ def registrar_usuario(request):
             flash("Ya existe un usuario con ese correo.", "error")
             return redirect(url_for('registrar_usuario'))  # Redirigir al formulario de registro
 
+        # Encriptar la contraseña
+        contraseña_encriptada = encrypt(contraseña)
+
         # Crear el nuevo usuario
         nuevo_usuario = {
             "nombre": nombre,
             "correo": correo,
-            "contrasena": contrasena_encriptada,
+            "contraseña": contraseña_encriptada,
             "activo": True  # Establecer el estado del usuario como activo
         }
 
@@ -60,18 +60,18 @@ def registrar_usuario(request):
         flash("Usuario registrado con éxito.", "success")
 
         # Redirigir a la página de inicio de sesión
-        return redirect(url_for('inicio_usuarios'))  # Redirigir a la página de login
-    
+        return redirect(url_for('/index.html'))  # Redirigir a la página de login
+
     # Si la solicitud no es POST, simplemente renderiza el formulario de registro
-    return render_template("views/usuarios/usuarios_login.html")
+    return render_template("views/usuarios/registro_usuarios.html")
 
 
 def iniciar_sesion(request):
     if request.method == 'POST':
         correo = request.form.get('correo')
-        contrasena = request.form.get('contrasena')
+        contraseña = request.form.get('contraseña')
 
-        if not correo or not contrasena:
+        if not correo or not contraseña:
             flash("Por favor complete ambos campos.", "error")
             return redirect(url_for('inicio_usuarios'))  # Redirigir al formulario de login
 
@@ -86,8 +86,8 @@ def iniciar_sesion(request):
             return redirect(url_for('inicio_usuarios'))  # Redirigir al formulario de login
 
         # Comparar la contraseña encriptada
-        contrasena_encriptada = encrypt(contrasena)  # Encriptar la contraseña ingresada
-        if usuario['contrasena'] != contrasena_encriptada:
+        contraseña_encriptada = encrypt(contraseña)  # Encriptar la contraseña ingresada
+        if usuario['contrasena'] != contraseña_encriptada:
             flash("Contraseña incorrecta.", "error")
             return redirect(url_for('inicio_usuarios'))  # Redirigir al formulario de login
 
@@ -99,7 +99,7 @@ def iniciar_sesion(request):
         flash("Inicio de sesión exitoso.", "success")
 
         # Redirigir a la página principal (o donde sea necesario)
-        return redirect(url_for('pagina_principal'))  # Redirigir a la página principal después de iniciar sesión
+        return redirect(url_for('/index.html'))  # Redirigir a la página principal después de iniciar sesión
 
     # Si no es un POST, simplemente renderiza el formulario de login
-    return render_template("views/usuarios/usuarios_login.html")
+    return render_template("views/usuarios/login_usuarios.html")
