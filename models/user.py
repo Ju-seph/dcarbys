@@ -2,11 +2,11 @@ from datetime import datetime
 
 class User:
 
-    def __init__(self, idUser,nombreUsuario ,correo,contraseña , rol,status):
+    def __init__(self, idUser,nombreUsuario ,correo,clave , rol,status):
         self.idUser= idUser
         self.nombreUsuario= nombreUsuario
         self.correo= correo
-        self.contraseña= contraseña
+        self.clave= clave
         self.rol= rol
         self.status= status
 

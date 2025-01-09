@@ -14,36 +14,21 @@ def after_request(response):
     response.headers["cache-control"]= "no-cache, no-store, must-revalidate"
     return response
 
-@app.route('/usuarios_login',methods=["GET"])
-def inicio_usuarios():
-    return usu.inicio_usuarios(request)
-
-@app.route('/registro_usuarios',methods=["GET", "POST"])
-def registrar_usuario():
-    return usu.registrar_usuario(request)
-
-@app.route('/login_usuarios',methods=["GET", "POST"])
-def iniciar_sesion():
-    return usu.iniciar_sesion(request)
-
-
-
 @app.route('/',methods=["GET", "POST"])
 def begin():
     return indx.begin(request)
 
-@app.route('/login',methods=["GET", "POST"])
-def index():
-    return indx.inicio(request)
+@app.route('/registro_usuarios', methods=["GET", "POST"])
+def registro_usuarios():
+    return usu.save_user(request)
 
-@app.route('/salir',methods=["GET"])
-def salir():
-    return indx.salir()
 
-@app.route('/principal',methods=["GET"])
-def principal():
-    return indx.principal()
-    
+@app.route('/login_usuarios',methods=["GET", "POST"])
+def login_usuarios():
+    return usu.login_user(request)
+
+
+
 
 
 if __name__ == "__main__":

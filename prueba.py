@@ -11,3 +11,6 @@ try:
     print("Colecciones disponibles:", db.list_collection_names())
 except Exception as e:
     print("Error de conexión:", e)
+
+
+from controllers.ctl_encrypt import encrypt, decrypt

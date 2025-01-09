@@ -1,105 +1,106 @@
 from flask import render_template, session, redirect, url_for, abort,jsonify,json, flash
 from database.mongodb import Mongodb
+import controllers.ctl_encrypt as ctl_encrypt
 from controllers.ctl_encrypt import encrypt, decrypt
 from bson.objectid import ObjectId
+from models.user import User
+
 import re
 
+db = Mongodb().db()
 
-def inicio_usuarios(request):
-    return render_template("views/usuarios/registro_usuarios.html")
+from flask import render_template, session, redirect, url_for, jsonify, request, flash
+from database.mongodb import Mongodb
+import controllers.ctl_encrypt as ctl_encrypt
+from models.user import User
 
+db = Mongodb().db()
 
+def save_user(request):
+    # Si es una solicitud GET, renderizar la página de registro
+    if request.method == 'GET':
+        return render_template("views/usuarios/registro_usuarios.html")
 
-
-def registrar_usuario(request):
+    # Si es una solicitud POST, procesar el registro del usuario
     if request.method == 'POST':
-        # Recibir los datos del formulario
-        nombre = request.form.get('nombre')
-        correo = request.form.get('correo')
-        contraseña = request.form.get('contraseña')
-        confirmar_contraseña = request.form.get('confirmar_contraseña')
-        
-        # Validación básica
-        if not nombre or not correo or not contraseña or not confirmar_contraseña:
-            flash("Por favor complete todos los campos.", "error")
-            return redirect(url_for('registrar_usuario'))  # Redirigir al formulario de registro
+        try:
+            # Obtener datos del formulario
+            nombreUsuario = request.form["u_nombreUsuario"]
+            correo = request.form["u_correo"]
+            clave = request.form["u_clave"]
+            rol = request.form["u_rol"]
 
-        if contraseña != confirmar_contraseña:
-            flash("Las contraseñas no coinciden.", "error")
-            return redirect(url_for('registrar_usuario'))  # Redirigir al formulario de registro
-        
-        # Validar formato de correo electrónico
-        email_regex = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
-        if not re.match(email_regex, correo):
-            flash("El correo electrónico no tiene un formato válido.", "error")
-            return redirect(url_for('registrar_usuario'))  # Redirigir al formulario de registro
+            # Comprobar si el usuario ya existe
+            existe = db.users.find_one({"$and": [{"correo": correo}, {"nombreUsuario": nombreUsuario}]})
 
-        # Conectar a la base de datos con MongoDB
-        db = Mongodb()  # Instanciar la clase Mongodb
-        coleccion_usuarios = db['usuarios']  # Acceder a la colección "usuarios"
+            if existe:
+                # Usuario existente, enviar mensaje de error
+                flash("Usuario ya existe. Intente con otro correo o nombre de usuario.", "error")
+                return redirect(url_for("registro_usuarios"))
 
-        # Verificar si el correo ya existe
-        usuario_existente = coleccion_usuarios.find_one({"correo": correo})
-        if usuario_existente:
-            flash("Ya existe un usuario con ese correo.", "error")
-            return redirect(url_for('registrar_usuario'))  # Redirigir al formulario de registro
+            # Encriptar la clave
+            clave_encriptada = ctl_encrypt.encrypt(clave)
 
-        # Encriptar la contraseña
-        contraseña_encriptada = encrypt(contraseña)
+            # Crear el objeto del usuario
+            usuario = User(nombreUsuario, correo, clave_encriptada, rol)
 
-        # Crear el nuevo usuario
-        nuevo_usuario = {
-            "nombre": nombre,
-            "correo": correo,
-            "contraseña": contraseña_encriptada,
-            "activo": True  # Establecer el estado del usuario como activo
-        }
+            # Guardar en la base de datos
+            db.users.insert_one(usuario.obtener_user())
 
-        # Insertar el usuario en la base de datos
-        coleccion_usuarios.insert_one(nuevo_usuario)
-        flash("Usuario registrado con éxito.", "success")
+            # Mensaje de éxito y redirección
+            flash("Usuario creado correctamente.", "success")
+            return redirect(url_for("index"))
 
-        # Redirigir a la página de inicio de sesión
-        return redirect(url_for('/index.html'))  # Redirigir a la página de login
+        except Exception as e:
+            # Manejar errores y enviar mensaje de error
+            flash(f"Error al crear el usuario: {e}", "error")
+            return redirect(url_for("registro_usuarios"))
 
-    # Si la solicitud no es POST, simplemente renderiza el formulario de registro
-    return render_template("views/usuarios/registro_usuarios.html")
+    # Si el método no es GET ni POST, devolver error 405
+    return jsonify({"message": "Método no permitido"}), 405
 
 
-def iniciar_sesion(request):
+
+def login_user(request):
+    # Si es una solicitud GET, renderizar la página de inicio de sesión
+    if request.method == 'GET':
+        return render_template("views/usuarios/login_usuarios.html")
+
+    # Si es una solicitud POST, procesar el inicio de sesión del usuario
     if request.method == 'POST':
-        correo = request.form.get('correo')
-        contraseña = request.form.get('contraseña')
+        try:
+            # Obtener datos del formulario
+            nombreUsuario = request.form["u_nombreUsuario"]
+            clave = request.form["u_clave"]
 
-        if not correo or not contraseña:
-            flash("Por favor complete ambos campos.", "error")
-            return redirect(url_for('inicio_usuarios'))  # Redirigir al formulario de login
+            # Buscar al usuario por nombreUsuario
+            usuario = db.users.find_one({"nombreUsuario": nombreUsuario})
 
-        # Conectar a la base de datos
-        db = Mongodb()
-        coleccion_usuarios = db.get_collection('usuarios')
+            if usuario:
+                # Verificar la contraseña desencriptando
+                clave_encriptada = usuario["clave"]
+                if ctl_encrypt.decrypt(clave_encriptada) == clave:
+                    # Guardar los datos del usuario en la sesión
+                    session["usuario_id"] = str(usuario["_id"])
+                    session["nombreUsuario"] = usuario["nombreUsuario"]
+                    session["rol"] = usuario["rol"]
 
-        # Buscar el usuario en la base de datos por correo
-        usuario = coleccion_usuarios.find_one({"correo": correo})
-        if not usuario:
-            flash("Correo no encontrado.", "error")
-            return redirect(url_for('inicio_usuarios'))  # Redirigir al formulario de login
+                    # Mensaje de éxito y redirección al panel principal
+                    flash("Inicio de sesión exitoso.", "success")
+                    return redirect(url_for("index"))
+                else:
+                    # Contraseña incorrecta
+                    flash("Contraseña incorrecta.", "error")
+                    return redirect(url_for("login_usuarios"))
+            else:
+                # Usuario no encontrado
+                flash("El nombre de usuario no existe.", "error")
+                return redirect(url_for("login_usuarios"))
 
-        # Comparar la contraseña encriptada
-        contraseña_encriptada = encrypt(contraseña)  # Encriptar la contraseña ingresada
-        if usuario['contrasena'] != contraseña_encriptada:
-            flash("Contraseña incorrecta.", "error")
-            return redirect(url_for('inicio_usuarios'))  # Redirigir al formulario de login
+        except Exception as e:
+            # Manejar errores y enviar mensaje de error
+            flash(f"Error al iniciar sesión: {e}", "error")
+            return redirect(url_for("login_usuarios"))
 
-        # Si el usuario y contraseña son correctos, se inicia sesión
-        session['user_id'] = str(usuario['_id'])
-        session['nombre'] = usuario['nombre']
-        session['correo'] = usuario['correo']
-
-        flash("Inicio de sesión exitoso.", "success")
-
-        # Redirigir a la página principal (o donde sea necesario)
-        return redirect(url_for('/index.html'))  # Redirigir a la página principal después de iniciar sesión
-
-    # Si no es un POST, simplemente renderiza el formulario de login
-    return render_template("views/usuarios/login_usuarios.html")
+    # Si el método no es GET ni POST, devolver error 405
+    return jsonify({"message": "Método no permitido"}), 405

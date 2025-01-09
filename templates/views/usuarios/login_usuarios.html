@@ -7,36 +7,39 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-6 col-md-8 col-sm-10">
-                <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card border-0 shadow-lg rounded-4">
                     <div class="card-body p-5">
                         <h2 class="text-center mb-4 fw-bold text-primary">Iniciar sesión</h2>
                         <p class="text-center text-muted mb-4">Accede a tu cuenta para continuar con tu pedido</p>
                         
-                        <form method="POST" action="/login">
-                            
+                        <form method="POST" action="/login_user">
+                            <!-- Campo de Nombre de Usuario -->
                             <div class="mb-4">
-                                <label for="username" class="form-label text-muted">Nombre de usuario</label>
+                                <label for="username" class="form-label">Nombre de usuario</label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-person-fill text-primary"></i></span>
-                                    <input type="text" class="form-control border-start-0 ps-0" id="username" name="username" required placeholder="Ingresa tu nombre de usuario">
+                                    <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                                    <input type="text" class="form-control" id="username" name="username" required placeholder="Ingresa tu nombre de usuario">
                                 </div>
                             </div>
                             
+                            <!-- Campo de Contraseña -->
                             <div class="mb-4">
-                                <label for="password" class="form-label text-muted">Contraseña</label>
+                                <label for="password" class="form-label">Contraseña</label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-lock-fill text-primary"></i></span>
-                                    <input type="password" class="form-control border-start-0 ps-0" id="password" name="password" required placeholder="Ingresa tu contraseña">
+                                    <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                                    <input type="password" class="form-control" id="password" name="password" required placeholder="Ingresa tu contraseña">
                                 </div>
                             </div>
                             
+                            <!-- Botón de Iniciar Sesión -->
                             <div class="d-grid gap-2 mb-4">
-                                <button type="submit" class="btn btn-primary btn-lg rounded-pill">Iniciar sesión</button>
+                                <button type="submit" class="btn btn-primary btn-lg">Iniciar sesión</button>
                             </div>
                         </form>
 
+                        <!-- Enlace de Registro -->
                         <div class="text-center">
-                            <p class="text-muted">¿No tienes cuenta? <a href="/registro" class="text-decoration-none text-primary fw-bold">Regístrate aquí</a></p>
+                            <p class="text-muted">¿No tienes cuenta? <a href="/registro_usuarios" class="text-decoration-none">Regístrate aquí</a></p>
                         </div>
                     </div>
                 </div>
@@ -44,63 +47,5 @@
         </div>
     </div>
 </div>
-
-<!-- Estilos adicionales para los colores -->
-<style>
-    :root {
-        --primary-color: #FF6B35;
-        --secondary-color: #ffc72c;
-    }
-
-    body {
-        font-family: 'Poppins', sans-serif;
-    }
-
-    .navbar-light .navbar-nav .nav-link {
-        color: rgba(0,0,0,.7);
-    }
-
-    .navbar-light .navbar-nav .nav-link:hover,
-    .navbar-light .navbar-nav .nav-link:focus,
-    .navbar-light .navbar-nav .nav-link.active {
-        color: var(--primary-color);
-    }
-
-    .btn-primary {
-        background-color: var(--primary-color);
-        border-color: var(--primary-color);
-    }
-
-    .btn-primary:hover,
-    .btn-primary:focus {
-        background-color: #c5001f;
-        border-color: #c5001f;
-    }
-
-    .text-primary {
-        color: var(--primary-color) !important;
-    }
-
-    .form-control:focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 0.25rem rgba(228, 0, 43, 0.25);
-    }
-
-    .input-group-text {
-        border-right: none;
-    }
-
-    .form-control {
-        border-left: none;
-    }
-
-    .card {
-        transition: transform 0.3s ease-in-out;
-    }
-
-    .card:hover {
-        transform: translateY(-5px);
-    }
-</style>
 
 {% endblock %}

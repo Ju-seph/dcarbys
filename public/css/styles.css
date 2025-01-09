@@ -1,0 +1,31 @@
+:root {
+    --primary-color: #FF6B35;
+    --secondary-color: #4CAF50;
+    --accent-color: #FFC300;
+    --background-color: #F7F7F7;
+    --text-color: #333333;
+    --light-text-color: #FFFFFF;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.navbar {
+    background-color: var(--primary-color);
+    color: var(--light-text-color);
+}
+
+.navbar a {
+    color: var(--light-text-color);
+}
+
+.btn-custom {
+    background-color: var(--primary-color);
+    color: var(--light-text-color);
+}
+
+.btn-custom:hover {
+    background-color: var(--secondary-color);
+}
