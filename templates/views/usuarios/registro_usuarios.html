@@ -13,7 +13,7 @@
                         <p class="text-center text-muted mb-4">Únete a Dcarbys y disfruta de deliciosas comidas</p>
 
                         <!-- Formulario -->
-                        <form method="POST" action="/save_usuario">
+                        <form method="POST" action="/registro_usuarios">
                             <div class="mb-4">
                                 <label for="u_nombreUsuario" class="form-label text-muted">Nombre de usuario</label>
                                 <div class="input-group">
@@ -43,18 +43,6 @@
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-shield-lock-fill"></i></span>
                                     <input type="password" class="form-control" id="confirm_password" name="confirm_password" required placeholder="Confirma tu contraseña">
-                                </div>
-                            </div>
-                            
-                            <div class="mb-4">
-                                <label for="u_rol" class="form-label text-muted">Rol</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-briefcase-fill"></i></span>
-                                    <select class="form-select" id="u_rol" name="u_rol" required>
-                                        <option value="" disabled selected>Seleccione un rol</option>
-                                        <option value="admin">Administrador</option>
-                                        <option value="user">Usuario</option>
-                                    </select>
                                 </div>
                             </div>
                             

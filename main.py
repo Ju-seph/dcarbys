@@ -19,7 +19,7 @@ def begin():
     return indx.begin(request)
 
 @app.route('/registro_usuarios', methods=["GET", "POST"])
-def registro_usuarios():
+def save_user():
     return usu.save_user(request)
 
 

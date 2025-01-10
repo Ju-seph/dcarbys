@@ -21,8 +21,7 @@ def save_user(request):
             nombreUsuario = request.form["u_nombreUsuario"]
             correo = request.form["u_correo"]
             clave = request.form["u_clave"]
-            rol = request.form["u_rol"]
-
+            
             # Comprobar si el usuario ya existe
             existe = db.users.find_one({"$and": [{"correo": correo}, {"nombreUsuario": nombreUsuario}]})
 
@@ -35,7 +34,9 @@ def save_user(request):
             clave_encriptada = ctl_encrypt.encrypt(clave)
 
             # Crear el objeto del usuario
-            usuario = User(nombreUsuario, correo, clave_encriptada, rol)
+            usuario = User(nombreUsuario, correo, clave_encriptada, rol="usuario", status="activo")
+
+            usuario.crear_usuario()
 
             # Guardar en la base de datos
             db.users.insert_one(usuario.obtener_user())
@@ -47,7 +48,7 @@ def save_user(request):
         except Exception as e:
             # Manejar errores y enviar mensaje de error
             print(f"Error al crear el usuario: {e}")
-            return redirect(url_for("registro_usuarios"))
+            return redirect(url_for("save_user"))
 
     # Si el método no es GET ni POST, devolver error 405
     return jsonify({"message": "Método no permitido"}), 405
@@ -76,7 +77,7 @@ def login_user(request):
                     # Guardar los datos del usuario en la sesión
                     session["usuario_id"] = str(usuario["_id"])
                     session["nombreUsuario"] = usuario["nombreUsuario"]
-                    session["rol"] = usuario["rol"]
+                    
 
                     # Mensaje de éxito y redirección al panel principal
                     jsonify("Inicio de sesión exitoso.", "success")
