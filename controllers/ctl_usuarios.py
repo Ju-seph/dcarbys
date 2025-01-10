@@ -46,7 +46,7 @@ def save_user(request):
 
         except Exception as e:
             # Manejar errores y enviar mensaje de error
-            flash(f"Error al crear el usuario: {e}", "error")
+            print(f"Error al crear el usuario: {e}")
             return redirect(url_for("registro_usuarios"))
 
     # Si el método no es GET ni POST, devolver error 405
@@ -79,20 +79,20 @@ def login_user(request):
                     session["rol"] = usuario["rol"]
 
                     # Mensaje de éxito y redirección al panel principal
-                    flash("Inicio de sesión exitoso.", "success")
+                    jsonify("Inicio de sesión exitoso.", "success")
                     return redirect(url_for("index"))
                 else:
                     # Contraseña incorrecta
-                    flash("Contraseña incorrecta.", "error")
+                    jsonify("Contraseña incorrecta.", "error")
                     return redirect(url_for("login_usuarios"))
             else:
                 # Usuario no encontrado
-                flash("El nombre de usuario no existe.", "error")
+                jsonify("El nombre de usuario no existe.", "error")
                 return redirect(url_for("login_usuarios"))
 
         except Exception as e:
             # Manejar errores y enviar mensaje de error
-            flash(f"Error al iniciar sesión: {e}", "error")
+            jsonify(f"Error al iniciar sesión: {e}", "error")
             return redirect(url_for("login_usuarios"))
 
     # Si el método no es GET ni POST, devolver error 405
