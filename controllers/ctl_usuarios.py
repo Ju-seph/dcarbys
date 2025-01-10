@@ -9,13 +9,6 @@ import re
 
 db = Mongodb().db()
 
-from flask import render_template, session, redirect, url_for, jsonify, request, flash
-from database.mongodb import Mongodb
-import controllers.ctl_encrypt as ctl_encrypt
-from models.user import User
-
-db = Mongodb().db()
-
 def save_user(request):
     # Si es una solicitud GET, renderizar la página de registro
     if request.method == 'GET':
@@ -35,7 +28,7 @@ def save_user(request):
 
             if existe:
                 # Usuario existente, enviar mensaje de error
-                flash("Usuario ya existe. Intente con otro correo o nombre de usuario.", "error")
+                jsonify({"message":"Usuario Existente"}), 404
                 return redirect(url_for("registro_usuarios"))
 
             # Encriptar la clave
@@ -48,7 +41,7 @@ def save_user(request):
             db.users.insert_one(usuario.obtener_user())
 
             # Mensaje de éxito y redirección
-            flash("Usuario creado correctamente.", "success")
+            jsonify({"message":"Usuario creado correctamente"}), 200
             return redirect(url_for("index"))
 
         except Exception as e:
