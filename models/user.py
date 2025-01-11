@@ -2,8 +2,7 @@ from datetime import datetime
 
 class User:
 
-    def __init__(self, idUser,nombreUsuario ,correo,clave , rol,status):
-        self.idUser= idUser
+    def __init__(self,nombreUsuario ,correo,clave , rol,status):
         self.nombreUsuario= nombreUsuario
         self.correo= correo
         self.clave= clave

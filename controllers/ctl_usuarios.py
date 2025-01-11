@@ -17,6 +17,7 @@ def save_user(request):
     # Si es una solicitud POST, procesar el registro del usuario
     if request.method == 'POST':
         try:
+            
             # Obtener datos del formulario
             nombreUsuario = request.form["u_nombreUsuario"]
             correo = request.form["u_correo"]
@@ -28,22 +29,22 @@ def save_user(request):
             if existe:
                 # Usuario existente, enviar mensaje de error
                 jsonify({"message":"Usuario Existente"}), 404
-                return redirect(url_for("registro_usuarios"))
+                return redirect(url_for("login_usuarios"))
 
             # Encriptar la clave
-            clave_encriptada = ctl_encrypt.encrypt(clave)
+            clave = ctl_encrypt.encrypt(clave)
 
             # Crear el objeto del usuario
-            usuario = User(nombreUsuario, correo, clave_encriptada, rol="usuario", status="activo")
-
-            usuario.crear_usuario()
+            usuario = User(nombreUsuario, correo, clave, rol="usuario", status="activo")
+            print(usuario)
+            usuario.createUser()
 
             # Guardar en la base de datos
-            db.users.insert_one(usuario.obtener_user())
+            db.users.insert_one(usuario.getUser())
 
             # Mensaje de éxito y redirección
             jsonify({"message":"Usuario creado correctamente"}), 200
-            return redirect(url_for("index"))
+            return redirect(url_for("begin"))
 
         except Exception as e:
             # Manejar errores y enviar mensaje de error
@@ -72,8 +73,8 @@ def login_user(request):
 
             if usuario:
                 # Verificar la contraseña desencriptando
-                clave_encriptada = usuario["clave"]
-                if ctl_encrypt.decrypt(clave_encriptada) == clave:
+                clave = usuario["clave"]
+                if ctl_encrypt.decrypt(clave) == clave:
                     # Guardar los datos del usuario en la sesión
                     session["usuario_id"] = str(usuario["_id"])
                     session["nombreUsuario"] = usuario["nombreUsuario"]
