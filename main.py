@@ -24,7 +24,7 @@ def save_user():
 
 
 @app.route('/login_usuarios',methods=["GET", "POST"])
-def login_usuarios():
+def login_user():
     return usu.login_user(request)
 
 

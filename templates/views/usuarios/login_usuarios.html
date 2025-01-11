@@ -12,13 +12,13 @@
                         <h2 class="text-center mb-4 fw-bold text-primary">Iniciar sesión</h2>
                         <p class="text-center text-muted mb-4">Accede a tu cuenta para continuar con tu pedido</p>
                         
-                        <form method="POST" action="/login_user">
+                        <form method="POST" action="/login_usuarios">
                             <!-- Campo de Nombre de Usuario -->
                             <div class="mb-4">
                                 <label for="username" class="form-label">Nombre de usuario</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                                    <input type="text" class="form-control" id="username" name="username" required placeholder="Ingresa tu nombre de usuario">
+                                    <input type="text" class="form-control" id="u_nombreUsuario" name="u_nombreUsuario" required placeholder="Ingresa tu nombre de usuario">
                                 </div>
                             </div>
                             
@@ -27,7 +27,7 @@
                                 <label for="password" class="form-label">Contraseña</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-                                    <input type="password" class="form-control" id="password" name="password" required placeholder="Ingresa tu contraseña">
+                                    <input type="password" class="form-control" id="u_clave" name="u_clave" required placeholder="Ingresa tu contraseña">
                                 </div>
                             </div>
                             
