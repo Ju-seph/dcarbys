@@ -85,7 +85,9 @@ def login_user(request):
                     # Guardar datos del usuario en la sesión
                     session["usuario_id"] = str(usuario["_id"])
                     session["nombreUsuario"] = usuario["nombreUsuario"]
-
+                    alertas["tipo"]= "success"
+                    alertas["message"] = "Session iniciada correctamente."
+                    
                     # Redirigir al panel principal
                     return render_template("views/index.html", alertas=alertas)
                 else:
@@ -106,4 +108,8 @@ def login_user(request):
 
     return abort(405)
 
-
+def logout_user():
+    # Eliminar las variables de sesión
+    session.clear()
+    # Redirigir al inicio
+    return redirect(url_for('begin'))

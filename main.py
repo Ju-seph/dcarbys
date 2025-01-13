@@ -27,6 +27,10 @@ def save_user():
 def login_user():
     return usu.login_user(request)
 
+@app.route('/logout', methods=["GET"])
+def logout_user():
+    return usu.logout_user()
+
 
 
 
