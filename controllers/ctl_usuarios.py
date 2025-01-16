@@ -38,7 +38,7 @@ def save_user(request):
             clave = ctl_encrypt.encrypt(clave)
 
             # Crear el objeto del usuario
-            usuario = User(nombreUsuario, correo, clave, rol="usuario", status="activo")
+            usuario = User(nombreUsuario, correo, clave, rol="cliente", status="activo")
             usuario.createUser()
 
             # Guardar en la base de datos
@@ -85,11 +85,15 @@ def login_user(request):
                     # Guardar datos del usuario en la sesión
                     session["usuario_id"] = str(usuario["_id"])
                     session["nombreUsuario"] = usuario["nombreUsuario"]
-                    alertas["tipo"]= "success"
-                    alertas["message"] = "Session iniciada correctamente."
-                    
-                    # Redirigir al panel principal
-                    return render_template("views/index.html", alertas=alertas)
+                    session["rol"] = usuario.get("rol", "nombreUsuario")  # Asegurar que el rol está definido
+                    alertas["tipo"] = "success"
+                    alertas["message"] = "Sesión iniciada correctamente."
+
+                    # Redirigir según el rol
+                    if session["rol"] == "Administrador":
+                        return render_template("views/principal.html", alertas=alertas)
+                    else:
+                        return render_template("views/index.html", alertas=alertas)
                 else:
                     # Contraseña incorrecta
                     alertas["tipo"] = "danger"
@@ -107,6 +111,9 @@ def login_user(request):
         return render_template("views/usuarios/login_usuarios.html", alertas=alertas)
 
     return abort(405)
+
+
+
 
 def logout_user():
     # Eliminar las variables de sesión

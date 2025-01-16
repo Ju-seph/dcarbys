@@ -2,6 +2,39 @@
 
 {% block body %}
 
+<nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
+    <div class="container">
+        <a class="navbar-brand" href="#"><span class="text-primary">D</span>carbys</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/">Menú</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#ofertas">Ofertas</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#testimonios">Testimonios</a>
+                </li>
+                {% if session.get('usuario_id') %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout">Cerrar Sesión</a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/registro_usuarios">Registro De Usuario</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/login_usuarios">Iniciar Sesión</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
 
 <header class="bg-primary text-white text-center py-5">
     <div class="container">
