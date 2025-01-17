@@ -2,9 +2,9 @@ from datetime import datetime
 
 class Producto:
 
-    def __init__(self, nombre, precio, cantidad, status, categoria=None, descripcion=None, 
+    def __init__(self, nombreProducto, precio, cantidad, status, categoria=None, descripcion=None, 
                  imagen_url=None, tiempo_preparacion=None, destacado=False):
-        self.nombre = nombre
+        self.nombreProducto = nombreProducto
         self.precio = precio
         self.cantidad = cantidad
         self.status = status

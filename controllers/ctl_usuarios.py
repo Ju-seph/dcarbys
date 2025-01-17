@@ -120,3 +120,7 @@ def logout_user():
     session.clear()
     # Redirigir al inicio
     return redirect(url_for('begin'))
+
+
+# Funciones Dentro de principal.html
+

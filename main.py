@@ -1,6 +1,7 @@
 from flask import Flask, request, render_template
 import controllers.index as indx
 import controllers.ctl_usuarios as usu
+import controllers.ctl_productos as prod
 from dotenv import load_dotenv
 import os
 
@@ -32,7 +33,11 @@ def logout_user():
     return usu.logout_user()
 
 
+# PRODUCTOS
 
+@app.route('/save_productos',methods=["POST"])
+def save_product():
+    return prod.save_product(request)
 
 
 if __name__ == "__main__":
