@@ -17,7 +17,7 @@ def save_product(request):
     if request.method == 'POST':
         try:
             # Obtener datos del formulario
-            nombre = request.form.get("u_nombreProducto")
+            nombreProducto = request.form.get("u_nombreProducto")
             precio = request.form.get("u_precio")
             cantidad = request.form.get("u_cantidad")
             status = request.form.get("u_status")
@@ -27,8 +27,9 @@ def save_product(request):
             tiempo_preparacion = request.form.get("u_tiempo_preparacion")
             destacado = request.form.get("u_destacado") == 'true'
 
+            existe = db.users.find_one({"$and": [{"nombreProducto": nombreProducto}, {"precio": precio}]})
             # Validar campos obligatorios
-            if not nombre or not precio or not cantidad or not status:
+            if existe:
                 response["message"] = "Todos los campos obligatorios deben ser completados."
                 return jsonify(response), 400
 
@@ -42,7 +43,7 @@ def save_product(request):
 
             # Crear objeto Producto
             producto = Producto(
-                nombre=nombre,
+                nombreProducto=nombreProducto,
                 precio=precio,
                 cantidad=cantidad,
                 status="activo",
@@ -52,15 +53,15 @@ def save_product(request):
                 tiempo_preparacion=tiempo_preparacion,
                 destacado=destacado
             )
-            producto_data = producto.getProducto()
+            producto.createProducto()
 
             # Guardar el producto en la base de datos
-            db.productos.insert_one(producto_data)
+            db.productos.insert_one(producto.getProducto())
 
             # Producto creado exitosamente
             response["status"] = "success"
             response["message"] = "Producto creado correctamente."
-            response["data"] = producto_data  # Retornar los datos del producto creado
+
             return jsonify(response), 201
 
         except Exception as e:
