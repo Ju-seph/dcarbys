@@ -6,7 +6,7 @@ $(document).ready(function () {
         },
         "columns": [
             { "data": "id", "className": "text-center" },
-            { "data": "nombre", "className": "text-center" },
+            { "data": "nombreProducto", "className": "text-center" },
             { "data": "precio", "className": "text-center" },
             { "data": "cantidad", "className": "text-center" },
             { "data": "categoria", "className": "text-center" },
@@ -30,7 +30,7 @@ $(document).ready(function () {
             {
                 "targets": -1,
                 "data": null,
-                "defaultContent": '<button type="button" class="btn btn-primary btn-editar-producto">Editar</button> <button type="button" class="btn btn-danger btn-eliminar-producto">Eliminar</button>'
+                "defaultContent": '<button type="button" class="btn btn-primary btn-editar-producto"><i class="bi bi-pencil"></i></button> <button type="button" class="btn btn-danger btn-eliminar-producto"><i class="bi bi-trash"></i></button>'
             }
         ],
         "language": { "url": "https://cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json" },

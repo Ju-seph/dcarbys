@@ -9,6 +9,31 @@ import re
 
 db = Mongodb().db()
 
+def ver_productos(request):
+    if request.method == 'POST':
+        try:
+            # Obtener todos los productos desde la base de datos
+            productos = db.productos.find()
+            lista_productos = list(productos)
+
+            # Formatear los datos para ser compatibles con DataTables
+            for producto in lista_productos:
+                producto["_id"] = str(producto["_id"])  # Convertir ObjectId a string
+
+            datos = {"data": lista_productos}
+            return json.dumps(datos, default=str), 200
+
+        except Exception as e:
+            # Manejar errores y devolver un mensaje
+            print(f"Error al obtener los productos: {e}")
+            return jsonify({"message": f"Error al obtener los productos: {e}"}), 500
+    else:
+        return jsonify({"message": "Petición Incorrecta"}), 405
+
+
+
+
+
 def save_product(request):
     # Inicializar el diccionario de respuesta
     response = {"status": "error", "message": "", "data": None}
@@ -27,13 +52,12 @@ def save_product(request):
             tiempo_preparacion = request.form.get("u_tiempo_preparacion")
             destacado = request.form.get("u_destacado") == 'true'
 
-            existe = db.users.find_one({"$and": [{"nombreProducto": nombreProducto}, {"precio": precio}]})
-            # Validar campos obligatorios
-            if existe:
-                response["message"] = "Todos los campos obligatorios deben ser completados."
+            # Validar que los campos requeridos no estén vacíos
+            if not (nombreProducto and precio and cantidad):
+                response["message"] = "Nombre del producto, precio y cantidad son obligatorios."
                 return jsonify(response), 400
 
-            # Validar que el precio y cantidad sean números
+            # Validar que el precio sea decimal y la cantidad un entero
             try:
                 precio = float(precio)
                 cantidad = int(cantidad)
@@ -41,12 +65,18 @@ def save_product(request):
                 response["message"] = "El precio debe ser un número decimal y la cantidad un número entero."
                 return jsonify(response), 400
 
+            # Verificar si el producto ya existe en la base de datos
+            existe = db.productos.find_one({"nombreProducto": nombreProducto})
+            if existe:
+                response["message"] = f"El producto '{nombreProducto}' ya existe."
+                return jsonify(response), 409
+
             # Crear objeto Producto
             producto = Producto(
                 nombreProducto=nombreProducto,
                 precio=precio,
                 cantidad=cantidad,
-                status="activo",
+                status="activo" if not status else status,
                 categoria=categoria,
                 descripcion=descripcion,
                 imagen_url=imagen_url,
@@ -61,7 +91,6 @@ def save_product(request):
             # Producto creado exitosamente
             response["status"] = "success"
             response["message"] = "Producto creado correctamente."
-
             return jsonify(response), 201
 
         except Exception as e:
@@ -73,5 +102,3 @@ def save_product(request):
     # Si el método no es POST, devolver error 405
     response["message"] = "Método no permitido."
     return jsonify(response), 405
-
-

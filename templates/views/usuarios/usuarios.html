@@ -1,7 +1,4 @@
-<div class="tab-pane fade show active" id="v-pills-user" role="tabpanel" aria-labelledby="v-pills-user-tab"
-    tabindex="0">
-
-
+<div class="tab-pane fade show active" id="v-pills-usuarios" role="tabpanel" aria-labelledby="v-pills-user-tab" tabindex="0">
 
     <div class="row">
         <div class="col">
@@ -24,7 +21,7 @@
                     <h5 class="modal-title" id="userModalLabel">Agregar Usuario</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="POST" id="form_usuario">
+                <form id="form_usuario">
                     <div class="modal-body">
                         <div class="row">
                             <div class="mb-4">
@@ -34,8 +31,7 @@
                                     <input type="text" class="form-control" id="u_nombreUsuario" name="u_nombreUsuario" required placeholder="Ingresa tu nombre de usuario">
                                 </div>
                             </div>
-                            
-                            
+
                             <div class="mb-4">
                                 <label for="u_correo" class="form-label text-muted">Correo electrónico</label>
                                 <div class="input-group">
@@ -43,6 +39,7 @@
                                     <input type="email" class="form-control" id="u_correo" name="u_correo" required placeholder="Ingresa tu correo electrónico">
                                 </div>
                             </div>
+
                             <div class="mb-4">
                                 <label for="u_clave" class="form-label text-muted">Contraseña</label>
                                 <div class="input-group">
@@ -50,7 +47,7 @@
                                     <input type="password" class="form-control" id="u_clave" name="u_clave" required placeholder="Crea una contraseña segura">
                                 </div>
                             </div>
-                            
+
                             <div class="mb-4">
                                 <label for="confirm_password" class="form-label text-muted">Confirmar contraseña</label>
                                 <div class="input-group">
@@ -58,6 +55,7 @@
                                     <input type="password" class="form-control" id="confirm_password" name="confirm_password" required placeholder="Confirma tu contraseña">
                                 </div>
                             </div>
+
                             <div class="mb-4">
                                 <label for="u_rol" class="form-label text-muted">Rol</label>
                                 <div class="input-group">
@@ -68,12 +66,12 @@
                                         <option value="user">Cliente</option>
                                     </select>
                                 </div>
-                            </div>>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="submit" id="btn-guardar-usuario" class="btn btn-primary">Guardar Cambios</button>
-                        <button type="submit" id="btn-editar-usuario" class="btn btn-success">Editar Campo</button>
+                        <button type="button" id="btn-editar-usuario" class="btn btn-success" style="display: none;">Editar Campo</button>
                     </div>
                 </form>
             </div>
@@ -81,8 +79,6 @@
     </div>
 
     <script src="/js/usuarios.js"></script>
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
 
 </div>

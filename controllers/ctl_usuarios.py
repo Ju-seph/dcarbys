@@ -124,3 +124,103 @@ def logout_user():
 
 # Funciones Dentro de principal.html
 
+def ver_usuarios(request):
+    try:
+        # Verificar si el método es POST
+        if request.method == 'POST':
+            # Obtener el usuario actual de la sesión
+            usuario_actual = session.get("nombreUsuario")
+            rol_actual = session.get("rol")
+            
+            if not usuario_actual or rol_actual != "Administrador":
+                # Validar que el usuario esté autenticado y sea administrador
+                return jsonify({"message": "Acceso no autorizado."}), 403
+
+            # Consultar usuarios excluyendo al actual y a otros administradores
+            usuarios = db.users.find({
+                "$and": [
+                    {"nombreUsuario": {"$ne": usuario_actual}},  # Excluir al usuario en sesión
+                    {"rol": {"$ne": "Administrador"}}  # Excluir administradores
+                ]
+            })
+
+            datos_usuarios = []
+
+            # Procesar los usuarios
+            for user in usuarios:
+                try:
+                    # Desencriptar la clave
+                    user["clave"] = ctl_encrypt.decrypt(user["clave"])
+                except Exception as e:
+                    print(f"Error al desencriptar clave para el usuario {user.get('nombreUsuario', 'Desconocido')}: {e}")
+                    user["clave"] = "Error al desencriptar"
+
+                # Convertir ObjectId a string y agregar a la lista
+                user["_id"] = str(user["_id"])
+                datos_usuarios.append(user)
+
+            # Preparar respuesta para DataTables
+            datos = {"data": datos_usuarios}
+            return json.dumps(datos, default=str), 200
+
+        # Si el método no es POST, devolver error 405
+        return jsonify({"message": "Método no permitido."}), 405
+
+    except Exception as e:
+        # Manejar errores generales
+        print(f"Error al obtener usuarios: {e}")
+        return jsonify({"message": f"Error interno del servidor: {e}"}), 500
+
+
+
+
+
+def create_user(request):
+    # Inicializar el diccionario de alertas
+    alertas = {"tipo": "", "message": ""}
+
+    
+    # Si es una solicitud POST, procesar el registro del usuario
+    if request.method == 'POST':
+        try:
+            # Obtener datos del formulario
+            nombreUsuario = request.form["u_nombreUsuario"]
+            correo = request.form["u_correo"]
+            clave = request.form["u_clave"]
+            rol = request.form["u_rol"]
+
+            # Comprobar si el usuario ya existe
+            existe = db.users.find_one({"$and": [{"correo": correo}, {"nombreUsuario": nombreUsuario}]})
+
+            if existe:
+                # Usuario existente, enviar mensaje de error
+                alertas["tipo"] = "danger"
+                alertas["message"] = "El usuario ya existe. Por favor, elige un nombre de usuario o correo diferente."
+                return render_template("views/usuarios/registro_usuarios.html", alertas=alertas)
+
+            # Encriptar la clave
+            clave = ctl_encrypt.encrypt(clave)
+
+            # Crear el objeto del usuario
+            usuario = User(nombreUsuario, correo, clave, rol, status="activo")
+            usuario.createUser()
+
+            # Guardar en la base de datos
+            db.users.insert_one(usuario.getUser())
+
+            # Usuario creado exitosamente
+            alertas["tipo"] = "success"
+            alertas["message"] = "Usuario creado correctamente."
+            
+
+        except Exception as e:
+            # Manejar errores y enviar mensaje de error
+            print(f"Error al crear el usuario: {e}")
+            alertas["tipo"] = "danger"
+            alertas["message"] = f"Ocurrió un error al crear el usuario: {e}"
+            
+
+    # Si el método no es GET ni POST, devolver error 405
+    alertas["tipo"] = "warning"
+    alertas["message"] = "Método no permitido."
+    

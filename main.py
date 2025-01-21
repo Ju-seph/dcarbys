@@ -32,12 +32,33 @@ def login_user():
 def logout_user():
     return usu.logout_user()
 
+# ADMINISTRADOR
+
+# --Ver usuarios desde la administracion--
+
+@app.route('/usuarios',methods=["POST"])
+def ver_usuarios():
+    return usu.ver_usuarios(request)
+
+# --Crear usuarios desde la administracion--
+
+@app.route('/save_usuarios',methods=["POST"])
+def create_user():
+    return usu.create_user(request)
+
+
 
 # PRODUCTOS
+
+@app.route('/productos',methods=["POST"])
+def ver_productos():
+    return prod.ver_productos(request)
 
 @app.route('/save_productos',methods=["POST"])
 def save_product():
     return prod.save_product(request)
+
+
 
 
 if __name__ == "__main__":
