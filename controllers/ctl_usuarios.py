@@ -131,7 +131,7 @@ def ver_usuarios(request):
             # Obtener el usuario actual de la sesión
             usuario_actual = session.get("nombreUsuario")
             rol_actual = session.get("rol")
-            
+
             if not usuario_actual or rol_actual != "Administrador":
                 # Validar que el usuario esté autenticado y sea administrador
                 return jsonify({"message": "Acceso no autorizado."}), 403
@@ -143,6 +143,10 @@ def ver_usuarios(request):
                     {"rol": {"$ne": "Administrador"}}  # Excluir administradores
                 ]
             })
+
+            # Verificar si la consulta devuelve resultados
+            if not usuarios:
+                return jsonify({"data": []}), 200
 
             datos_usuarios = []
 
@@ -161,7 +165,7 @@ def ver_usuarios(request):
 
             # Preparar respuesta para DataTables
             datos = {"data": datos_usuarios}
-            return json.dumps(datos, default=str), 200
+            return jsonify(datos), 200
 
         # Si el método no es POST, devolver error 405
         return jsonify({"message": "Método no permitido."}), 405
@@ -175,11 +179,11 @@ def ver_usuarios(request):
 
 
 
+
 def create_user(request):
     # Inicializar el diccionario de alertas
     alertas = {"tipo": "", "message": ""}
 
-    
     # Si es una solicitud POST, procesar el registro del usuario
     if request.method == 'POST':
         try:
@@ -196,7 +200,7 @@ def create_user(request):
                 # Usuario existente, enviar mensaje de error
                 alertas["tipo"] = "danger"
                 alertas["message"] = "El usuario ya existe. Por favor, elige un nombre de usuario o correo diferente."
-                return render_template("views/usuarios/registro_usuarios.html", alertas=alertas)
+                return jsonify(alertas), 400
 
             # Encriptar la clave
             clave = ctl_encrypt.encrypt(clave)
@@ -211,16 +215,16 @@ def create_user(request):
             # Usuario creado exitosamente
             alertas["tipo"] = "success"
             alertas["message"] = "Usuario creado correctamente."
-            
+            return jsonify(alertas), 201
 
         except Exception as e:
             # Manejar errores y enviar mensaje de error
             print(f"Error al crear el usuario: {e}")
             alertas["tipo"] = "danger"
             alertas["message"] = f"Ocurrió un error al crear el usuario: {e}"
-            
+            return jsonify(alertas), 500
 
-    # Si el método no es GET ni POST, devolver error 405
+    # Si el método no es POST, devolver un error
     alertas["tipo"] = "warning"
     alertas["message"] = "Método no permitido."
-    
+    return jsonify(alertas), 405

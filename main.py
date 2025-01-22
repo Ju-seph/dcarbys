@@ -36,7 +36,7 @@ def logout_user():
 
 # --Ver usuarios desde la administracion--
 
-@app.route('/usuarios',methods=["POST"])
+@app.route('/ver_usuarios',methods=["POST"])
 def ver_usuarios():
     return usu.ver_usuarios(request)
 
@@ -59,6 +59,9 @@ def save_product():
     return prod.save_product(request)
 
 
+@app.route('/edit_productos',methods=["POST"])
+def edit_product():
+    return prod.edit_product(request)
 
 
 if __name__ == "__main__":

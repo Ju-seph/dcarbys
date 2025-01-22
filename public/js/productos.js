@@ -11,7 +11,7 @@ $(document).ready(function () {
             { "data": "cantidad", "className": "text-center" },
             { "data": "categoria", "className": "text-center" },
             { "data": "descripcion", "className": "text-center" },
-            { "data": "tiempoPreparacion", "className": "text-center" },
+            { "data": "tiempo_preparacion", "className": "text-center" },
             { 
                 "data": "destacado",
                 "className": "text-center",
@@ -69,12 +69,12 @@ $(document).ready(function () {
         document.getElementById("btn-editar-producto").style = "display:visible";
         document.getElementById("btn-guardar-producto").style = "display:none";
 
-        document.getElementById("u_nombreProducto").value = datos.nombre;
+        document.getElementById("u_nombreProducto").value = datos.nombreProducto;
         document.getElementById("u_precio").value = datos.precio;
         document.getElementById("u_cantidad").value = datos.cantidad;
         document.getElementById("u_categoria").value = datos.categoria;
         document.getElementById("u_descripcion").value = datos.descripcion;
-        document.getElementById("u_tiempo_preparacion").value = datos.tiempoPreparacion;
+        document.getElementById("u_tiempo_preparacion").value = datos.tiempo_preparacion;
         document.getElementById("u_destacado").checked = datos.destacado;
 
         form.setAttribute("url", "/edit_productos");
