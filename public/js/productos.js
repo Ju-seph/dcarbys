@@ -11,7 +11,6 @@ $(document).ready(function () {
             { "data": "cantidad", "className": "text-center" },
             { "data": "categoria", "className": "text-center" },
             { "data": "descripcion", "className": "text-center" },
-            { "data": "imagen_path", "className": "text-center" },
             { "data": "tiempo_preparacion", "className": "text-center" },
             { 
                 "data": "destacado",
