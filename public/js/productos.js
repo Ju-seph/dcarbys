@@ -2,37 +2,53 @@ $(document).ready(function () {
     var tabla = $('#table_producto').DataTable({
         "ajax": {
             "url": "/productos",
-            "method": "post"
+            "method": "POST"
         },
         "columns": [
-            { "data": "id", "className": "text-center" },
-            { "data": "nombreProducto", "className": "text-center" },
-            { "data": "precio", "className": "text-center" },
-            { "data": "cantidad", "className": "text-center" },
-            { "data": "categoria", "className": "text-center" },
-            { "data": "descripcion", "className": "text-center" },
-            { "data": "tiempo_preparacion", "className": "text-center" },
-            { 
-                "data": "destacado",
+            { "data": "id", "className": "text-center" }, // ID (oculto)
+            { "data": "nombreProducto", "className": "text-center" }, // Nombre del Producto
+            { "data": "precio", "className": "text-center" }, // Precio
+            { "data": "cantidad", "className": "text-center" }, // Cantidad
+            { "data": "categoria", "className": "text-center" }, // Categoría
+            { "data": "descripcion", "className": "text-center" }, // Descripción
+            {
+                "data": "imagen_path", // Imagen
                 "className": "text-center",
-                "render": function(data) {
+                "render": function (data) {
+                    if (data) {
+                        return `<img src="${data}" alt="Imagen Producto" style="width: 60px; height: 60px; object-fit: cover;">`;
+                    } else {
+                        return "No disponible";
+                    }
+                }
+            },
+            { "data": "tiempo_preparacion", "className": "text-center" }, // Tiempo de Preparación
+            {
+                "data": "destacado", // Destacado
+                "className": "text-center",
+                "render": function (data) {
                     return data ? '<i class="bi bi-star-fill text-warning"></i>' : '<i class="bi bi-star"></i>';
                 }
             },
-            { "data": null }
+            {
+                "data": null, // Acciones
+                "className": "text-center",
+                "defaultContent": '<button type="button" class="btn btn-primary btn-editar-producto"><i class="bi bi-pencil"></i></button> <button type="button" class="btn btn-danger btn-eliminar-producto"><i class="bi bi-trash"></i></button>'
+            }
         ],
         "columnDefs": [
             {
-                "targets": 0,
+                "targets": 0, // Ocultar la columna ID
                 "visible": false,
                 "searchable": false
             },
             {
-                "targets": -1,
+                "targets": -1, // Acciones
                 "data": null,
                 "defaultContent": '<button type="button" class="btn btn-primary btn-editar-producto"><i class="bi bi-pencil"></i></button> <button type="button" class="btn btn-danger btn-eliminar-producto"><i class="bi bi-trash"></i></button>'
             }
         ],
+        "order": [[0, "asc"]], // Ordenar por ID
         "language": { "url": "https://cdn.datatables.net/plug-ins/1.10.15/i18n/Spanish.json" },
         "pageLength": 30,
         "lengthMenu": [10, 20, 30]

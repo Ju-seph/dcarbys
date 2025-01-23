@@ -109,6 +109,7 @@ def save_product(request):
     return jsonify(response), 405
 
 
+
 def edit_product(request):
     # Inicializar el diccionario de respuesta
     response = {"status": "error", "message": "", "data": None}
@@ -117,19 +118,19 @@ def edit_product(request):
     if request.method == 'POST':
         try:
             # Obtener datos del formulario
+            producto_id = request.form.get("u_id")  # ID del producto a editar
             nombreProducto = request.form.get("u_nombreProducto")
             precio = request.form.get("u_precio")
             cantidad = request.form.get("u_cantidad")
             status = request.form.get("u_status")
             categoria = request.form.get("u_categoria")
             descripcion = request.form.get("u_descripcion")
-            imagen_url = request.form.get("u_imagen_url")
             tiempo_preparacion = request.form.get("u_tiempo_preparacion")
             destacado = request.form.get("u_destacado") == 'true'
 
-            # Validar que los campos requeridos no estén vacíos
-            if not (nombreProducto and precio and cantidad):
-                response["message"] = "Nombre del producto, precio y cantidad son obligatorios."
+            # Validar campos obligatorios
+            if not (producto_id and nombreProducto and precio and cantidad):
+                response["message"] = "ID del producto, nombre, precio y cantidad son obligatorios."
                 return jsonify(response), 400
 
             # Validar que el precio sea decimal y la cantidad un entero
@@ -140,29 +141,58 @@ def edit_product(request):
                 response["message"] = "El precio debe ser un número decimal y la cantidad un número entero."
                 return jsonify(response), 400
 
-            # Verificar si el producto ya existe en la base de datos
-            existe = db.productos.find_one({"nombreProducto": nombreProducto})
-            if existe:
-                 producto = Producto(
+            # Buscar el producto en la base de datos
+            producto_existente = db.productos.find_one({"_id": ObjectId(producto_id)})
+            if not producto_existente:
+                response["message"] = "El producto no existe."
+                return jsonify(response), 404
+
+            # Manejar la carga de una nueva imagen
+            imagen_file = request.files.get("u_imagen_producto")
+            imagen_path = producto_existente.get("imagen_path")  # Mantener la imagen actual si no se sube una nueva
+
+            if imagen_file and allowed_file(imagen_file.filename):
+                # Generar un nombre de archivo seguro
+                filename = secure_filename(imagen_file.filename)
+                save_path = os.path.join(UPLOAD_FOLDER, filename)
+
+                # Evitar sobrescritura
+                if os.path.exists(save_path):
+                    base, ext = os.path.splitext(filename)
+                    filename = f"{base}_{int(time.time())}{ext}"
+                    save_path = os.path.join(UPLOAD_FOLDER, filename)
+
+                # Guardar la nueva imagen en el servidor
+                imagen_file.save(save_path)
+                imagen_path = f"/img/{filename}"  # Actualizar la ruta relativa
+
+                # Eliminar la imagen anterior si existe
+                if "imagen_path" in producto_existente and os.path.exists(os.path.join(UPLOAD_FOLDER, producto_existente["imagen_path"].split('/')[-1])):
+                    os.remove(os.path.join(UPLOAD_FOLDER, producto_existente["imagen_path"].split('/')[-1]))
+
+            # Crear objeto Producto con los datos actualizados
+            producto = Producto(
                 nombreProducto=nombreProducto,
                 precio=precio,
                 cantidad=cantidad,
                 status="activo" if not status else status,
                 categoria=categoria,
                 descripcion=descripcion,
-                imagen_url=imagen_url,
+                imagen_path=imagen_path,
                 tiempo_preparacion=tiempo_preparacion,
                 destacado=destacado
             )
-                 # Actualizar el producto en la base de datos
-            producto.updateProducto()
-            db.productos.update_one({"_id":ObjectId(existe["_id"])},
-                                    {"$set":producto.getProducto()})
+
+            # Actualizar el producto en la base de datos
+            db.productos.update_one(
+                {"_id": ObjectId(producto_id)},
+                {"$set": producto.getProducto()}
+            )
 
             # Producto actualizado exitosamente
             response["status"] = "success"
             response["message"] = "Producto actualizado correctamente."
-            return jsonify(response), 201
+            return jsonify(response), 200
 
         except Exception as e:
             # Manejar errores y enviar mensaje de error
@@ -173,5 +203,3 @@ def edit_product(request):
     # Si el método no es POST, devolver error 405
     response["message"] = "Método no permitido."
     return jsonify(response), 405
-
-           
