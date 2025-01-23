@@ -1,44 +1,45 @@
-from flask import render_template, session, redirect, url_for, abort,jsonify,json, flash
+from flask import render_template, session, redirect, url_for, abort, jsonify, json, flash
+from werkzeug.utils import secure_filename
+import time 
 from database.mongodb import Mongodb
-import controllers.ctl_encrypt as ctl_encrypt
-from controllers.ctl_encrypt import encrypt, decrypt
 from bson.objectid import ObjectId
 from models.Producto import Producto
+import os
 
-import re
+# Configuración de la carpeta de subida
+UPLOAD_FOLDER = 'public/img'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
+# Base de datos
 db = Mongodb().db()
+
+# Verificar si la extensión es válida
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 def ver_productos(request):
     if request.method == 'POST':
         try:
-            # Obtener todos los productos desde la base de datos
             productos = db.productos.find()
             lista_productos = list(productos)
 
-            # Formatear los datos para ser compatibles con DataTables
             for producto in lista_productos:
-                producto["_id"] = str(producto["_id"])  # Convertir ObjectId a string
+                producto["_id"] = str(producto["_id"])
 
             datos = {"data": lista_productos}
             return json.dumps(datos, default=str), 200
 
         except Exception as e:
-            # Manejar errores y devolver un mensaje
             print(f"Error al obtener los productos: {e}")
             return jsonify({"message": f"Error al obtener los productos: {e}"}), 500
-    else:
-        return jsonify({"message": "Petición Incorrecta"}), 405
 
-
-
+    return jsonify({"message": "Petición Incorrecta"}), 405
 
 
 def save_product(request):
-    # Inicializar el diccionario de respuesta
     response = {"status": "error", "message": "", "data": None}
 
-    # Verificar si el método de la solicitud es POST
     if request.method == 'POST':
         try:
             # Obtener datos del formulario
@@ -48,30 +49,39 @@ def save_product(request):
             status = request.form.get("u_status")
             categoria = request.form.get("u_categoria")
             descripcion = request.form.get("u_descripcion")
-            imagen_url = request.form.get("u_imagen_url")
             tiempo_preparacion = request.form.get("u_tiempo_preparacion")
             destacado = request.form.get("u_destacado") == 'true'
 
-            # Validar que los campos requeridos no estén vacíos
             if not (nombreProducto and precio and cantidad):
-                response["message"] = "Nombre del producto, precio y cantidad son obligatorios."
+                response["message"] = "Nombre, precio y cantidad son obligatorios."
                 return jsonify(response), 400
 
-            # Validar que el precio sea decimal y la cantidad un entero
             try:
                 precio = float(precio)
                 cantidad = int(cantidad)
             except ValueError:
-                response["message"] = "El precio debe ser un número decimal y la cantidad un número entero."
+                response["message"] = "El precio debe ser un número decimal y la cantidad un entero."
                 return jsonify(response), 400
 
-            # Verificar si el producto ya existe en la base de datos
-            existe = db.productos.find_one({"nombreProducto": nombreProducto})
-            if existe:
-                response["message"] = f"El producto '{nombreProducto}' ya existe."
-                return jsonify(response), 409
+            # Manejar la carga de imagen
+            image_file = request.files.get("u_imagen_producto")
+            if not image_file or not allowed_file(image_file.filename):
+                response["message"] = "Debe cargar una imagen válida (png, jpg, jpeg, gif)."
+                return jsonify(response), 400
 
-            # Crear objeto Producto
+            filename = secure_filename(image_file.filename)
+            save_path = os.path.join(UPLOAD_FOLDER, filename)
+
+            # Evitar sobrescritura
+            if os.path.exists(save_path):
+                base, ext = os.path.splitext(filename)
+                filename = f"{base}_{int(time.time())}{ext}"
+                save_path = os.path.join(UPLOAD_FOLDER, filename)
+
+            image_file.save(save_path)  # Guardar la imagen en el servidor
+            imagen_path = f"/img/{filename}"  # Ruta relativa
+
+            # Crear y guardar el producto
             producto = Producto(
                 nombreProducto=nombreProducto,
                 precio=precio,
@@ -79,27 +89,22 @@ def save_product(request):
                 status="activo" if not status else status,
                 categoria=categoria,
                 descripcion=descripcion,
-                imagen_url=imagen_url,
+                imagen_path=imagen_path,
                 tiempo_preparacion=tiempo_preparacion,
-                destacado=destacado
+                destacado=destacado,
             )
             producto.createProducto()
-
-            # Guardar el producto en la base de datos
             db.productos.insert_one(producto.getProducto())
 
-            # Producto creado exitosamente
             response["status"] = "success"
             response["message"] = "Producto creado correctamente."
             return jsonify(response), 201
 
         except Exception as e:
-            # Manejar errores y enviar mensaje de error
             print(f"Error al guardar el producto: {e}")
             response["message"] = f"Ocurrió un error al guardar el producto: {e}"
             return jsonify(response), 500
 
-    # Si el método no es POST, devolver error 405
     response["message"] = "Método no permitido."
     return jsonify(response), 405
 

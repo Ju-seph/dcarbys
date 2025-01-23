@@ -3,14 +3,14 @@ from datetime import datetime
 class Producto:
 
     def __init__(self, nombreProducto, precio, cantidad, status, categoria=None, descripcion=None, 
-                 imagen_url=None, tiempo_preparacion=None, destacado=False):
+                 imagen_path=None, tiempo_preparacion=None, destacado=False):
         self.nombreProducto = nombreProducto
         self.precio = round(float(precio), 2)  # Asegurar precio en formato decimal y con 2 decimales
         self.cantidad = int(cantidad)  # Asegurar que la cantidad sea un entero
         self.status = status
         self.categoria = categoria
         self.descripcion = descripcion
-        self.imagen_url = imagen_url
+        self.imagen_path = imagen_path  # Cambiado el nombre del atributo
         self.tiempo_preparacion = tiempo_preparacion
         self.destacado = destacado
         self.createDateTime = None  # Se inicializa vacío
@@ -36,6 +36,6 @@ class Producto:
 
     def setImagePath(self, image_filename):
         """
-        Establece la ruta de la imagen para el producto.
+        Establece la ruta del archivo de imagen del producto.
         """
-        self.imagen_url = f"/img/{image_filename}"
+        self.imagen_path = f"/img/{image_filename}"  # Actualiza el atributo con la ruta relativa
