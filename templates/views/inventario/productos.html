@@ -27,6 +27,9 @@
                 <form id="form_producto" enctype="multipart/form-data" method="POST">
                     <div class="modal-body">
                         <div class="row">
+                            <!-- Campo oculto para el ID del producto -->
+                            <input type="hidden" id="u_id" name="u_id">
+                
                             <!-- Nombre del Producto -->
                             <div class="mb-4">
                                 <label for="u_nombreProducto" class="form-label text-muted">Nombre del Producto</label>
@@ -35,7 +38,7 @@
                                     <input type="text" class="form-control" id="u_nombreProducto" name="u_nombreProducto" required placeholder="Nombre del producto">
                                 </div>
                             </div>
-
+                
                             <!-- Precio -->
                             <div class="mb-4">
                                 <label for="u_precio" class="form-label text-muted">Precio</label>
@@ -44,7 +47,7 @@
                                     <input type="number" class="form-control" id="u_precio" name="u_precio" required placeholder="Precio del producto">
                                 </div>
                             </div>
-
+                
                             <!-- Cantidad -->
                             <div class="mb-4">
                                 <label for="u_cantidad" class="form-label text-muted">Cantidad</label>
@@ -53,7 +56,7 @@
                                     <input type="number" class="form-control" id="u_cantidad" name="u_cantidad" required placeholder="Cantidad en inventario">
                                 </div>
                             </div>
-
+                
                             <!-- Categoría -->
                             <div class="mb-4">
                                 <label for="u_categoria" class="form-label text-muted">Categoría</label>
@@ -67,19 +70,19 @@
                                     </select>
                                 </div>
                             </div>
-
+                
                             <!-- Descripción -->
                             <div class="mb-4">
                                 <label for="u_descripcion" class="form-label text-muted">Descripción</label>
                                 <textarea class="form-control" id="u_descripcion" name="u_descripcion" rows="3" placeholder="Descripción del producto"></textarea>
                             </div>
-
+                
                             <!-- Imagen -->
                             <div class="mb-4">
                                 <label for="u_imagen_producto" class="form-label text-muted">Imagen del Producto</label>
                                 <input type="file" class="form-control" id="u_imagen_producto" name="u_imagen_producto" accept="image/*" required>
                             </div>
-
+                
                             <!-- Tiempo de preparación -->
                             <div class="mb-4">
                                 <label for="u_tiempo_preparacion" class="form-label text-muted">Tiempo de Preparación (min)</label>
@@ -88,7 +91,7 @@
                                     <input type="number" class="form-control" id="u_tiempo_preparacion" name="u_tiempo_preparacion" placeholder="Tiempo en minutos">
                                 </div>
                             </div>
-
+                
                             <!-- Producto destacado -->
                             <div class="mb-4 form-check">
                                 <input type="checkbox" class="form-check-input" id="u_destacado" name="u_destacado">
@@ -101,6 +104,7 @@
                         <button type="submit" id="btn-editar-producto" class="btn btn-success">Editar Producto</button>
                     </div>
                 </form>
+                
             </div>
         </div>
     </div>
