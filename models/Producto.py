@@ -10,7 +10,7 @@ class Producto:
         self.status = status
         self.categoria = categoria
         self.descripcion = descripcion
-        self.imagen_path = imagen_path  # Cambiado el nombre del atributo
+        self.imagen_path = imagen_path
         self.tiempo_preparacion = tiempo_preparacion
         self.destacado = destacado
         self.createDateTime = None  # Se inicializa vacío

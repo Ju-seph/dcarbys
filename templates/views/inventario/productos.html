@@ -44,7 +44,7 @@
                                 <label for="u_precio" class="form-label text-muted">Precio</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
-                                    <input type="number" class="form-control" id="u_precio" name="u_precio" required placeholder="Precio del producto">
+                                    <input type="number" class="form-control" id="u_precio" name="u_precio" required placeholder="Precio del producto (ej: 19.99)" step="0.01" min="0">
                                 </div>
                             </div>
                 
@@ -53,7 +53,7 @@
                                 <label for="u_cantidad" class="form-label text-muted">Cantidad</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-cart-fill"></i></span>
-                                    <input type="number" class="form-control" id="u_cantidad" name="u_cantidad" required placeholder="Cantidad en inventario">
+                                    <input type="number" class="form-control" id="u_cantidad" name="u_cantidad" required placeholder="Cantidad en inventario" min="0">
                                 </div>
                             </div>
                 
@@ -80,7 +80,7 @@
                             <!-- Imagen -->
                             <div class="mb-4">
                                 <label for="u_imagen_producto" class="form-label text-muted">Imagen del Producto</label>
-                                <input type="file" class="form-control" id="u_imagen_producto" name="u_imagen_producto" accept="image/*" required>
+                                <input type="file" class="form-control" id="u_imagen_producto" name="u_imagen_producto" accept="image/*">
                             </div>
                 
                             <!-- Tiempo de preparación -->
@@ -88,7 +88,7 @@
                                 <label for="u_tiempo_preparacion" class="form-label text-muted">Tiempo de Preparación (min)</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-clock-fill"></i></span>
-                                    <input type="number" class="form-control" id="u_tiempo_preparacion" name="u_tiempo_preparacion" placeholder="Tiempo en minutos">
+                                    <input type="number" class="form-control" id="u_tiempo_preparacion" name="u_tiempo_preparacion" placeholder="Tiempo en minutos (ej: 5)" min="0" required>
                                 </div>
                             </div>
                 
@@ -100,8 +100,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" id="btn-guardar-producto" class="btn btn-primary">Guardar Cambios</button>
-                        <button type="submit" id="btn-editar-producto" class="btn btn-success">Editar Producto</button>
+                        <button type="submit" id="btn-guardar-producto" name="action" value="guardar" class="btn btn-primary">Guardar Cambios</button>
+                        <button type="submit" id="btn-editar-producto" name="action" value="editar" class="btn btn-success">Editar Producto</button>
                     </div>
                 </form>
                 

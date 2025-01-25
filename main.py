@@ -60,9 +60,13 @@ def ver_productos():
 def save_product():
     return prod.save_product(request)
 
-@app.route('/edit_productos', methods=["POST"])
+@app.route('/edit_productos', methods=["GET", "POST"])
 def edit_product():
     return prod.edit_product(request)
+
+@app.route('/del_productos', methods=["GET", "POST"])
+def del_product():
+    return prod.del_product(request)
 
 if __name__ == "__main__":
     # Ejecutar la aplicación Flask
