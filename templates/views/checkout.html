@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="container mt-5">
+    <h2>Finalizar Compra</h2>
+    <div class="row">
+        <div class="col-md-8">
+            <h3>Resumen del Pedido</h3>
+            <ul class="list-group mb-3" id="cart-summary">
+                <!-- El resumen del carrito se llenará con JavaScript -->
+            </ul>
+            
+            <form id="checkout-form">
+                <h3>Información de Envío</h3>
+                <div class="mb-3">
+                    <label for="direccion" class="form-label">Dirección</label>
+                    <input type="text" class="form-control" id="direccion" name="direccion" required>
+                </div>
+                <div class="mb-3">
+                    <label for="ciudad" class="form-label">Ciudad</label>
+                    <input type="text" class="form-control" id="ciudad" name="ciudad" required>
+                </div>
+                <div class="mb-3">
+                    <label for="codigo_postal" class="form-label">Código Postal</label>
+                    <input type="text" class="form-control" id="codigo_postal" name="codigo_postal" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Confirmar Pedido</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+    const cartSummary = document.getElementById('cart-summary');
+    let total = 0;
+
+    cart.forEach(item => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between lh-sm';
+        li.innerHTML = `
+            <div>
+                <h6 class="my-0">${item.name}</h6>
+                <small class="text-muted">Cantidad: ${item.quantity}</small>
+            </div>
+            <span class="text-muted">$${(item.price * item.quantity).toFixed(2)}</span>
+        `;
+        cartSummary.appendChild(li);
+        total += item.price * item.quantity;
+    });
+
+    const totalLi = document.createElement('li');
+    totalLi.className = 'list-group-item d-flex justify-content-between';
+    totalLi.innerHTML = `
+        <span>Total (USD)</span>
+        <strong>$${total.toFixed(2)}</strong>
+    `;
+    cartSummary.appendChild(totalLi);
+
+    document.getElementById('checkout-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetch('/procesar_pedido', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                cart: cart,
+                direccion: document.getElementById('direccion').value,
+                ciudad: document.getElementById('ciudad').value,
+                codigo_postal: document.getElementById('codigo_postal').value
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Pedido realizado con éxito');
+                localStorage.removeItem('cart');  // Limpiar el carrito
+                window.location.href = '/';  // Redirigir a la página principal
+            } else {
+                alert('Error al procesar el pedido: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Hubo un error al procesar el pedido');
+        });
+    });
+});
+</script>
+{% endblock %}
+

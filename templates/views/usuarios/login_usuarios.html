@@ -48,6 +48,14 @@
                     <a class="nav-link" href="/login_usuarios">Iniciar Sesión</a>
                 </li>
                 {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#cartModal">
+                        <span class="cart-icon">
+                            <i class="bi bi-cart"></i>
+                            <span id="cart-count" class="cart-count">0</span>
+                        </span>
+                    </a>
+                </li>
             </ul>
         </div>
     </div>
@@ -98,5 +106,7 @@
         </div>
     </div>
 </div>
+
+<script src="{{ url_for('static', filename='js/cart.js') }}"></script>
 
 {% endblock %}
