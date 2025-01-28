@@ -1,10 +1,12 @@
-from flask import Flask, request
+from flask import Flask, request, render_template
 from werkzeug.utils import secure_filename
 import controllers.index as indx
 import controllers.ctl_usuarios as usu
 import controllers.ctl_productos as prod
+from database.mongodb import Mongodb
 from dotenv import load_dotenv
 import os
+db = Mongodb().db()
 
 # Cargar variables de entorno
 load_dotenv()
@@ -26,9 +28,14 @@ def after_request(response):
     return response
 
 # Rutas principales
+
+# -- Index renderiza los prodcutos--
+
 @app.route('/', methods=["GET", "POST"])
 def begin():
-    return indx.begin(request)
+    productos = list(db.productos.find({"status": "activo"}))
+    return render_template('views/index.html', productos=productos)
+
 
 @app.route('/registro_usuarios', methods=["GET", "POST"])
 def save_user():

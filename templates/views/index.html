@@ -2,7 +2,6 @@
 
 {% block body %}
 
-
 <style>
     .text-primary {
         color: red !important;
@@ -18,9 +17,22 @@
         border-color: darkred !important;
     }
 
+    .cart-icon {
+        position: relative;
+        display: inline-block;
+    }
+
+    .cart-count {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background-color: red;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 0.7rem;
+    }
 </style>
-
-
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
     <div class="container">
@@ -51,6 +63,14 @@
                     <a class="nav-link" href="/login_usuarios">Iniciar Sesión</a>
                 </li>
                 {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#cartModal">
+                        <span class="cart-icon">
+                            <i class="bi bi-cart"></i>
+                            <span id="cart-count" class="cart-count">0</span>
+                        </span>
+                    </a>
+                </li>
             </ul>
         </div>
     </div>
@@ -68,36 +88,21 @@
     <div class="container">
         <h2 class="text-center mb-4">Nuestro Menú</h2>
         <div class="row g-4">
+            {% for producto in productos %}
             <div class="col-md-4">
                 <div class="card">
+                    {% if producto.imagen_path %}
+                    <img src="{{ producto.imagen_path }}" class="card-img-top" alt="{{ producto.nombreProducto }}">
+                    {% endif %}
                     <div class="card-body text-center">
-                        <h5 class="card-title">Hamburguesa Clásica</h5>
-                        <p class="card-text">Carne jugosa, queso cheddar, lechuga y tomate</p>
-                        <p class="fw-bold text-success">$8.99</p>
-                        <button class="btn btn-primary fw-bold">Agregar</button>
+                        <h5 class="card-title">{{ producto.nombreProducto }}</h5>
+                        <p class="card-text">{{ producto.descripcion }}</p>
+                        <p class="fw-bold text-success">${{ "%.2f"|format(producto.precio) }}</p>
+                        <button class="btn btn-primary fw-bold add-to-cart" data-id="{{ producto._id }}" data-name="{{ producto.nombreProducto }}" data-price="{{ producto.precio }}">Agregar</button>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Pizza Margherita</h5>
-                        <p class="card-text">Salsa de tomate, mozzarella fresca y albahaca</p>
-                        <p class="fw-bold text-success">$12.99</p>
-                        <button class="btn btn-primary fw-bold">Agregar</button>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">Ensalada César</h5>
-                        <p class="card-text">Lechuga romana, crutones, parmesano y aderezo César</p>
-                        <p class="fw-bold text-success">$7.99</p>
-                        <button class="btn btn-primary fw-bold">Agregar</button>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
     </div>
 </section>
@@ -166,7 +171,75 @@
     </div>
 </footer>
 
+<!-- Modal del carrito -->
+<div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cartModalLabel">Carrito de Compras</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul id="cart-items" class="list-group list-group-flush">
+                    <!-- Los items del carrito se agregarán aquí dinámicamente -->
+                </ul>
+                <div class="mt-3">
+                    <strong>Total: $<span id="cart-total">0.00</span></strong>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary">Realizar Pedido</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+    let cart = [];
+
+    function updateCart() {
+        const cartItems = document.getElementById('cart-items');
+        const cartTotal = document.getElementById('cart-total');
+        const cartCount = document.getElementById('cart-count');
+
+        cartItems.innerHTML = '';
+        let total = 0;
+
+        cart.forEach((item, index) => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            li.innerHTML = `
+                ${item.name} - $${item.price.toFixed(2)}
+                <button class="btn btn-sm btn-danger remove-from-cart" data-index="${index}">Eliminar</button>
+            `;
+            cartItems.appendChild(li);
+            total += item.price;
+        });
+
+        cartTotal.textContent = total.toFixed(2);
+        cartCount.textContent = cart.length;
+    }
+
+    document.querySelectorAll('.add-to-cart').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            const price = parseFloat(this.getAttribute('data-price'));
+            cart.push({id, name, price});
+            updateCart();
+        });
+    });
+
+    document.getElementById('cart-items').addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-from-cart')) {
+            const index = parseInt(e.target.getAttribute('data-index'));
+            cart.splice(index, 1);
+            updateCart();
+        }
+    });
+
+    // Smooth scrolling para los enlaces internos
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
@@ -176,4 +249,5 @@
         });
     });
 </script>
+
 {% endblock %}
