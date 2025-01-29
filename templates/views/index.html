@@ -87,19 +87,19 @@
 <section id="menu" class="py-5">
     <div class="container">
         <h2 class="text-center mb-4">Nuestro Menú</h2>
-        <div class="row g-4">
+        <div class="row g-3">
             {% for producto in productos %}
-            <div class="col-md-4">
+            <div class="col-md-2 col-sm-4 col-6">
                 <div class="card">
                     {% if producto.imagen_path %}
-                    <img src="{{ producto.imagen_path }}" class="card-img-top" alt="{{ producto.nombreProducto }}">
+                    <img src="{{ producto.imagen_path }}" class="card-img-top" alt="{{ producto.nombreProducto }}" style="max-height: 150px; object-fit: cover;">
                     {% endif %}
-                    <div class="card-body text-center">
-                        <h5 class="card-title">{{ producto.nombreProducto }}</h5>
-                        <p class="card-text">{{ producto.descripcion }}</p>
-                        <p class="fw-bold text-success">${{ "%.2f"|format(producto.precio) }}</p>
-                        <p>Disponibles: <span class="product-quantity" data-id="{{ producto._id }}">{{ producto.cantidad }}</span></p>
-                        <button class="btn btn-primary fw-bold add-to-cart" 
+                    <div class="card-body text-center p-2">
+                        <h6 class="card-title">{{ producto.nombreProducto }}</h6>
+                        <p class="card-text small">{{ producto.descripcion | truncate(50) }}</p>
+                        <p class="fw-bold text-success mb-1">${{ "%.2f"|format(producto.precio) }}</p>
+                        <p class="small mb-1">Disponibles: <span class="product-quantity" data-id="{{ producto._id }}">{{ producto.cantidad }}</span></p>
+                        <button class="btn btn-primary btn-sm fw-bold add-to-cart" 
                                 data-id="{{ producto._id }}" 
                                 data-name="{{ producto.nombreProducto }}" 
                                 data-price="{{ producto.precio }}"

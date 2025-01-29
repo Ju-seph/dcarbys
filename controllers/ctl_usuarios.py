@@ -93,7 +93,7 @@ def login_user(request):
                     if session["rol"] == "Administrador":
                         return render_template("views/principal.html", alertas=alertas)
                     else:
-                        return render_template("views/index.html", alertas=alertas)
+                        return redirect(url_for('begin'))
                 else:
                     # Contraseña incorrecta
                     alertas["tipo"] = "danger"
