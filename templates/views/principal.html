@@ -2,11 +2,22 @@
 
 {% block body %}
 
-
-
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<style>
+    .text-primary {
+        color: darkred !important;
+    }
+    .bg-primary {
+        background-color: darkred !important;
+    }
+    .list-group-item.active {
+        background-color: rgba(199, 38, 38, 0.89) !important;
+        border-color: rgba(199, 38, 38, 0.89)!important;
+    }
+</style>
 
 <div class="container-fluid py-4">
     <!-- Header -->
@@ -30,12 +41,11 @@
         <!-- Sidebar -->
         <div class="col-lg-3">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-secondary text-white">
+                <div class="card-header bg-primary text-white">
                     <h5 class="mb-0 text-center">Opciones</h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="list-group list-group-flush" role="tablist">
-                        <!-- Botones de pestañas -->
                         <button class="list-group-item list-group-item-action active d-flex align-items-center"
                             id="v-pills-usuarios-tab" data-bs-toggle="pill" data-bs-target="#v-pills-usuarios"
                             type="button" role="tab">
@@ -55,7 +65,7 @@
         <div class="col-lg-9">
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0 text-center">Gestión</h5>
+                    <h5 class="mb-0 text-center text-primary">Gestión</h5>
                 </div>
                 <div class="card-body">
                     <div class="tab-content" id="v-pills-tabContent">
@@ -74,7 +84,7 @@
             </div>
         </div>
     </div>
-    
+</div>
 
 <script>
     $(document).ready(function () {
