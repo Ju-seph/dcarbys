@@ -9,3 +9,7 @@ db = Mongodb().db()
 def begin(request):
     return render_template("views/index.html")
 
+
+def contact(request):
+    return render_template("views/contactos.html")
+

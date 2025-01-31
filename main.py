@@ -80,6 +80,11 @@ def login_user():
 def logout_user():
     return usu.logout_user()
 
+# -- Renderiza Contactos--
+@app.route('/contacto', methods=["GET"])
+def contact():
+    return indx.contact(request)
+
 # ADMINISTRADOR
 @app.route('/ver_usuarios', methods=["POST"])
 def ver_usuarios():

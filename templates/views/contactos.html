@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block body %}
 
@@ -17,6 +17,32 @@
         border-color: darkred !important;
     }
 
+    .cart-icon {
+        position: relative;
+        display: inline-block;
+    }
+
+    .cart-count {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        background-color: red;
+        color: white;
+        border-radius: 50%;
+        padding: 2px 6px;
+        font-size: 0.7rem;
+    }
+
+    .contact-form {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 30px;
+    }
+
+    .map-container {
+        height: 400px;
+        width: 100%;
+    }
 </style>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
@@ -29,10 +55,10 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" href="/">Menú</a>
+                    <a class="nav-link" href="/">Menú</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/contacto">Contactos</a>
+                    <a class="nav-link active" href="/contacto">Contactos</a>
                 </li>
                 {% if session.get('usuario_id') %}
                 <li class="nav-item">
@@ -59,54 +85,27 @@
     </div>
 </nav>
 
-<!-- Formulario de Inicio de Sesión -->
-<div class="container-fluid min-vh-100 d-flex align-items-center bg-light py-5">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-6 col-md-8 col-sm-10">
-                <div class="card border-0 shadow-lg rounded-4">
-                    <div class="card-body p-5">
-                        <h2 class="text-center mb-4 fw-bold text-primary">Iniciar sesión</h2>
-                        <p class="text-center text-muted mb-4">Accede a tu cuenta para continuar con tu pedido</p>
-                        
-                        <form method="POST" action="/login_usuarios">
-                            <!-- Campo de Nombre de Usuario -->
-                            <div class="mb-4">
-                                <label for="username" class="form-label">Nombre de usuario</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                                    <input type="text" class="form-control" id="u_nombreUsuario" name="u_nombreUsuario" required placeholder="Ingresa tu nombre de usuario">
-                                </div>
-                            </div>
-                            
-                            <!-- Campo de Contraseña -->
-                            <div class="mb-4">
-                                <label for="password" class="form-label">Contraseña</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-                                    <input type="password" class="form-control" id="u_clave" name="u_clave" required placeholder="Ingresa tu contraseña">
-                                </div>
-                            </div>
-                            
-                            <!-- Botón de Iniciar Sesión -->
-                            <div class="d-grid gap-2 mb-4">
-                                <button type="submit" class="btn btn-primary btn-lg">Iniciar sesión</button>
-                            </div>
-                        </form>
-
-                        <!-- Enlace de Registro -->
-                        <div class="text-center">
-                            <p class="text-muted">¿No tienes cuenta? <a href="/registro_usuarios" class="text-decoration-none text-primary fw-bold">Regístrate aquí</a></p>
-                        </div>
-                    </div>
-                </div>
+<div class="container mt-5">
+    <h1 class="text-center mb-5">Contáctanos</h1>
+    <div class="row">
+        
+        <div class="col-md-6 mb-4">
+            <h3 class="mb-4">Información de contacto</h3>
+            <ul class="list-unstyled">
+                <li class="mb-3"><i class="bi bi-geo-alt-fill me-2 text-primary"></i> Av. Principal 123, Ciudad</li>
+                <li class="mb-3"><i class="bi bi-telephone-fill me-2 text-primary"></i> +1 234 567 890</li>
+                <li class="mb-3"><i class="bi bi-envelope-fill me-2 text-primary"></i> info@dcarbys.com</li>
+                <li class="mb-3"><i class="bi bi-clock-fill me-2 text-primary"></i> Lunes a Domingo: 11:00 AM - 10:00 PM</li>
+            </ul>
+            <div class="map-container mt-4">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.835253640225!2d144.95373631531996!3d-37.817209979751735!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d4c2b349649%3A0xb6899234e561db11!2sRestaurant!5e0!3m2!1sen!2sus!4v1635176869248!5m2!1sen!2sus" 
+                        width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
             </div>
         </div>
     </div>
 </div>
 
-
-<footer class="bg-dark text-white py-4">
+<footer class="bg-dark text-white py-4 mt-5">
     <div class="container">
         <div class="row">
             <div class="col-md-4">
@@ -126,7 +125,7 @@
                 <div class="d-flex gap-3">
                     <a href="#" class="text-white fs-4"><i class="bi bi-facebook"></i></a>
                     <a href="#" class="text-white fs-4"><i class="bi bi-instagram"></i></a>
-                    <a href="#" class="text-white fs-4"><i class="bi bi-twitter"></i></a>
+                    <a href="#" class="bi bi-twitter"></i></a>
                 </div>
             </div>
         </div>
@@ -137,6 +136,10 @@
 </footer>
 
 
+
+
+<!-- Include cart.js -->
 <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
 
 {% endblock %}
+
