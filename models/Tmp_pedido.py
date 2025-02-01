@@ -2,10 +2,10 @@ from datetime import datetime
 
 class Carrito:
 
-    def __init__(self,userId, productoId,direccionDestino,total):
+    def __init__(self,VentaId,userId, productoId,direccionDestino,total):
+        self.VentaId=VentaId
         self.userId= userId
         self.productoId= productoId
-        
         self.total= total
 
 
