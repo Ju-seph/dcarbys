@@ -6,17 +6,49 @@
     <div class="row">
         <div class="col-md-8">
             <h3>Resumen del Pedido</h3>
-            <ul class="list-group mb-3" id="cart-summary">
-                <!-- El resumen del carrito se llenará con JavaScript -->
-            </ul>
+            <p>Número de Pedido: <strong id="purchase-number"></strong></p>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody id="cart-summary">
+                    <!-- El resumen del carrito se llenará con JavaScript -->
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                        <td><strong id="cart-total"></strong></td>
+                    </tr>
+                </tfoot>
+            </table>
             
             <form id="checkout-form">
                 <h3>Información de Envío</h3>
                 <div class="mb-3">
+                    <label for="nombre" class="form-label">Nombre Completo</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre" required>
+                </div>
+                <div class="mb-3">
+                    <label for="telefono" class="form-label">Teléfono</label>
+                    <input type="tel" class="form-control" id="telefono" name="telefono" required>
+                </div>
+                <div class="mb-3">
                     <label for="direccion" class="form-label">Dirección</label>
                     <input type="text" class="form-control" id="direccion" name="direccion" required>
                 </div>
-               
+                <div class="mb-3">
+                    <label for="ciudad" class="form-label">Ciudad</label>
+                    <input type="text" class="form-control" id="ciudad" name="ciudad" required>
+                </div>
+                <div class="mb-3">
+                    <label for="codigo_postal" class="form-label">Código Postal</label>
+                    <input type="text" class="form-control" id="codigo_postal" name="codigo_postal" required>
+                </div>
                 <button type="submit" class="btn btn-primary">Confirmar Pedido</button>
             </form>
         </div>
@@ -27,29 +59,28 @@
 document.addEventListener('DOMContentLoaded', function() {
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
     const cartSummary = document.getElementById('cart-summary');
+    const cartTotal = document.getElementById('cart-total');
     let total = 0;
 
+    // Generate a random purchase number
+    const purchaseNumber = Math.floor(100000 + Math.random() * 900000);
+    document.getElementById('purchase-number').textContent = purchaseNumber;
+
     cart.forEach(item => {
-        const li = document.createElement('li');
-        li.className = 'list-group-item d-flex justify-content-between lh-sm';
-        li.innerHTML = `
-            <div>
-                <h6 class="my-0">${item.name}</h6>
-                <small class="text-muted">Cantidad: ${item.quantity}</small>
-            </div>
-            <span class="text-muted">$${(item.price * item.quantity).toFixed(2)}</span>
+        const subtotal = item.price * item.quantity;
+        total += subtotal;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${item.name}</td>
+            <td>${item.quantity}</td>
+            <td>$${item.price.toFixed(2)}</td>
+            <td>$${subtotal.toFixed(2)}</td>
         `;
-        cartSummary.appendChild(li);
-        total += item.price * item.quantity;
+        cartSummary.appendChild(tr);
     });
 
-    const totalLi = document.createElement('li');
-    totalLi.className = 'list-group-item d-flex justify-content-between';
-    totalLi.innerHTML = `
-        <span>Total (USD)</span>
-        <strong>$${total.toFixed(2)}</strong>
-    `;
-    cartSummary.appendChild(totalLi);
+    cartTotal.textContent = `$${total.toFixed(2)}`;
 
     document.getElementById('checkout-form').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -59,10 +90,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
+                purchaseNumber: purchaseNumber,
                 cart: cart,
+                nombre: document.getElementById('nombre').value,
+                telefono: document.getElementById('telefono').value,
                 direccion: document.getElementById('direccion').value,
                 ciudad: document.getElementById('ciudad').value,
-                codigo_postal: document.getElementById('codigo_postal').value
+                codigo_postal: document.getElementById('codigo_postal').value,
+                total: total
             })
         })
         .then(response => response.json())

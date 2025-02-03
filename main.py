@@ -1,14 +1,17 @@
-from flask import Flask, request, render_template, jsonify, session, redirect, url_for
+from flask import Flask, request, render_template, jsonify, session, redirect, url_for, flash
 from bson.objectid import ObjectId
 from werkzeug.utils import secure_filename
 import controllers.index as indx
 import controllers.ctl_usuarios as usu
 import controllers.ctl_productos as prod
+import controllers.ctl_pedidos as ped
 from database.mongodb import Mongodb
 from dotenv import load_dotenv
 import os
 import json
 from datetime import datetime
+from apscheduler.schedulers.background import BackgroundScheduler
+import atexit
 
 db = Mongodb().db()
 
@@ -25,6 +28,14 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Crear el directorio de imágenes si no existe
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+# Configurar el planificador
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=ped.limpiar_pedidos_expirados, trigger="interval", minutes=5)
+scheduler.start()
+
+# Asegurarse de que el planificador se detenga cuando la aplicación se cierre
+atexit.register(lambda: scheduler.shutdown())
 
 @app.after_request
 def after_request(response):
@@ -68,25 +79,14 @@ def save_user():
 
 @app.route('/login_usuarios', methods=["GET", "POST"])
 def login_user():
-    if request.method == 'POST':
-        result = usu.login_user(request)
-        if isinstance(result, tuple) and result[1] == 200:  # Si el login fue exitoso
-            next_page = session.pop('next', url_for('begin'))
-            return redirect(next_page)
-        return result
     return usu.login_user(request)
 
 @app.route('/logout', methods=["GET"])
 def logout_user():
     return usu.logout_user()
 
-# -- Renderiza Contactos--
-@app.route('/contacto', methods=["GET"])
-def contact():
-    return indx.contact(request)
-
 # ADMINISTRADOR
-@app.route('/ver_usuarios', methods=["POST"])
+@app.route('/ver_usuarios', methods=["GET", "POST"])
 def ver_usuarios():
     return usu.ver_usuarios(request)
 
@@ -124,37 +124,18 @@ def checkout():
 # Nueva ruta para procesar el pedido
 @app.route('/procesar_pedido', methods=['POST'])
 def procesar_pedido():
-    if 'usuario_id' not in session:
-        return jsonify({"success": False, "message": "Usuario no autenticado"}), 401
+    return ped.procesar_pedido(request)
 
-    data = request.json
-    cart = data['cart']
-    direccion = data['direccion']
-    ciudad = data['ciudad']
-    codigo_postal = data['codigo_postal']
+@app.route('/confirmar_pedido/<order_id>', methods=['POST'])
+def confirmar_pedido(order_id):
+    return ped.confirmar_pedido(order_id)
 
-    try:
-        pedido = {
-            "usuario_id": session['usuario_id'],
-            "productos": cart,
-            "direccion": direccion,
-            "ciudad": ciudad,
-            "codigo_postal": codigo_postal,
-            "fecha": datetime.now(),
-            "estado": "pendiente"
-        }
-        db.pedidos.insert_one(pedido)
-
-        # Actualizar inventario
-        for item in cart:
-            db.productos.update_one(
-                {"_id": ObjectId(item['id'])},
-                {"$inc": {"cantidad": -item['quantity']}}
-            )
-
-        return jsonify({"success": True, "message": "Pedido procesado con éxito"}), 200
-    except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
+@app.route('/admin_dashboard')
+def admin_dashboard():
+    if session.get('rol') != 'Administrador':
+        flash("Acceso no autorizado.", "danger")
+        return redirect(url_for('begin'))
+    return render_template("views/principal.html")
 
 if __name__ == "__main__":
     # Ejecutar la aplicación Flask

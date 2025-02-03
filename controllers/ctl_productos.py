@@ -42,8 +42,6 @@ def ver_productos(request):
 
     return jsonify({"message": "Petición Incorrecta"}), 405
 
-
-
 def save_product(request):
     response = {"status": "error", "message": "", "data": None}
 
@@ -68,6 +66,11 @@ def save_product(request):
                 cantidad = int(cantidad)
             except ValueError:
                 response["message"] = "El precio debe ser un número decimal y la cantidad un entero."
+                return jsonify(response), 400
+
+            # Validación de cantidad negativa
+            if cantidad < 0:
+                response["message"] = "La cantidad del producto no puede ser negativa."
                 return jsonify(response), 400
 
             # Manejar la carga de imagen
@@ -115,9 +118,6 @@ def save_product(request):
     response["message"] = "Método no permitido."
     return jsonify(response), 405
 
-
-
-
 def edit_product(request):
     response = {"status": "error", "message": "", "data": None}
 
@@ -154,6 +154,11 @@ def edit_product(request):
                 tiempo_preparacion = int(tiempo_preparacion)
             except ValueError:
                 response["message"] = "Formato inválido para precio, cantidad o tiempo de preparación."
+                return jsonify(response), 400
+
+            # Validación de cantidad negativa
+            if cantidad < 0:
+                response["message"] = "La cantidad del producto no puede ser negativa."
                 return jsonify(response), 400
 
             # Handle image upload
@@ -204,7 +209,6 @@ def edit_product(request):
     response["message"] = "Método no permitido."
     return jsonify(response), 405
 
-
 def del_product(request):
     response = {"status": "error", "message": "", "data": None}
 
@@ -246,3 +250,4 @@ def del_product(request):
 
     response["message"] = "Método no permitido."
     return jsonify(response), 405
+
