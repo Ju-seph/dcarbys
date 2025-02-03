@@ -58,14 +58,29 @@ def update_quantity():
         product_id = data['productId']
         quantity = data['quantity']
 
-        # Actualizar la cantidad en la base de datos
+        # Find the product
+        product = db.productos.find_one({"_id": ObjectId(product_id)})
+        
+        if not product:
+            return jsonify({"success": False, "message": "Producto no encontrado"}), 404
+
+        new_quantity = product['cantidad'] - quantity
+
+        if new_quantity < 0:
+            return jsonify({"success": False, "message": "No hay suficiente stock disponible"}), 400
+
+        # Update the quantity in the database
         result = db.productos.update_one(
             {"_id": ObjectId(product_id)},
-            {"$inc": {"cantidad": -quantity}}
+            {"$set": {"cantidad": new_quantity}}
         )
 
         if result.modified_count > 0:
-            return jsonify({"success": True, "message": "Cantidad actualizada correctamente"}), 200
+            return jsonify({
+                "success": True, 
+                "message": "Cantidad actualizada correctamente",
+                "newQuantity": new_quantity
+            }), 200
         else:
             return jsonify({"success": False, "message": "No se pudo actualizar la cantidad"}), 400
 
@@ -129,6 +144,10 @@ def procesar_pedido():
 @app.route('/confirmar_pedido/<order_id>', methods=['POST'])
 def confirmar_pedido(order_id):
     return ped.confirmar_pedido(order_id)
+
+@app.route('/cancelar_pedido/<order_id>', methods=['POST'])
+def cancelar_pedido(order_id):
+    return ped.cancelar_pedido(order_id)
 
 @app.route('/admin_dashboard')
 def admin_dashboard():

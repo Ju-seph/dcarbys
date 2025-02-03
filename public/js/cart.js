@@ -79,13 +79,13 @@ async function updateQuantity(index, change) {
 
       // Update available quantity
       if (quantityElement) {
-        quantityElement.textContent = availableQuantity - change
+        quantityElement.textContent = result.newQuantity
       }
 
       // Enable or disable the add button based on available quantity
       const addButton = document.querySelector(`.add-to-cart[data-id="${item.id}"]`)
       if (addButton) {
-        addButton.disabled = availableQuantity - change <= 0
+        addButton.disabled = result.newQuantity <= 0
       }
     } else {
       alert(result.message)
@@ -115,14 +115,13 @@ async function removeFromCart(index, productId, quantity) {
       // Actualizar la cantidad mostrada en la página si estamos en la página de productos
       const quantityElement = document.querySelector(`.product-quantity[data-id="${productId}"]`)
       if (quantityElement) {
-        const currentQuantity = Number.parseInt(quantityElement.textContent)
-        quantityElement.textContent = currentQuantity + quantity
+        quantityElement.textContent = result.newQuantity
       }
 
       // Habilitar el botón si la cantidad es mayor que cero
       const addButton = document.querySelector(`.add-to-cart[data-id="${productId}"]`)
       if (addButton) {
-        addButton.disabled = false
+        addButton.disabled = result.newQuantity <= 0
       }
     } else {
       alert(result.message)
@@ -200,10 +199,10 @@ async function addToCart(button) {
       updateCart()
 
       if (quantityElement) {
-        quantityElement.textContent = availableQuantity - quantity
+        quantityElement.textContent = result.newQuantity
       }
 
-      button.disabled = availableQuantity - quantity <= 0
+      button.disabled = result.newQuantity <= 0
 
       alert("Producto agregado al carrito")
     } else {

@@ -120,3 +120,30 @@ def limpiar_pedidos_expirados():
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
+def cancelar_pedido(order_id):
+    try:
+        # Buscar el pedido temporal
+        pedido_temporal = db.pedidos_temporales.find_one({"_id": ObjectId(order_id)})
+
+        if not pedido_temporal:
+            return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
+
+        # Iniciar una sesión de transacción
+        with db.client.start_session() as session:
+            with session.start_transaction():
+                # Devolver el stock de los productos
+                for item in pedido_temporal['productos']:
+                    db.productos.update_one(
+                        {"_id": ObjectId(item['id'])},
+                        {"$inc": {"cantidad": item['quantity']}},
+                        session=session
+                    )
+
+                # Eliminar el pedido temporal
+                db.pedidos_temporales.delete_one({"_id": ObjectId(order_id)}, session=session)
+
+        return jsonify({"success": True, "message": "Pedido cancelado con éxito"}), 200
+
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+

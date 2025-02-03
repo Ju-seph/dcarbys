@@ -157,9 +157,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function cancelarPedido(orderId) {
-        // Aquí puedes implementar la lógica para cancelar el pedido si es necesario
-        alert('Pedido cancelado');
-        window.location.href = '/';  // Redirigir a la página principal
+        fetch(`/cancelar_pedido/${orderId}`, {
+            method: 'POST',
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Pedido cancelado con éxito');
+                localStorage.removeItem('cart');  // Limpiar el carrito
+                window.location.href = '/';  // Redirigir a la página principal
+            } else {
+                alert('Error al cancelar el pedido: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Hubo un error al cancelar el pedido');
+        });
     }
 });
 </script>
