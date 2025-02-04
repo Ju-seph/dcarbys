@@ -18,20 +18,28 @@ def procesar_pedido(request):
         # Iniciar una sesión de transacción
         with db.client.start_session() as db_session:
             with db_session.start_transaction():
+                insufficient_stock = []
+                
                 # Verificar y reservar productos
                 for item in data['cart']:
-                    producto = db.productos.find_one_and_update(
-                        {
-                            "_id": ObjectId(item['id']),
-                            "cantidad": {"$gte": item['quantity']}
-                        },
+                    producto = db.productos.find_one({"_id": ObjectId(item['id'])}, session=db_session)
+                    if not producto or producto['cantidad'] < item['quantity']:
+                        insufficient_stock.append(item['name'])
+                
+                if insufficient_stock:
+                    db_session.abort_transaction()
+                    return jsonify({
+                        "success": False, 
+                        "message": f"No hay suficiente stock para: {', '.join(insufficient_stock)}"
+                    }), 400
+
+                # Si hay suficiente stock, proceder con la actualización
+                for item in data['cart']:
+                    db.productos.update_one(
+                        {"_id": ObjectId(item['id'])},
                         {"$inc": {"cantidad": -item['quantity']}},
                         session=db_session
                     )
-                    if not producto:
-                        # Si no hay suficiente stock, abortar la transacción
-                        db_session.abort_transaction()
-                        return jsonify({"success": False, "message": f"No hay suficiente stock para {item['name']}"}), 400
 
                 # Crear el pedido temporal
                 pedido_temporal = PedidoTemporal(
@@ -100,26 +108,6 @@ def confirmar_pedido(order_id):
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
-def limpiar_pedidos_expirados():
-    try:
-        # Encontrar todos los pedidos expirados
-        pedidos_expirados = db.pedidos_temporales.find({"expireDateTime": {"$lt": datetime.now()}})
-
-        for pedido in pedidos_expirados:
-            # Devolver el stock de cada producto
-            for item in pedido['productos']:
-                db.productos.update_one(
-                    {"_id": ObjectId(item['id'])},
-                    {"$inc": {"cantidad": item['quantity']}}
-                )
-            
-            # Eliminar el pedido temporal
-            db.pedidos_temporales.delete_one({"_id": pedido['_id']})
-
-        return jsonify({"success": True, "message": "Pedidos expirados limpiados con éxito"}), 200
-    except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
-
 def cancelar_pedido(order_id):
     try:
         # Buscar el pedido temporal
@@ -144,6 +132,26 @@ def cancelar_pedido(order_id):
 
         return jsonify({"success": True, "message": "Pedido cancelado con éxito"}), 200
 
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+def limpiar_pedidos_expirados():
+    try:
+        # Encontrar todos los pedidos expirados
+        pedidos_expirados = db.pedidos_temporales.find({"expireDateTime": {"$lt": datetime.now()}})
+
+        for pedido in pedidos_expirados:
+            # Devolver el stock de cada producto
+            for item in pedido['productos']:
+                db.productos.update_one(
+                    {"_id": ObjectId(item['id'])},
+                    {"$inc": {"cantidad": item['quantity']}}
+                )
+            
+            # Eliminar el pedido temporal
+            db.pedidos_temporales.delete_one({"_id": pedido['_id']})
+
+        return jsonify({"success": True, "message": "Pedidos expirados limpiados con éxito"}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 

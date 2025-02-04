@@ -45,91 +45,9 @@ function updateCart() {
   }
 }
 
-async function updateQuantity(index, change) {
-  const item = cart[index]
-  const newQuantity = item.quantity + change
-
-  if (newQuantity <= 0) {
-    return removeFromCart(index, item.id, item.quantity)
-  }
-
-  // Check available quantity
-  const quantityElement = document.querySelector(`.product-quantity[data-id="${item.id}"]`)
-  const availableQuantity = quantityElement ? Number.parseInt(quantityElement.textContent) : 0
-
-  if (change > 0 && availableQuantity <= 0) {
-    alert("No hay más unidades disponibles de este producto.")
-    return
-  }
-
-  try {
-    const response = await fetch("/update_quantity", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ productId: item.id, quantity: change }),
-    })
-
-    const result = await response.json()
-
-    if (result.success) {
-      item.quantity = newQuantity
-      updateCart()
-
-      // Update available quantity
-      if (quantityElement) {
-        quantityElement.textContent = result.newQuantity
-      }
-
-      // Enable or disable the add button based on available quantity
-      const addButton = document.querySelector(`.add-to-cart[data-id="${item.id}"]`)
-      if (addButton) {
-        addButton.disabled = result.newQuantity <= 0
-      }
-    } else {
-      alert(result.message)
-    }
-  } catch (error) {
-    console.error("Error:", error)
-    alert("Hubo un error al actualizar la cantidad del producto")
-  }
-}
-
-async function removeFromCart(index, productId, quantity) {
-  try {
-    const response = await fetch("/update_quantity", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ productId: productId, quantity: -quantity }),
-    })
-
-    const result = await response.json()
-
-    if (result.success) {
-      cart.splice(index, 1)
-      updateCart()
-
-      // Actualizar la cantidad mostrada en la página si estamos en la página de productos
-      const quantityElement = document.querySelector(`.product-quantity[data-id="${productId}"]`)
-      if (quantityElement) {
-        quantityElement.textContent = result.newQuantity
-      }
-
-      // Habilitar el botón si la cantidad es mayor que cero
-      const addButton = document.querySelector(`.add-to-cart[data-id="${productId}"]`)
-      if (addButton) {
-        addButton.disabled = result.newQuantity <= 0
-      }
-    } else {
-      alert(result.message)
-    }
-  } catch (error) {
-    console.error("Error:", error)
-    alert("Hubo un error al eliminar el producto del carrito")
-  }
+function removeFromCart(index) {
+  cart.splice(index, 1)
+  updateCart()
 }
 
 function initCart() {
@@ -144,13 +62,17 @@ function initCart() {
       const index = Number.parseInt(target.getAttribute("data-index"))
 
       if (target.classList.contains("remove-from-cart")) {
-        const productId = target.getAttribute("data-id")
-        const quantity = Number.parseInt(target.getAttribute("data-quantity"))
-        removeFromCart(index, productId, quantity)
+        removeFromCart(index)
       } else if (target.classList.contains("increase-quantity")) {
-        updateQuantity(index, 1)
+        cart[index].quantity++
+        updateCart()
       } else if (target.classList.contains("decrease-quantity")) {
-        updateQuantity(index, -1)
+        if (cart[index].quantity > 1) {
+          cart[index].quantity--
+          updateCart()
+        } else {
+          removeFromCart(index)
+        }
       }
     })
   }
@@ -163,55 +85,22 @@ function initCart() {
   })
 }
 
-async function addToCart(button) {
+function addToCart(button) {
   const id = button.getAttribute("data-id")
   const name = button.getAttribute("data-name")
   const price = Number.parseFloat(button.getAttribute("data-price"))
   const imageUrl = button.getAttribute("data-image")
   const quantity = 1
 
-  const quantityElement = document.querySelector(`.product-quantity[data-id="${id}"]`)
-  const availableQuantity = quantityElement ? Number.parseInt(quantityElement.textContent) : 0
-
-  if (availableQuantity <= 0) {
-    alert("No hay más unidades disponibles de este producto.")
-    return
+  const existingItem = cart.find((item) => item.id === id)
+  if (existingItem) {
+    existingItem.quantity += quantity
+  } else {
+    cart.push({ id, name, price, imageUrl, quantity })
   }
+  updateCart()
 
-  try {
-    const response = await fetch("/update_quantity", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ productId: id, quantity: quantity }),
-    })
-
-    const result = await response.json()
-
-    if (result.success) {
-      const existingItem = cart.find((item) => item.id === id)
-      if (existingItem) {
-        existingItem.quantity += quantity
-      } else {
-        cart.push({ id, name, price, imageUrl, quantity })
-      }
-      updateCart()
-
-      if (quantityElement) {
-        quantityElement.textContent = result.newQuantity
-      }
-
-      button.disabled = result.newQuantity <= 0
-
-      alert("Producto agregado al carrito")
-    } else {
-      alert(result.message)
-    }
-  } catch (error) {
-    console.error("Error:", error)
-    alert("Hubo un error al agregar el producto al carrito")
-  }
+  alert("Producto agregado al carrito")
 }
 
 document.addEventListener("DOMContentLoaded", initCart)

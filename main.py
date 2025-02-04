@@ -50,42 +50,6 @@ def begin():
     productos = list(db.productos.find({"status": "activo"}))
     return render_template('views/index.html', productos=productos)
 
-# -- Index renderiza los productos y la cantidad de producto--
-@app.route('/update_quantity', methods=['POST'])
-def update_quantity():
-    try:
-        data = request.json
-        product_id = data['productId']
-        quantity = data['quantity']
-
-        # Find the product
-        product = db.productos.find_one({"_id": ObjectId(product_id)})
-        
-        if not product:
-            return jsonify({"success": False, "message": "Producto no encontrado"}), 404
-
-        new_quantity = product['cantidad'] - quantity
-
-        if new_quantity < 0:
-            return jsonify({"success": False, "message": "No hay suficiente stock disponible"}), 400
-
-        # Update the quantity in the database
-        result = db.productos.update_one(
-            {"_id": ObjectId(product_id)},
-            {"$set": {"cantidad": new_quantity}}
-        )
-
-        if result.modified_count > 0:
-            return jsonify({
-                "success": True, 
-                "message": "Cantidad actualizada correctamente",
-                "newQuantity": new_quantity
-            }), 200
-        else:
-            return jsonify({"success": False, "message": "No se pudo actualizar la cantidad"}), 400
-
-    except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
 
 # Manejo de session 
 @app.route('/registro_usuarios', methods=["GET", "POST"])
@@ -133,8 +97,7 @@ def checkout():
         session['next'] = url_for('checkout')
         return redirect(url_for('login_user'))
     
-    cart = json.loads(request.cookies.get('cart', '[]'))
-    return render_template('views/checkout.html', cart=cart)
+    return render_template('views/checkout.html')
 
 # Nueva ruta para procesar el pedido
 @app.route('/procesar_pedido', methods=['POST'])
