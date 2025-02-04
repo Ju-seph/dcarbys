@@ -32,7 +32,7 @@ function updateCart() {
         </div>
         <div class="d-flex align-items-center">
           <span class="me-2">$${(item.price * item.quantity).toFixed(2)}</span>
-          <button class="btn btn-sm btn-danger remove-from-cart" data-index="${index}" data-id="${item.id}" data-quantity="${item.quantity}">
+          <button class="btn btn-sm btn-danger remove-from-cart" data-index="${index}">
             <i class="bi bi-trash"></i>
           </button>
         </div>
@@ -64,15 +64,9 @@ function initCart() {
       if (target.classList.contains("remove-from-cart")) {
         removeFromCart(index)
       } else if (target.classList.contains("increase-quantity")) {
-        cart[index].quantity++
-        updateCart()
+        increaseQuantity(index)
       } else if (target.classList.contains("decrease-quantity")) {
-        if (cart[index].quantity > 1) {
-          cart[index].quantity--
-          updateCart()
-        } else {
-          removeFromCart(index)
-        }
+        decreaseQuantity(index)
       }
     })
   }
@@ -85,18 +79,46 @@ function initCart() {
   })
 }
 
+function increaseQuantity(index) {
+  const item = cart[index]
+  const availableQuantity = Number.parseInt(
+    document.querySelector(`.product-quantity[data-id="${item.id}"]`).textContent,
+  )
+
+  if (item.quantity < availableQuantity) {
+    item.quantity++
+    updateCart()
+  } else {
+    alert("No hay más stock disponible para este producto.")
+  }
+}
+
+function decreaseQuantity(index) {
+  if (cart[index].quantity > 1) {
+    cart[index].quantity--
+    updateCart()
+  } else {
+    removeFromCart(index)
+  }
+}
+
 function addToCart(button) {
   const id = button.getAttribute("data-id")
   const name = button.getAttribute("data-name")
   const price = Number.parseFloat(button.getAttribute("data-price"))
   const imageUrl = button.getAttribute("data-image")
-  const quantity = 1
+  const availableQuantity = Number.parseInt(button.parentElement.querySelector(".product-quantity").textContent)
 
   const existingItem = cart.find((item) => item.id === id)
   if (existingItem) {
-    existingItem.quantity += quantity
+    if (existingItem.quantity < availableQuantity) {
+      existingItem.quantity++
+    } else {
+      alert("No hay más stock disponible para este producto.")
+      return
+    }
   } else {
-    cart.push({ id, name, price, imageUrl, quantity })
+    cart.push({ id, name, price, imageUrl, quantity: 1 })
   }
   updateCart()
 
