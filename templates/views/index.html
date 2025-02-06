@@ -37,10 +37,13 @@
         height: 100%;
         display: flex;
         flex-direction: column;
+        border: 1px solid #ddd; /* Borde para las tarjetas */
+        border-radius: 8px; /* Bordes redondeados */
+        overflow: hidden; /* Evita que el contenido se desborde */
     }
 
     .product-image {
-        height: 200px;
+        height: 120px; /* Reducir la altura de la imagen */
         object-fit: cover;
     }
 
@@ -48,23 +51,30 @@
         flex-grow: 1;
         display: flex;
         flex-direction: column;
+        padding: 10px; /* Espaciado interno */
     }
 
     .product-title {
-        font-size: 1rem;
+        font-size: 0.9rem; /* Reducir el tamaño del título */
         font-weight: bold;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.3rem;
     }
 
     .product-description {
-        font-size: 0.8rem;
+        font-size: 0.75rem; /* Reducir el tamaño de la descripción */
         flex-grow: 1;
+        margin-bottom: 0.3rem;
     }
 
     .product-price {
-        font-size: 1rem;
+        font-size: 0.9rem; /* Reducir el tamaño del precio */
         font-weight: bold;
         color: #28a745;
+        margin-bottom: 0.3rem;
+    }
+
+    .product-quantity {
+        font-size: 0.75rem; /* Reducir el tamaño del texto de disponibilidad */
     }
 
     .category-title {
@@ -72,6 +82,12 @@
         font-weight: bold;
         margin-bottom: 1rem;
         color: red;
+    }
+
+    /* Ajustar el tamaño de los botones */
+    .btn-sm {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
     }
 </style>
 
@@ -91,6 +107,9 @@
                     <a class="nav-link" href="/contacto">Contactos</a>
                 </li>
                 {% if session.get('usuario_id') %}
+                <li class="nav-item">
+                    <span class="nav-link">Bienvenido, {{ session.get('nombreUsuario') }}</span>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/logout">Cerrar Sesión</a>
                 </li>
@@ -126,28 +145,27 @@
 <section id="menu" class="py-5">
     <div class="container">
         <h2 class="text-center mb-5">Nuestro Menú</h2>
-        {% for categoria in ['bebidas', 'alimentos', 'adicionales'] %}
-        <div class="mb-5">
+        {% for categoria in ['Alimentos', 'Bebidas', 'Adicionales'] %}
+        <div class="mb-4">
             <h3 class="category-title">{{ categoria }}</h3>
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2"> <!-- Reducir el espacio entre tarjetas (g-2) -->
                 {% for producto in productos %}
                 {% if producto.categoria == categoria %}
                 <div class="col">
-                    <div class="card product-card">
+                    <div class="card product-card h-100">
                         {% if producto.imagen_path %}
-                        <img src="{{ producto.imagen_path }}" class="card-img-top product-image" alt="{{ producto.nombreProducto }}">
+                        <img src="{{ producto.imagen_path }}" class="card-img-top product-image"
+                            alt="{{ producto.nombreProducto }}"
+                            onclick="openProductModal('{{ producto.nombreProducto }}', '{{ producto.descripcion }}', '{{ producto.precio }}', '{{ producto.imagen_path }}', '{{ producto.cantidad }}')">
                         {% endif %}
                         <div class="card-body product-body">
                             <h5 class="card-title product-title">{{ producto.nombreProducto }}</h5>
-                            <p class="card-text product-description">{{ producto.descripcion | truncate(50) }}</p>
                             <p class="product-price mb-2">${{ "%.2f"|format(producto.precio) }}</p>
-                            <p class="small mb-2">Disponibles: <span class="product-quantity" data-id="{{ producto._id }}">{{ producto.cantidad }}</span></p>
-                            <button class="btn btn-primary btn-sm w-100 add-to-cart" 
-                                    data-id="{{ producto._id }}" 
-                                    data-name="{{ producto.nombreProducto }}" 
-                                    data-price="{{ producto.precio }}"
-                                    data-image="{{ producto.imagen_path }}"
-                                    {% if producto.cantidad <= 0 %}disabled{% endif %}>
+                            <p class="small mb-2">Disponibles: <span class="product-quantity"
+                                    data-id="{{ producto._id }}">{{ producto.cantidad }}</span></p>
+                            <button class="btn btn-primary btn-sm w-100 add-to-cart" data-id="{{ producto._id }}"
+                                data-name="{{ producto.nombreProducto }}" data-price="{{ producto.precio }}"
+                                data-image="{{ producto.imagen_path }}" {% if producto.cantidad <=0 %}disabled{% endif %}>
                                 Agregar al carrito
                             </button>
                         </div>
@@ -249,6 +267,28 @@
     </div>
 </div>
 
+<!-- Modal para la descripción del producto -->
+<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productModalLabel">Detalles del Producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <img id="modalProductImage" src="" class="img-fluid mb-3" alt="Imagen del producto">
+                <h4 id="modalProductName" class="mb-3"></h4>
+                <p id="modalProductDescription" class="mb-3"></p>
+                <p id="modalProductPrice" class="fw-bold"></p>
+                <p id="modalProductStock" class="small"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Include cart.js -->
 <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
 
@@ -270,5 +310,21 @@
     });
 </script>
 
-{% endblock %}
 
+<script>
+    // Función para abrir el modal y mostrar los detalles del producto
+    function openProductModal(name, description, price, image, stock) {
+        // Asignar los valores al modal
+        document.getElementById('modalProductName').innerText = name;
+        document.getElementById('modalProductDescription').innerText = description;
+        document.getElementById('modalProductPrice').innerText = `Precio: $${parseFloat(price).toFixed(2)}`;
+        document.getElementById('modalProductStock').innerText = `Disponibles: ${stock}`;
+        document.getElementById('modalProductImage').src = image;
+
+        // Mostrar el modal
+        const productModal = new bootstrap.Modal(document.getElementById('productModal'));
+        productModal.show();
+    }
+</script>
+
+{% endblock %}

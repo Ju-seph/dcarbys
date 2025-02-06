@@ -55,7 +55,7 @@ def save_product(request):
             categoria = request.form.get("u_categoria")
             descripcion = request.form.get("u_descripcion")
             tiempo_preparacion = request.form.get("u_tiempo_preparacion")
-            destacado = request.form.get("u_destacado") == 'true'
+            
 
             if not (nombreProducto and precio and cantidad):
                 response["message"] = "Nombre, precio y cantidad son obligatorios."
@@ -101,7 +101,7 @@ def save_product(request):
                 descripcion=descripcion,
                 imagen_path=imagen_path,
                 tiempo_preparacion=tiempo_preparacion,
-                destacado=destacado,
+                
             )
             producto.createProducto()
             db.productos.insert_one(producto.getProducto())
@@ -142,7 +142,7 @@ def edit_product(request):
             categoria = request.form.get("u_categoria")
             descripcion = request.form.get("u_descripcion")
             tiempo_preparacion = request.form.get("u_tiempo_preparacion")
-            destacado = request.form.get("u_destacado") == 'true'
+            
 
             if not all([nombreProducto, precio, cantidad, categoria, tiempo_preparacion]):
                 response["message"] = "Todos los campos son obligatorios."
@@ -183,7 +183,7 @@ def edit_product(request):
                 descripcion=descripcion,
                 imagen_path=imagen_path,
                 tiempo_preparacion=tiempo_preparacion,
-                destacado=destacado
+                
             )
             updated_product.updateProducto()  # Set update timestamp
 

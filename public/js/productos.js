@@ -22,13 +22,6 @@ $(document).ready(function () {
             },
             { "data": "tiempo_preparacion", "className": "text-center" },
             {
-                "data": "destacado",
-                "className": "text-center",
-                "render": function (data) {
-                    return data ? '<i class="bi bi-star-fill text-warning"></i>' : '<i class="bi bi-star"></i>';
-                }
-            },
-            {
                 "data": null,
                 "className": "text-center",
                 "defaultContent": `

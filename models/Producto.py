@@ -12,7 +12,6 @@ class Producto:
         self.descripcion = descripcion
         self.imagen_path = imagen_path
         self.tiempo_preparacion = tiempo_preparacion
-        self.destacado = destacado
         self.createDateTime = None  # Se inicializa vacío
         self.updateDateTime = None  # Se inicializa vacío
 
