@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from bson import ObjectId
 
 class PedidoTemporal:
-
     def __init__(self, numero_pedido, usuario_id, productos, nombre, telefono, direccion, ciudad, codigo_postal, total, estado="pendiente"):
         self._id = ObjectId()
         self.numero_pedido = numero_pedido

@@ -142,7 +142,7 @@ def edit_product(request):
             categoria = request.form.get("u_categoria")
             descripcion = request.form.get("u_descripcion")
             tiempo_preparacion = request.form.get("u_tiempo_preparacion")
-            
+           
 
             if not all([nombreProducto, precio, cantidad, categoria, tiempo_preparacion]):
                 response["message"] = "Todos los campos son obligatorios."
@@ -183,7 +183,7 @@ def edit_product(request):
                 descripcion=descripcion,
                 imagen_path=imagen_path,
                 tiempo_preparacion=tiempo_preparacion,
-                
+              
             )
             updated_product.updateProducto()  # Set update timestamp
 

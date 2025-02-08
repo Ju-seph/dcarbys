@@ -44,19 +44,23 @@
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0 text-center">Opciones</h5>
                 </div>
-                <div class="card-body p-0">
-                    <div class="list-group list-group-flush" role="tablist">
-                        <button class="list-group-item list-group-item-action active d-flex align-items-center"
-                            id="v-pills-usuarios-tab" data-bs-toggle="pill" data-bs-target="#v-pills-usuarios"
-                            type="button" role="tab">
-                            <i class="bi bi-people-fill me-2"></i>Gestión de Usuarios
-                        </button>
-                        <button class="list-group-item list-group-item-action d-flex align-items-center"
-                            id="v-pills-productos-tab" data-bs-toggle="pill" data-bs-target="#v-pills-productos"
-                            type="button" role="tab">
-                            <i class="bi bi-box-seam me-2"></i>Productos
-                        </button>
-                    </div>
+                <div class="list-group list-group-flush" role="tablist">
+                    <button class="list-group-item list-group-item-action active d-flex align-items-center"
+                        id="v-pills-usuarios-tab" data-bs-toggle="pill" data-bs-target="#v-pills-usuarios"
+                        type="button" role="tab">
+                        <i class="bi bi-people-fill me-2"></i>Gestión de Usuarios
+                    </button>
+                    <button class="list-group-item list-group-item-action d-flex align-items-center"
+                        id="v-pills-productos-tab" data-bs-toggle="pill" data-bs-target="#v-pills-productos"
+                        type="button" role="tab">
+                        <i class="bi bi-box-seam me-2"></i>Productos
+                    </button>
+                    <!-- Nueva pestaña para pedidos -->
+                    <button class="list-group-item list-group-item-action d-flex align-items-center"
+                        id="v-pills-pedidos-tab" data-bs-toggle="pill" data-bs-target="#v-pills-pedidos"
+                        type="button" role="tab">
+                        <i class="bi bi-cart me-2"></i>Pedidos Pendientes
+                    </button>
                 </div>
             </div>
         </div>
@@ -78,6 +82,11 @@
                         <div class="tab-pane fade" id="v-pills-productos" role="tabpanel"
                             aria-labelledby="v-pills-productos-tab">
                             {% include '/views/inventario/productos.html' %}
+                        </div>
+                        <!-- Nueva pestaña para pedidos -->
+                        <div class="tab-pane fade" id="v-pills-pedidos" role="tabpanel"
+                            aria-labelledby="v-pills-pedidos-tab">
+                            {% include '/views/inventario/pedidos.html' %}
                         </div>
                     </div>
                 </div>
