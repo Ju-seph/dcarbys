@@ -14,6 +14,8 @@ class PedidoTemporal:
         self.codigo_postal = codigo_postal
         self.total = total
         self.estado = estado
+        self.estado_administrador = "pendiente"  # Estado del administrador (aceptado/rechazado)
+        self.estado_cliente = "pendiente"  # Estado del cliente (confirmado/cancelado)
         self.createDateTime = None
         self.updateDateTime = None
         self.expireDateTime = None

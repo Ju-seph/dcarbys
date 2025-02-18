@@ -2,7 +2,6 @@ from datetime import datetime
 from bson import ObjectId
 
 class Pedido:
-
     def __init__(self, numero_pedido, usuario_id, productos, nombre, telefono, direccion, ciudad, codigo_postal, total, estado="confirmado"):
         self._id = ObjectId()
         self.numero_pedido = numero_pedido
@@ -15,10 +14,10 @@ class Pedido:
         self.codigo_postal = codigo_postal
         self.total = total
         self.estado = estado
+        self.tiempo_estimado = ""  # Nuevo campo para el tiempo estimado
         self.fecha_confirmacion = None
         self.createDateTime = None
         self.updateDateTime = None
-
     def getPedido(self):
         return self.__dict__
 

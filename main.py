@@ -12,6 +12,7 @@ import json
 from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
+from models.Pedido import Pedido  # Importar la clase Pedido
 
 db = Mongodb().db()
 
@@ -119,7 +120,95 @@ def admin_dashboard():
         return redirect(url_for('begin'))
     return render_template("views/principal.html")
 
+
+# Pedidos para el Administrador
+
+@app.route('/obtener_pedidos_pendientes', methods=['GET'])
+def obtener_pedidos_pendientes():
+    try:
+        pedidos = db.pedidos_temporales.find({"estado": "pendiente"})
+        lista_pedidos = []
+        for pedido in pedidos:
+            pedido["_id"] = str(pedido["_id"])
+            lista_pedidos.append(pedido)
+        return jsonify({"data": lista_pedidos}), 200
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/aceptar_pedido/<pedido_id>', methods=['POST'])
+def aceptar_pedido(pedido_id):
+    try:
+        # Obtener el tiempo estimado de entrega desde el formulario del administrador
+        tiempo_estimado = request.json.get('tiempo_estimado')
+
+        # Convertir el pedido temporal a un pedido confirmado
+        pedido_temporal = db.pedidos_temporales.find_one({"_id": ObjectId(pedido_id)})
+        if not pedido_temporal:
+            return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
+
+        # Crear el pedido confirmado
+        pedido_confirmado = Pedido.from_pedido_temporal(pedido_temporal)
+        pedido_confirmado.tiempo_estimado = tiempo_estimado  # Agregar el tiempo estimado
+        pedido_confirmado.estado = "confirmado"  # Actualizar el estado
+        db.pedidos.insert_one(pedido_confirmado.getPedido())
+
+        # Eliminar el pedido temporal
+        db.pedidos_temporales.delete_one({"_id": ObjectId(pedido_id)})
+
+        return jsonify({"success": True, "message": "Pedido aceptado con éxito", "tiempo_estimado": tiempo_estimado}), 200
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@app.route('/cancelar_pedido_admin/<pedido_id>', methods=['POST'])
+def cancelar_pedido_admin(pedido_id):
+    try:
+        # Devolver el stock y eliminar el pedido temporal
+        pedido_temporal = db.pedidos_temporales.find_one({"_id": ObjectId(pedido_id)})
+        if not pedido_temporal:
+            return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
+
+        with db.client.start_session() as session:
+            with session.start_transaction():
+                for item in pedido_temporal['productos']:
+                    db.productos.update_one(
+                        {"_id": ObjectId(item['id'])},
+                        {"$inc": {"cantidad": item['quantity']}},
+                        session=session
+                    )
+                db.pedidos_temporales.delete_one({"_id": ObjectId(pedido_id)}, session=session)
+
+        return jsonify({"success": True, "message": "Pedido cancelado con éxito"}), 200
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/estado_pedido/<pedido_id>', methods=['GET'])
+def estado_pedido(pedido_id):
+    try:
+        # Buscar el pedido en la colección de pedidos temporales
+        pedido_temporal = db.pedidos_temporales.find_one({"_id": ObjectId(pedido_id)})
+        if pedido_temporal:
+            return jsonify({
+                "success": True,
+                "estado": pedido_temporal.get("estado", "pendiente"),
+                "tiempo_estimado": ""  # No hay tiempo estimado en pedidos temporales
+            }), 200
+
+        # Si no se encuentra en pedidos temporales, buscar en pedidos confirmados
+        pedido_confirmado = db.pedidos.find_one({"_id": ObjectId(pedido_id)})
+        if pedido_confirmado:
+            return jsonify({
+                "success": True,
+                "estado": pedido_confirmado.get("estado", "confirmado"),
+                "tiempo_estimado": pedido_confirmado.get("tiempo_estimado", "")
+            }), 200
+
+        # Si no se encuentra en ninguna colección, devolver error
+        return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
 if __name__ == "__main__":
     # Ejecutar la aplicación Flask
     app.run(host=os.getenv("HOST", "0.0.0.0"), port=int(os.getenv("PORT", 5000)))
-
