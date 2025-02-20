@@ -47,10 +47,10 @@ def procesar_pedido(request):
                     usuario_id=session['usuario_id'],
                     productos=data['cart'],
                     nombre=data['nombre'],
-                    telefono=data['telefono'],
-                    direccion=data['direccion'],
+                    celular=data['celular'],
                     ciudad=data['ciudad'],
-                    codigo_postal=data['codigo_postal'],
+                    direccion=data['direccion'],
+                    referencia=data['referencia'],
                     total=data['total']
                 )
                 pedido_temporal.createPedidoTemporal()

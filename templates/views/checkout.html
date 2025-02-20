@@ -193,22 +193,42 @@
                     <input type="text" class="form-control" id="nombre" name="nombre" required>
                 </div>
                 <div class="mb-3">
-                    <label for="telefono" class="form-label">Teléfono</label>
-                    <input type="tel" class="form-control" id="telefono" name="telefono" required>
-                </div>
-                <div class="mb-3">
-                    <label for="direccion" class="form-label">Dirección</label>
-                    <input type="text" class="form-control" id="direccion" name="direccion" required>
+                    <label for="celular" class="form-label">Celular</label>
+                    <input type="tel" class="form-control" id="celular" name="celular" required>
                 </div>
                 <div class="mb-3">
                     <label for="ciudad" class="form-label">Ciudad</label>
                     <input type="text" class="form-control" id="ciudad" name="ciudad" required>
                 </div>
                 <div class="mb-3">
-                    <label for="codigo_postal" class="form-label">Código Postal</label>
-                    <input type="text" class="form-control" id="codigo_postal" name="codigo_postal" required>
+                    <label for="direccion" class="form-label">Dirección</label>
+                    <input type="text" class="form-control" id="direccion" name="direccion" required>
                 </div>
-                <button type="submit" class="btn btn-primary">Procesar Pedido</button>
+                <div class="mb-3">
+                    <label for="Referencia" class="form-label">Referencia (opcional)</label>
+                    <input type="text" class="form-control" id="Referencia" name="Referencia">
+                </div>
+
+                <!-- Método de pago -->
+                <div class="mb-3">
+                    <label class="form-label">Método de Pago <span class="text-danger">*</span></label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="metodo_pago" id="pago_efectivo"
+                            value="efectivo" required>
+                        <label class="form-check-label" for="pago_efectivo">
+                            Pago en efectivo
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="metodo_pago" id="pago_boton" value="boton"
+                            disabled>
+                        <label class="form-check-label" for="pago_boton">
+                            Botón de pago (próximamente)
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="procesar-pedido" disabled>Procesar Pedido</button>
             </form>
 
             <!-- Mensaje de espera -->
@@ -243,6 +263,7 @@
         const waitingMessage = document.getElementById('waiting-message');
         const confirmationMessage = document.getElementById('confirmation-message');
         const cancellationMessage = document.getElementById('cancellation-message');
+        const procesarPedidoBtn = document.getElementById('procesar-pedido');
         let total = 0;
 
         // Generar un número de pedido aleatorio
@@ -266,6 +287,20 @@
 
         cartTotal.textContent = `$${total.toFixed(2)}`;
 
+        // Validar campos obligatorios y habilitar/deshabilitar el botón
+        const camposObligatorios = ['nombre', 'celular', 'ciudad', 'direccion'];
+        const inputs = camposObligatorios.map(id => document.getElementById(id));
+        const metodoPago = document.querySelectorAll('input[name="metodo_pago"]');
+
+        function validarCampos() {
+            const todosCompletos = inputs.every(input => input.value.trim() !== '');
+            const metodoPagoSeleccionado = Array.from(metodoPago).some(input => input.checked);
+            procesarPedidoBtn.disabled = !(todosCompletos && metodoPagoSeleccionado);
+        }
+
+        inputs.forEach(input => input.addEventListener('input', validarCampos));
+        metodoPago.forEach(input => input.addEventListener('change', validarCampos));
+
         // Procesar el pedido
         checkoutForm.addEventListener('submit', function (e) {
             e.preventDefault();
@@ -282,10 +317,11 @@
                     purchaseNumber: purchaseNumber,
                     cart: cart,
                     nombre: document.getElementById('nombre').value,
-                    telefono: document.getElementById('telefono').value,
-                    direccion: document.getElementById('direccion').value,
+                    celular: document.getElementById('celular').value,
                     ciudad: document.getElementById('ciudad').value,
-                    codigo_postal: document.getElementById('codigo_postal').value,
+                    direccion: document.getElementById('direccion').value,
+                    referencia: document.getElementById('Referencia').value,
+                    metodo_pago: document.querySelector('input[name="metodo_pago"]:checked').value,
                     total: total
                 })
             })

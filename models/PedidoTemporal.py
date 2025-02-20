@@ -2,16 +2,16 @@ from datetime import datetime, timedelta
 from bson import ObjectId
 
 class PedidoTemporal:
-    def __init__(self, numero_pedido, usuario_id, productos, nombre, telefono, direccion, ciudad, codigo_postal, total, estado="pendiente"):
+    def __init__(self, numero_pedido, usuario_id, productos, nombre, celular, direccion, ciudad, referencia, total, estado="pendiente"):
         self._id = ObjectId()
         self.numero_pedido = numero_pedido
         self.usuario_id = usuario_id
         self.productos = productos
         self.nombre = nombre
-        self.telefono = telefono
+        self.celular = celular
         self.direccion = direccion
         self.ciudad = ciudad
-        self.codigo_postal = codigo_postal
+        self.referencia = referencia
         self.total = total
         self.estado = estado
         self.estado_administrador = "pendiente"  # Estado del administrador (aceptado/rechazado)
@@ -37,10 +37,10 @@ class PedidoTemporal:
             usuario_id=data['usuario_id'],
             productos=data['productos'],
             nombre=data['nombre'],
-            telefono=data['telefono'],
-            direccion=data['direccion'],
+            celular=data['celular'],
             ciudad=data['ciudad'],
-            codigo_postal=data['codigo_postal'],
+            direccion=data['direccion'],
+            referencia=data['referencia'],
             total=data['total'],
             estado=data.get('estado', 'pendiente')
         )
