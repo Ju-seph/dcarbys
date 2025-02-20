@@ -1,37 +1,23 @@
-<div class="table-responsive" style="margin-top: auto;">
-    <table id="tablaPedidos" width="100%" cellspacing="0" class="table table-striped table-hover">
+<div class="table-responsive">
+    <table id="tablaPedidosPendientes" width="100%" cellspacing="0" class="table table-striped">
         <thead>
             <tr>
                 <th>Número de Pedido</th>
                 <th>Cliente</th>
                 <th>Productos</th>
                 <th>Total</th>
-                <th>Estado</th>
                 <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
-            <!-- Los pedidos se cargarán dinámicamente con JavaScript -->
+            <!-- Los pedidos pendientes se cargarán dinámicamente con JavaScript -->
         </tbody>
     </table>
 </div>
 
 <script>
     $(document).ready(function () {
-        // Función para cargar los pedidos
-        function cargarPedidos() {
-            $('#tablaPedidos').DataTable().ajax.reload(null, false); // Recargar la tabla sin resetear la paginación
-        }
-
-        // Inicializar DataTable
-        var tabla = $('#tablaPedidos').DataTable({
-            language: {
-                url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
-            },
-            responsive: true,
-            dom: '<"row mb-3"<"col-md-6"l><"col-md-6"f>>rt<"row mt-3"<"col-md-6"i><"col-md-6"p>>',
-            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
-            pageLength: 10,
+        $('#tablaPedidosPendientes').DataTable({
             ajax: {
                 url: '/obtener_pedidos_pendientes',
                 dataSrc: 'data'
@@ -46,7 +32,6 @@
                     }
                 },
                 { data: 'total', render: function (data) { return `$${data.toFixed(2)}`; } },
-                { data: 'estado' },
                 {
                     data: '_id',
                     render: function (data) {
@@ -54,7 +39,7 @@
                             <button class="btn btn-sm btn-success me-2" onclick="aceptarPedido('${data}')">
                                 <i class="bi bi-check-lg"></i> Aceptar
                             </button>
-                            <button class="btn btn-sm btn-danger" onclick="cancelarPedido('${data}')">
+                            <button class="btn btn-sm btn-danger" onclick="cancelarPedidoAdmin('${data}')">
                                 <i class="bi bi-x-lg"></i> Cancelar
                             </button>
                         `;
@@ -62,17 +47,12 @@
                 }
             ]
         });
-
-        // Actualizar la tabla cada 5 segundos
-        setInterval(cargarPedidos, 5000); // 5000 ms = 5 segundos
     });
 
     function aceptarPedido(pedidoId) {
-        // Pedir al administrador que ingrese el tiempo estimado
-        const tiempoEstimado = prompt("Ingrese el tiempo estimado de entrega (ej: 30 minutos):");
-
-        if (!tiempoEstimado) {
-            alert("Debe ingresar un tiempo estimado.");
+        const tiempoEstimado = prompt("Ingrese el tiempo estimado de entrega (en minutos):");
+        if (!tiempoEstimado || isNaN(tiempoEstimado)) {
+            alert("Por favor, ingrese un tiempo válido.");
             return;
         }
 
@@ -81,15 +61,13 @@
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                tiempo_estimado: tiempoEstimado
-            })
+            body: JSON.stringify({ tiempo_estimado: tiempoEstimado })
         })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     alert('Pedido aceptado con éxito');
-                    $('#tablaPedidos').DataTable().ajax.reload(); // Recargar la tabla
+                    $('#tablaPedidosPendientes').DataTable().ajax.reload(null, false);
                 } else {
                     alert('Error al aceptar el pedido: ' + data.message);
                 }
@@ -100,15 +78,15 @@
             });
     }
 
-    function cancelarPedido(pedidoId) {
+    function cancelarPedidoAdmin(pedidoId) {
         fetch(`/cancelar_pedido_admin/${pedidoId}`, {
             method: 'POST'
         })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Pedido cancelado con éxito');
-                    $('#tablaPedidos').DataTable().ajax.reload(null, false); // Recargar la tabla sin resetear la paginación
+                    alert('Pedido cancelado por el administrador');
+                    $('#tablaPedidosPendientes').DataTable().ajax.reload(null, false);
                 } else {
                     alert('Error al cancelar el pedido: ' + data.message);
                 }

@@ -2,18 +2,19 @@ from datetime import datetime
 from bson import ObjectId
 
 class Pedido:
-    def __init__(self, numero_pedido, usuario_id, productos, nombre, telefono, direccion, ciudad, codigo_postal, total, estado="confirmado"):
+    def __init__(self, numero_pedido, usuario_id, productos, nombre, celular, direccion, ciudad, referencia, total, estado="en transcurso"):
         self._id = ObjectId()
         self.numero_pedido = numero_pedido
         self.usuario_id = usuario_id
         self.productos = productos
         self.nombre = nombre
-        self.telefono = telefono
+        self.celular = celular
         self.direccion = direccion
         self.ciudad = ciudad
-        self.codigo_postal = codigo_postal
+        self.referencia = referencia
         self.total = total
-        self.estado = estado
+        self.estado = estado  # Estados: "en transcurso", "finalizado", "cancelado"
+        self.cancelado_por = None  # Nuevo campo para almacenar quién canceló el pedido
         self.tiempo_estimado = ""  # Nuevo campo para el tiempo estimado
         self.fecha_confirmacion = None
         self.createDateTime = None
@@ -35,10 +36,10 @@ class Pedido:
             usuario_id=data['usuario_id'],
             productos=data['productos'],
             nombre=data['nombre'],
-            telefono=data['telefono'],
+            celular=data['celular'],
             direccion=data['direccion'],
             ciudad=data['ciudad'],
-            codigo_postal=data['codigo_postal'],
+            referencia=data['codigo_postal'],
             total=data['total'],
             estado=data.get('estado', 'confirmado')
         )
@@ -59,10 +60,10 @@ class Pedido:
             usuario_id=pedido_temporal['usuario_id'],
             productos=pedido_temporal['productos'],
             nombre=pedido_temporal['nombre'],
-            telefono=pedido_temporal['telefono'],
+            celular=pedido_temporal['celular'],
             direccion=pedido_temporal['direccion'],
             ciudad=pedido_temporal['ciudad'],
-            codigo_postal=pedido_temporal['codigo_postal'],
+            referencia=pedido_temporal['referencia'],
             total=pedido_temporal['total']
         )
         pedido.createPedido()

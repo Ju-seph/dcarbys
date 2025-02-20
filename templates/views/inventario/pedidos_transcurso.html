@@ -1,0 +1,67 @@
+<div class="table-responsive">
+    <table id="tablaPedidosTranscurso" width="100%" cellspacing="0" class="table table-striped">
+        <thead>
+            <tr>
+                <th>Número de Pedido</th>
+                <th>Cliente</th>
+                <th>Productos</th>
+                <th>Total</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Los pedidos en transcurso se cargarán dinámicamente con JavaScript -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#tablaPedidosTranscurso').DataTable({
+            ajax: {
+                url: '/obtener_pedidos_transcurso',
+                dataSrc: 'data'
+            },
+            columns: [
+                { data: 'numero_pedido' },
+                { data: 'nombre' },
+                {
+                    data: 'productos',
+                    render: function (data) {
+                        return data.map(p => `${p.name} (x${p.quantity})`).join('<br>');
+                    }
+                },
+                { data: 'total', render: function (data) { return `$${data.toFixed(2)}`; } },
+                {
+                    data: '_id',
+                    render: function (data) {
+                        return `
+                            <button class="btn btn-sm btn-success" onclick="finalizarPedido('${data}')">
+                                <i class="bi bi-check-lg"></i> Finalizar
+                            </button>
+                        `;
+                    }
+                }
+            ]
+        });
+    });
+
+    function finalizarPedido(pedidoId) {
+        fetch(`/finalizar_pedido/${pedidoId}`, {
+            method: 'POST'
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Pedido finalizado con éxito');
+                    $('#tablaPedidosTranscurso').DataTable().ajax.reload(null, false);
+                } else {
+                    alert('Error al finalizar el pedido: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Hubo un error al finalizar el pedido');
+            });
+    }
+</script>

@@ -70,6 +70,9 @@ def procesar_pedido(request):
 
 def confirmar_pedido(order_id):
     try:
+        data = request.get_json()
+        tiempo_estimado = data.get("tiempo_estimado")  # Tiempo estimado en minutos
+
         # Buscar el pedido temporal
         pedido_temporal_doc = db.pedidos_temporales.find_one({"_id": ObjectId(order_id)})
 
@@ -93,6 +96,8 @@ def confirmar_pedido(order_id):
         # Crear un pedido confirmado a partir del pedido temporal
         pedido_temporal = PedidoTemporal.from_dict(pedido_temporal_doc)
         pedido_confirmado = Pedido.from_pedido_temporal(pedido_temporal.getPedidoTemporal())
+        pedido_confirmado.estado = "en transcurso"  # Cambiar el estado a "en transcurso"
+        pedido_confirmado.tiempo_estimado = tiempo_estimado  # Establecer el tiempo estimado
 
         # Insertar el pedido confirmado en la colección permanente
         result = db.pedidos.insert_one(pedido_confirmado.getPedido())
@@ -111,26 +116,72 @@ def confirmar_pedido(order_id):
 def cancelar_pedido(order_id):
     try:
         # Buscar el pedido temporal
-        pedido_temporal = db.pedidos_temporales.find_one({"_id": ObjectId(order_id)})
+        pedido_temporal_doc = db.pedidos_temporales.find_one({"_id": ObjectId(order_id)})
+
+        if not pedido_temporal_doc:
+            return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
+
+        # Crear un pedido cancelado a partir del pedido temporal
+        pedido_temporal = PedidoTemporal.from_dict(pedido_temporal_doc)
+        pedido_cancelado = Pedido.from_pedido_temporal(pedido_temporal.getPedidoTemporal())
+        pedido_cancelado.estado = "cancelado"  # Cambiar el estado a "cancelado"
+
+        # Insertar el pedido cancelado en la colección permanente
+        result = db.pedidos.insert_one(pedido_cancelado.getPedido())
+
+        if not result.inserted_id:
+            return jsonify({"success": False, "message": "Error al cancelar el pedido"}), 500
+
+        # Devolver el stock y eliminar el pedido temporal
+        with db.client.start_session() as db_session:
+            with db_session.start_transaction():
+                for item in pedido_temporal_doc['productos']:
+                    db.productos.update_one(
+                        {"_id": ObjectId(item['id'])},
+                        {"$inc": {"cantidad": item['quantity']}},
+                        session=db_session
+                    )
+                db.pedidos_temporales.delete_one({"_id": ObjectId(order_id)}, session=db_session)
+
+        return jsonify({"success": True, "message": "Pedido cancelado con éxito"}), 200
+
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+def cancelar_pedido_admin(pedido_id):
+    try:
+        # Buscar el pedido en la colección de pedidos temporales
+        pedido_temporal = db.pedidos_temporales.find_one({"_id": ObjectId(pedido_id)})
 
         if not pedido_temporal:
             return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
 
-        # Iniciar una sesión de transacción
-        with db.client.start_session() as session:
-            with session.start_transaction():
-                # Devolver el stock de los productos
-                for item in pedido_temporal['productos']:
-                    db.productos.update_one(
-                        {"_id": ObjectId(item['id'])},
-                        {"$inc": {"cantidad": item['quantity']}},
-                        session=session
-                    )
+        # Cambiar el estado a "cancelado" y guardar quién lo canceló
+        db.pedidos_temporales.update_one(
+            {"_id": ObjectId(pedido_id)},
+            {"$set": {"estado": "cancelado", "cancelado_por": "admin"}}
+        )
 
-                # Eliminar el pedido temporal
-                db.pedidos_temporales.delete_one({"_id": ObjectId(order_id)}, session=session)
+        return jsonify({"success": True, "message": "Pedido cancelado por el administrador"}), 200
 
-        return jsonify({"success": True, "message": "Pedido cancelado con éxito"}), 200
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+def cancelar_pedido_cliente(pedido_id):
+    try:
+        # Buscar el pedido en la colección de pedidos
+        pedido = db.pedidos.find_one({"_id": ObjectId(pedido_id)})
+
+        if not pedido:
+            return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
+
+        # Cambiar el estado a "cancelado" y guardar quién lo canceló
+        db.pedidos.update_one(
+            {"_id": ObjectId(pedido_id)},
+            {"$set": {"estado": "cancelado", "cancelado_por": "cliente"}}
+        )
+
+        return jsonify({"success": True, "message": "Pedido cancelado por el cliente"}), 200
 
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
@@ -154,4 +205,3 @@ def limpiar_pedidos_expirados():
         return jsonify({"success": True, "message": "Pedidos expirados limpiados con éxito"}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
-

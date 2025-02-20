@@ -1,0 +1,37 @@
+<div class="table-responsive">
+    <table id="tablaPedidosFinalizados" width="100%" cellspacing="0" class="table table-striped">
+        <thead>
+            <tr>
+                <th>Número de Pedido</th>
+                <th>Cliente</th>
+                <th>Productos</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Los pedidos finalizados se cargarán dinámicamente con JavaScript -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#tablaPedidosFinalizados').DataTable({
+            ajax: {
+                url: '/obtener_pedidos_finalizados',
+                dataSrc: 'data'
+            },
+            columns: [
+                { data: 'numero_pedido' },
+                { data: 'nombre' },
+                {
+                    data: 'productos',
+                    render: function (data) {
+                        return data.map(p => `${p.name} (x${p.quantity})`).join('<br>');
+                    }
+                },
+                { data: 'total', render: function (data) { return `$${data.toFixed(2)}`; } }
+            ]
+        });
+    });
+</script>

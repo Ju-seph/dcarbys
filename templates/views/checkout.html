@@ -343,6 +343,24 @@
                     alert('Hubo un error al procesar el pedido');
                 });
         }
+        function cancelarPedidoCliente(pedidoId) {
+            fetch(`/cancelar_pedido_cliente/${pedidoId}`, {
+                method: 'POST'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Pedido cancelado por el cliente');
+                        window.location.href = '/'; // Redirigir al inicio
+                    } else {
+                        alert('Error al cancelar el pedido: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Hubo un error al cancelar el pedido');
+                });
+        }
 
         function verificarEstadoPedido(orderId) {
             const interval = setInterval(() => {
@@ -365,6 +383,7 @@
                             confirmationMessage.innerHTML = `
                         <h3>Pedido Confirmado</h3>
                         <p>¡Tu pedido ha sido confirmado! Tiempo estimado de entrega: <strong>${tiempoEstimado}</strong>.</p>
+                        <button class="btn btn-danger" onclick="cancelarPedidoCliente('${orderId}')">Cancelar Pedido</button>
                         <a href="/" class="btn btn-primary">Volver al inicio</a>
                     `;
 

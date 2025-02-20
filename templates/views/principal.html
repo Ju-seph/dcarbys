@@ -59,7 +59,7 @@
                     <button class="list-group-item list-group-item-action d-flex align-items-center"
                         id="v-pills-pedidos-tab" data-bs-toggle="pill" data-bs-target="#v-pills-pedidos"
                         type="button" role="tab">
-                        <i class="bi bi-cart me-2"></i>Pedidos Pendientes
+                        <i class="bi bi-cart me-2"></i>Pedidos
                     </button>
                 </div>
             </div>
@@ -86,7 +86,34 @@
                         <!-- Nueva pestaña para pedidos -->
                         <div class="tab-pane fade" id="v-pills-pedidos" role="tabpanel"
                             aria-labelledby="v-pills-pedidos-tab">
-                            {% include '/views/inventario/pedidos.html' %}
+                            <ul class="nav nav-tabs mb-3" id="pedidosTab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="pendientes-tab" data-bs-toggle="tab" data-bs-target="#pendientes" type="button" role="tab">Pendientes</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="transcurso-tab" data-bs-toggle="tab" data-bs-target="#transcurso" type="button" role="tab">En Transcurso</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="finalizados-tab" data-bs-toggle="tab" data-bs-target="#finalizados" type="button" role="tab">Finalizados</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="cancelados-tab" data-bs-toggle="tab" data-bs-target="#cancelados" type="button" role="tab">Cancelados</button>
+                                </li>
+                            </ul>
+                            <div class="tab-content" id="pedidosTabContent">
+                                <div class="tab-pane fade show active" id="pendientes" role="tabpanel">
+                                    {% include '/views/inventario/pedidos_pendientes.html' %}
+                                </div>
+                                <div class="tab-pane fade" id="transcurso" role="tabpanel">
+                                    {% include '/views/inventario/pedidos_transcurso.html' %}
+                                </div>
+                                <div class="tab-pane fade" id="finalizados" role="tabpanel">
+                                    {% include '/views/inventario/pedidos_finalizados.html' %}
+                                </div>
+                                <div class="tab-pane fade" id="cancelados" role="tabpanel">
+                                    {% include '/views/inventario/pedidos_cancelados.html' %}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -110,4 +137,3 @@
 </script>
 
 {% endblock %}
-

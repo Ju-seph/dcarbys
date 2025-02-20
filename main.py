@@ -135,52 +135,49 @@ def obtener_pedidos_pendientes():
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
-@app.route('/aceptar_pedido/<pedido_id>', methods=['POST'])
-def aceptar_pedido(pedido_id):
+@app.route('/obtener_pedidos_transcurso', methods=['GET'])
+def obtener_pedidos_transcurso():
     try:
-        # Obtener el tiempo estimado de entrega desde el formulario del administrador
-        tiempo_estimado = request.json.get('tiempo_estimado')
-
-        # Convertir el pedido temporal a un pedido confirmado
-        pedido_temporal = db.pedidos_temporales.find_one({"_id": ObjectId(pedido_id)})
-        if not pedido_temporal:
-            return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
-
-        # Crear el pedido confirmado
-        pedido_confirmado = Pedido.from_pedido_temporal(pedido_temporal)
-        pedido_confirmado.tiempo_estimado = tiempo_estimado  # Agregar el tiempo estimado
-        pedido_confirmado.estado = "confirmado"  # Actualizar el estado
-        db.pedidos.insert_one(pedido_confirmado.getPedido())
-
-        # Eliminar el pedido temporal
-        db.pedidos_temporales.delete_one({"_id": ObjectId(pedido_id)})
-
-        return jsonify({"success": True, "message": "Pedido aceptado con éxito", "tiempo_estimado": tiempo_estimado}), 200
+        pedidos = db.pedidos.find({"estado": "en transcurso"})
+        lista_pedidos = []
+        for pedido in pedidos:
+            pedido["_id"] = str(pedido["_id"])
+            lista_pedidos.append(pedido)
+        return jsonify({"data": lista_pedidos}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
+@app.route('/obtener_pedidos_finalizados', methods=['GET'])
+def obtener_pedidos_finalizados():
+    try:
+        pedidos = db.pedidos.find({"estado": "finalizado"})
+        lista_pedidos = []
+        for pedido in pedidos:
+            pedido["_id"] = str(pedido["_id"])
+            lista_pedidos.append(pedido)
+        return jsonify({"data": lista_pedidos}), 200
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/obtener_pedidos_cancelados', methods=['GET'])
+def obtener_pedidos_cancelados():
+    try:
+        pedidos = db.pedidos.find({"estado": "cancelado"})
+        lista_pedidos = []
+        for pedido in pedidos:
+            pedido["_id"] = str(pedido["_id"])
+            lista_pedidos.append(pedido)
+        return jsonify({"data": lista_pedidos}), 200
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+@app.route('/aceptar_pedido/<pedido_id>', methods=['POST'])
+def aceptar_pedido(pedido_id):
+    return ped.confirmar_pedido(pedido_id)
 
 @app.route('/cancelar_pedido_admin/<pedido_id>', methods=['POST'])
 def cancelar_pedido_admin(pedido_id):
-    try:
-        # Devolver el stock y eliminar el pedido temporal
-        pedido_temporal = db.pedidos_temporales.find_one({"_id": ObjectId(pedido_id)})
-        if not pedido_temporal:
-            return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
-
-        with db.client.start_session() as session:
-            with session.start_transaction():
-                for item in pedido_temporal['productos']:
-                    db.productos.update_one(
-                        {"_id": ObjectId(item['id'])},
-                        {"$inc": {"cantidad": item['quantity']}},
-                        session=session
-                    )
-                db.pedidos_temporales.delete_one({"_id": ObjectId(pedido_id)}, session=session)
-
-        return jsonify({"success": True, "message": "Pedido cancelado con éxito"}), 200
-    except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
+    return ped.cancelar_pedido_admin(pedido_id)
 
 @app.route('/estado_pedido/<pedido_id>', methods=['GET'])
 def estado_pedido(pedido_id):
@@ -208,6 +205,9 @@ def estado_pedido(pedido_id):
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
+@app.route('/cancelar_pedido_cliente/<pedido_id>', methods=['POST'])
+def cancelar_pedido_cliente(pedido_id):
+    return ped.cancelar_pedido_cliente(pedido_id)
 
 if __name__ == "__main__":
     # Ejecutar la aplicación Flask
