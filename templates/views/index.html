@@ -37,13 +37,17 @@
         height: 100%;
         display: flex;
         flex-direction: column;
-        border: 1px solid #ddd; /* Borde para las tarjetas */
-        border-radius: 8px; /* Bordes redondeados */
-        overflow: hidden; /* Evita que el contenido se desborde */
+        border: 1px solid #ddd;
+        /* Borde para las tarjetas */
+        border-radius: 8px;
+        /* Bordes redondeados */
+        overflow: hidden;
+        /* Evita que el contenido se desborde */
     }
 
     .product-image {
-        height: 120px; /* Reducir la altura de la imagen */
+        height: 120px;
+        /* Reducir la altura de la imagen */
         object-fit: cover;
     }
 
@@ -51,30 +55,35 @@
         flex-grow: 1;
         display: flex;
         flex-direction: column;
-        padding: 10px; /* Espaciado interno */
+        padding: 10px;
+        /* Espaciado interno */
     }
 
     .product-title {
-        font-size: 0.9rem; /* Reducir el tamaño del título */
+        font-size: 0.9rem;
+        /* Reducir el tamaño del título */
         font-weight: bold;
         margin-bottom: 0.3rem;
     }
 
     .product-description {
-        font-size: 0.75rem; /* Reducir el tamaño de la descripción */
+        font-size: 0.75rem;
+        /* Reducir el tamaño de la descripción */
         flex-grow: 1;
         margin-bottom: 0.3rem;
     }
 
     .product-price {
-        font-size: 0.9rem; /* Reducir el tamaño del precio */
+        font-size: 0.9rem;
+        /* Reducir el tamaño del precio */
         font-weight: bold;
         color: #28a745;
         margin-bottom: 0.3rem;
     }
 
     .product-quantity {
-        font-size: 0.75rem; /* Reducir el tamaño del texto de disponibilidad */
+        font-size: 0.75rem;
+        /* Reducir el tamaño del texto de disponibilidad */
     }
 
     .category-title {
@@ -88,6 +97,48 @@
     .btn-sm {
         font-size: 0.75rem;
         padding: 0.25rem 0.5rem;
+    }
+
+    /* Estilos para el ícono de usuario */
+    .user-icon {
+        font-size: 1.2rem;
+        /* Tamaño del ícono */
+        color: #333;
+        /* Color del ícono */
+        margin-left: 10px;
+        /* Espacio a la izquierda */
+        transition: color 0.3s ease;
+        /* Transición suave */
+    }
+
+    .user-icon:hover {
+        color: red;
+        /* Cambiar color al pasar el cursor */
+    }
+
+    /* Estilos para el dropdown */
+    .dropdown-menu {
+        border: none;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        padding: 10px;
+    }
+
+    .dropdown-item {
+        color: #333;
+        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+
+    .dropdown-item:hover {
+        background-color: rgba(255, 0, 0, 0.1);
+        color: red;
+    }
+
+    .dropdown-divider {
+        margin: 5px 0;
     }
 </style>
 
@@ -107,14 +158,20 @@
                     <a class="nav-link" href="/contacto">Contactos</a>
                 </li>
                 {% if session.get('usuario_id') %}
-                <li class="nav-item">
-                    <span class="nav-link">Bienvenido, {{ session.get('nombreUsuario') }}</span>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/logout">Cerrar Sesión</a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown"
+                        role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle user-icon"></i> <!-- Ícono de usuario -->
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <li><span class="dropdown-item">Bienvenido, {{ session.get('nombreUsuario') }}</span></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="/logout">Cerrar Sesión</a></li>
+                    </ul>
                 </li>
                 {% else %}
-            
                 <li class="nav-item">
                     <a class="nav-link" href="/login_usuarios">Iniciar Sesión</a>
                 </li>
@@ -146,7 +203,8 @@
         {% for categoria in ['Alimentos', 'Bebidas', 'Adicionales'] %}
         <div class="mb-4">
             <h3 class="category-title">{{ categoria }}</h3>
-            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2"> <!-- Reducir el espacio entre tarjetas (g-2) -->
+            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2">
+                <!-- Reducir el espacio entre tarjetas (g-2) -->
                 {% for producto in productos %}
                 {% if producto.categoria == categoria %}
                 <div class="col">
@@ -163,7 +221,8 @@
                                     data-id="{{ producto._id }}">{{ producto.cantidad }}</span></p>
                             <button class="btn btn-primary btn-sm w-100 add-to-cart" data-id="{{ producto._id }}"
                                 data-name="{{ producto.nombreProducto }}" data-price="{{ producto.precio }}"
-                                data-image="{{ producto.imagen_path }}" {% if producto.cantidad <=0 %}disabled{% endif %}>
+                                data-image="{{ producto.imagen_path }}" {% if producto.cantidad <=0 %}disabled{% endif
+                                %}>
                                 Agregar al carrito
                             </button>
                         </div>
