@@ -362,6 +362,25 @@
                 });
         }
 
+        function confirmarPedidoCliente(pedidoId) {
+            fetch(`/confirmar_pedido_cliente/${pedidoId}`, {
+                method: 'POST'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Pedido confirmado por el cliente');
+                        window.location.href = '/'; // Redirigir al inicio
+                    } else {
+                        alert('Error al confirmar el pedido: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Hubo un error al confirmar el pedido');
+                });
+        }
+
         function verificarEstadoPedido(orderId) {
             const interval = setInterval(() => {
                 fetch(`/estado_pedido/${orderId}`)
@@ -392,11 +411,16 @@
                             clearInterval(interval); // Detener la verificación
                             waitingMessage.style.display = 'none';
                             cancellationMessage.style.display = 'block';
+
+                            // Mostrar quién canceló el pedido
+                            const canceladoPor = data.cancelado_por || "el sistema";
                             cancellationMessage.innerHTML = `
                         <h3>Pedido Cancelado</h3>
-                        <p>Tu pedido ha sido cancelado. Si tienes alguna duda, contáctanos.</p>
+                        <p>Tu pedido ha sido cancelado por <strong>${canceladoPor}</strong>.</p>
+                        <p>Si tienes alguna duda, contáctanos.</p>
                         <a href="/" class="btn btn-primary">Volver al inicio</a>
                     `;
+
                             localStorage.removeItem('cart'); // Limpiar el carrito
                         } else if (data.estado === 'pendiente') {
                             // El pedido sigue pendiente, no hacer nada

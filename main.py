@@ -162,18 +162,16 @@ def obtener_pedidos_finalizados():
 @app.route('/obtener_pedidos_cancelados', methods=['GET'])
 def obtener_pedidos_cancelados():
     try:
+        # Buscar los pedidos cancelados en la colección de pedidos
         pedidos = db.pedidos.find({"estado": "cancelado"})
         lista_pedidos = []
         for pedido in pedidos:
-            pedido["_id"] = str(pedido["_id"])
+            pedido["_id"] = str(pedido["_id"])  # Convertir ObjectId a string
             lista_pedidos.append(pedido)
         return jsonify({"data": lista_pedidos}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
-@app.route('/aceptar_pedido/<pedido_id>', methods=['POST'])
-def aceptar_pedido(pedido_id):
-    return ped.confirmar_pedido(pedido_id)
 
 @app.route('/cancelar_pedido_admin/<pedido_id>', methods=['POST'])
 def cancelar_pedido_admin(pedido_id):
@@ -188,16 +186,18 @@ def estado_pedido(pedido_id):
             return jsonify({
                 "success": True,
                 "estado": pedido_temporal.get("estado", "pendiente"),
-                "tiempo_estimado": ""  # No hay tiempo estimado en pedidos temporales
+                "tiempo_estimado": "",  # No hay tiempo estimado en pedidos temporales
+                "cancelado_por": None  # No aplica para pedidos temporales
             }), 200
 
-        # Si no se encuentra en pedidos temporales, buscar en pedidos confirmados
-        pedido_confirmado = db.pedidos.find_one({"_id": ObjectId(pedido_id)})
-        if pedido_confirmado:
+        # Si no se encuentra en pedidos temporales, buscar en pedidos confirmados o cancelados
+        pedido = db.pedidos.find_one({"_id": ObjectId(pedido_id)})
+        if pedido:
             return jsonify({
                 "success": True,
-                "estado": pedido_confirmado.get("estado", "confirmado"),
-                "tiempo_estimado": pedido_confirmado.get("tiempo_estimado", "")
+                "estado": pedido.get("estado", "confirmado"),
+                "tiempo_estimado": pedido.get("tiempo_estimado", ""),
+                "cancelado_por": pedido.get("cancelado_por", None)  # Agregar quién canceló el pedido
             }), 200
 
         # Si no se encuentra en ninguna colección, devolver error
@@ -208,6 +208,14 @@ def estado_pedido(pedido_id):
 @app.route('/cancelar_pedido_cliente/<pedido_id>', methods=['POST'])
 def cancelar_pedido_cliente(pedido_id):
     return ped.cancelar_pedido_cliente(pedido_id)
+
+@app.route('/confirmar_pedido_cliente/<pedido_id>', methods=['POST'])
+def confirmar_pedido_cliente(pedido_id):
+    return ped.confirmar_pedido_cliente(pedido_id)
+
+@app.route('/aceptar_pedido/<pedido_id>', methods=['POST'])
+def aceptar_pedido(pedido_id):
+    return ped.aceptar_pedido(pedido_id)
 
 if __name__ == "__main__":
     # Ejecutar la aplicación Flask
