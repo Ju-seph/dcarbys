@@ -15,6 +15,10 @@
     </table>
 </div>
 
+<!-- Incluir PDFMake desde un CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
 <script>
     $(document).ready(function () {
         $('#tablaPedidosTranscurso').DataTable({
@@ -34,10 +38,13 @@
                 { data: 'total', render: function (data) { return `$${data.toFixed(2)}`; } },
                 {
                     data: '_id',
-                    render: function (data) {
+                    render: function (data, type, row) {
                         return `
                             <button class="btn btn-sm btn-success" onclick="finalizarPedido('${data}')">
                                 <i class="bi bi-check-lg"></i> Finalizar
+                            </button>
+                            <button class="btn btn-sm btn-info" onclick="mostrarTicket('${data}')">
+                                <i class="bi bi-printer"></i> Ticket
                             </button>
                         `;
                     }
@@ -46,6 +53,7 @@
         });
     });
 
+    // Función para finalizar un pedido
     function finalizarPedido(pedidoId) {
         fetch(`/finalizar_pedido/${pedidoId}`, {
             method: 'POST'
@@ -62,6 +70,64 @@
             .catch(error => {
                 console.error('Error:', error);
                 alert('Hubo un error al finalizar el pedido');
+            });
+    }
+
+    // Función para mostrar el ticket en PDF
+    function mostrarTicket(pedidoId) {
+        fetch(`/obtener_detalles_pedido/${pedidoId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const pedido = data.pedido;
+
+                    // Definir el contenido del PDF
+                    const docDefinition = {
+                        content: [
+                            { text: 'Ticket del Pedido', style: 'header' },
+                            `Número de Pedido: ${pedido.numero_pedido}`,
+                            `Cliente: ${pedido.nombre}`,
+                            `Celular: ${pedido.celular}`,
+                            `Ciudad: ${pedido.ciudad}`,
+                            `Dirección: ${pedido.direccion}`,
+                            `Referencia: ${pedido.referencia}`,
+                            `Método de Pago: ${pedido.metodo_pago}`,
+                            `Total: $${pedido.total.toFixed(2)}`,
+                            { text: 'Productos:', style: 'subheader' },
+                            {
+                                table: {
+                                    headerRows: 1,
+                                    widths: ['*', 'auto', 'auto'],
+                                    body: [
+                                        ['Producto', 'Cantidad', 'Precio'],
+                                        ...pedido.productos.map(p => [p.name, p.quantity, `$${p.price * p.quantity}`])
+                                    ]
+                                }
+                            }
+                        ],
+                        styles: {
+                            header: {
+                                fontSize: 18,
+                                bold: true,
+                                margin: [0, 0, 0, 10]
+                            },
+                            subheader: {
+                                fontSize: 14,
+                                bold: true,
+                                margin: [0, 10, 0, 5]
+                            }
+                        }
+                    };
+
+                    // Generar y abrir el PDF
+                    pdfMake.createPdf(docDefinition).open();
+                } else {
+                    alert('Error al obtener los detalles del pedido: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Hubo un error al obtener los detalles del pedido');
             });
     }
 </script>

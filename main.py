@@ -171,7 +171,11 @@ def obtener_pedidos_cancelados():
         return jsonify({"data": lista_pedidos}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+    
 
+@app.route('/obtener_detalles_pedido/<pedido_id>', methods=['GET'])
+def obtener_detalles_pedido_route(pedido_id):
+    return ped.obtener_detalles_pedido(pedido_id)
 
 @app.route('/cancelar_pedido_admin/<pedido_id>', methods=['POST'])
 def cancelar_pedido_admin(pedido_id):

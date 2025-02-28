@@ -277,6 +277,40 @@ def confirmar_pedido_cliente(pedido_id):
 
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+    
+
+# OBTENER LOS PEDIDOS COMO IMAGEN
+
+def obtener_detalles_pedido(pedido_id):
+    try:
+        # Buscar el pedido en la colección de pedidos
+        pedido = db.pedidos.find_one({"_id": ObjectId(pedido_id)})
+
+        if not pedido:
+            # Si no se encuentra en pedidos, buscar en pedidos temporales
+            pedido = db.pedidos_temporales.find_one({"_id": ObjectId(pedido_id)})
+            if not pedido:
+                return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
+
+        # Formatear los datos del pedido para el ticket
+        detalles_pedido = {
+            "numero_pedido": pedido.get("numero_pedido"),
+            "nombre": pedido.get("nombre"),
+            "celular": pedido.get("celular"),
+            "ciudad": pedido.get("ciudad"),
+            "direccion": pedido.get("direccion"),
+            "referencia": pedido.get("referencia"),
+            "metodo_pago": pedido.get("metodo_pago", "No especificado"),  # Campo opcional
+            "total": pedido.get("total"),
+            "productos": pedido.get("productos", [])  # Lista de productos
+        }
+
+        return jsonify({"success": True, "pedido": detalles_pedido}), 200
+
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    
+
 
 def limpiar_pedidos_expirados():
     try:
