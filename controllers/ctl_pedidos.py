@@ -13,58 +13,34 @@ def procesar_pedido(request):
         return jsonify({"success": False, "message": "Usuario no autenticado"}), 401
 
     data = request.json
-    
+
     try:
-        # Iniciar una sesión de transacción
-        with db.client.start_session() as db_session:
-            with db_session.start_transaction():
-                insufficient_stock = []
-                
-                # Verificar y reservar productos
-                for item in data['cart']:
-                    producto = db.productos.find_one({"_id": ObjectId(item['id'])}, session=db_session)
-                    if not producto or producto['cantidad'] < item['quantity']:
-                        insufficient_stock.append(item['name'])
-                
-                if insufficient_stock:
-                    db_session.abort_transaction()
-                    return jsonify({
-                        "success": False, 
-                        "message": f"No hay suficiente stock para: {', '.join(insufficient_stock)}"
-                    }), 400
+        # Crear el pedido temporal
+        pedido_temporal = PedidoTemporal(
+            numero_pedido=data['purchaseNumber'],
+            usuario_id=session['usuario_id'],
+            productos=data['cart'],
+            nombre=data['nombre'],
+            celular=data['celular'],
+            ciudad=data['ciudad'],
+            direccion=data['direccion'],
+            referencia=data['referencia'],
+            total=data['total']
+        )
+        pedido_temporal.createPedidoTemporal()
 
-                # Si hay suficiente stock, proceder con la actualización
-                for item in data['cart']:
-                    db.productos.update_one(
-                        {"_id": ObjectId(item['id'])},
-                        {"$inc": {"cantidad": -item['quantity']}},
-                        session=db_session
-                    )
-
-                # Crear el pedido temporal
-                pedido_temporal = PedidoTemporal(
-                    numero_pedido=data['purchaseNumber'],
-                    usuario_id=session['usuario_id'],
-                    productos=data['cart'],
-                    nombre=data['nombre'],
-                    celular=data['celular'],
-                    ciudad=data['ciudad'],
-                    direccion=data['direccion'],
-                    referencia=data['referencia'],
-                    total=data['total']
-                )
-                pedido_temporal.createPedidoTemporal()
-                
-                # Insertar en la base de datos
-                result = db.pedidos_temporales.insert_one(pedido_temporal.getPedidoTemporal(), session=db_session)
+        # Insertar en la base de datos
+        result = db.pedidos_temporales.insert_one(pedido_temporal.getPedidoTemporal())
 
         if result.inserted_id:
-            return jsonify({"success": True, "message": "Pedido procesado con éxito", "order_id": str(result.inserted_id)}), 200
+            return jsonify({
+                "success": True,
+                "message": "Pedido procesado con éxito",
+                "order_id": str(result.inserted_id)  # Devuelve el _id del pedido temporal
+            }), 200
         else:
             return jsonify({"success": False, "message": "Error al procesar el pedido"}), 500
 
-    except pymongo.errors.PyMongoError as e:
-        return jsonify({"success": False, "message": f"Error de base de datos: {str(e)}"}), 500
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
@@ -124,28 +100,25 @@ def aceptar_pedido(pedido_id):
         if not pedido_temporal:
             return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
 
-        # Verificar si el pedido ha expirado
-        if datetime.now() > pedido_temporal['expireDateTime']:
-            # Devolver el stock y eliminar el pedido temporal
-            with db.client.start_session() as db_session:
-                with db_session.start_transaction():
-                    for item in pedido_temporal['productos']:
-                        db.productos.update_one(
-                            {"_id": ObjectId(item['id'])},
-                            {"$inc": {"cantidad": item['quantity']}},
-                            session=db_session
-                        )
-                    db.pedidos_temporales.delete_one({"_id": ObjectId(pedido_id)}, session=db_session)
-            return jsonify({"success": False, "message": "El pedido ha expirado"}), 400
-
-        # Crear un pedido confirmado a partir del pedido temporal usando el modelo Pedido
-        pedido_confirmado = Pedido.from_pedido_temporal(pedido_temporal)
-        pedido_confirmado.estado = "en transcurso"  # Cambiar el estado a "en transcurso"
-        pedido_confirmado.tiempo_estimado = tiempo_estimado  # Establecer el tiempo estimado
-        pedido_confirmado.createPedido()  # Establecer la fecha de creación
+        # Crear un pedido confirmado a partir del pedido temporal
+        pedido_confirmado = {
+            "_id": ObjectId(pedido_id),  # Mantener el mismo _id
+            "numero_pedido": pedido_temporal['numero_pedido'],
+            "usuario_id": pedido_temporal['usuario_id'],
+            "productos": pedido_temporal['productos'],
+            "nombre": pedido_temporal['nombre'],
+            "celular": pedido_temporal['celular'],
+            "direccion": pedido_temporal['direccion'],
+            "ciudad": pedido_temporal['ciudad'],
+            "referencia": pedido_temporal['referencia'],
+            "total": pedido_temporal['total'],
+            "estado": "en transcurso",  # Cambiar el estado a "en transcurso"
+            "tiempo_estimado": tiempo_estimado,  # Establecer el tiempo estimado
+            "fecha_confirmacion": datetime.now()  # Agregar la fecha de confirmación
+        }
 
         # Insertar el pedido confirmado en la colección permanente
-        result = db.pedidos.insert_one(pedido_confirmado.getPedido())
+        result = db.pedidos.insert_one(pedido_confirmado)
 
         if not result.inserted_id:
             return jsonify({"success": False, "message": "Error al confirmar el pedido"}), 500

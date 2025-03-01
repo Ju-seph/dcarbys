@@ -140,6 +140,50 @@
     .dropdown-divider {
         margin: 5px 0;
     }
+
+    /* Estilos para el CARRUSEL */
+    .carousel-item {
+        height: 400px;
+        /* Ajusta la altura del carrusel según tus necesidades */
+        background-color: rgba(0, 0, 0, 0.5);
+        /* Fondo oscuro para mejorar la visibilidad del texto */
+    }
+
+    .carousel-item img {
+        object-fit: cover;
+        height: 100%;
+        width: 100%;
+        opacity: 0.7;
+        /* Ajusta la opacidad de las imágenes para que el texto sea más visible */
+    }
+
+    .position-relative {
+        position: relative;
+    }
+
+    .position-absolute {
+        position: absolute;
+    }
+
+    .top-50 {
+        top: 50%;
+    }
+
+    .start-50 {
+        left: 50%;
+    }
+
+    .translate-middle {
+        transform: translate(-50%, -50%);
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .text-white {
+        color: white !important;
+    }
 </style>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
@@ -189,8 +233,33 @@
     </div>
 </nav>
 
-<header class="text-black text-center py-5">
-    <div class="container">
+<header class="text-black text-center position-relative py-5">
+    <!-- Carrusel de Bootstrap -->
+    <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+        
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img class="d-block w-100" src="img/slider1.png" alt="First slide">
+            </div>
+            <div class="carousel-item">
+                <img class="d-block w-100" src="img/slider2.png" alt="Second slide">
+            </div>
+            <div class="carousel-item">
+                <img class="d-block w-100" src="img/slider3.png" alt="Third slide">
+            </div>
+        </div>
+        <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </a>
+        <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </a>
+    </div>
+
+    <!-- Texto superpuesto -->
+    <div class="position-absolute top-50 start-50 translate-middle text-center">
         <h1 class="display-4">Bienvenidos a <span class="text-primary">D</span>carbys</h1>
         <p class="lead">Descubre sabores únicos con solo un clic</p>
         <a href="#menu" class="btn btn-light btn-lg">Ver Menú</a>

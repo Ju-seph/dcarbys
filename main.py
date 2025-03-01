@@ -184,29 +184,35 @@ def cancelar_pedido_admin(pedido_id):
 @app.route('/estado_pedido/<pedido_id>', methods=['GET'])
 def estado_pedido(pedido_id):
     try:
+        print(f"Buscando pedido con ID: {pedido_id}")  # Log para verificar el ID recibido
+
         # Buscar el pedido en la colección de pedidos temporales
         pedido_temporal = db.pedidos_temporales.find_one({"_id": ObjectId(pedido_id)})
         if pedido_temporal:
+            print("Pedido encontrado en pedidos_temporales")  # Log para verificar la colección
             return jsonify({
                 "success": True,
                 "estado": pedido_temporal.get("estado", "pendiente"),
-                "tiempo_estimado": "",  # No hay tiempo estimado en pedidos temporales
-                "cancelado_por": None  # No aplica para pedidos temporales
+                "tiempo_estimado": "",
+                "cancelado_por": None
             }), 200
 
         # Si no se encuentra en pedidos temporales, buscar en pedidos confirmados o cancelados
         pedido = db.pedidos.find_one({"_id": ObjectId(pedido_id)})
         if pedido:
+            print("Pedido encontrado en pedidos")  # Log para verificar la colección
             return jsonify({
                 "success": True,
-                "estado": pedido.get("estado", "confirmado"),
+                "estado": pedido.get("estado", "en transcurso"),
                 "tiempo_estimado": pedido.get("tiempo_estimado", ""),
-                "cancelado_por": pedido.get("cancelado_por", None)  # Agregar quién canceló el pedido
+                "cancelado_por": pedido.get("cancelado_por", None)
             }), 200
 
         # Si no se encuentra en ninguna colección, devolver error
+        print("Pedido no encontrado en ninguna colección")  # Log para verificar el error
         return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
     except Exception as e:
+        print(f"Error en la ruta /estado_pedido: {str(e)}")  # Log para capturar excepciones
         return jsonify({"success": False, "message": str(e)}), 500
 
 @app.route('/cancelar_pedido_cliente/<pedido_id>', methods=['POST'])
