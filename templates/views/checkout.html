@@ -344,13 +344,13 @@
                 });
         }
         function cancelarPedidoCliente(pedidoId) {
-            fetch(`/cancelar_pedido_cliente/${pedidoId}`, {
+            fetch(`/cancelar_pedido/${pedidoId}`, {
                 method: 'POST'
             })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        alert('Pedido cancelado por el cliente');
+                        alert('Pedido cancelado con éxito');
                         window.location.href = '/'; // Redirigir al inicio
                     } else {
                         alert('Error al cancelar el pedido: ' + data.message);

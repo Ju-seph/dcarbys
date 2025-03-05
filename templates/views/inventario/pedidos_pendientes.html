@@ -55,7 +55,7 @@
             .then(data => {
                 if (data.success) {
                     alert('Pedido cancelado por el administrador');
-                    cargarPedidosPendientes();
+                    cargarPedidosPendientes(); // Actualizar la lista de pedidos
                 } else {
                     alert('Error al cancelar el pedido: ' + data.message);
                 }
@@ -65,7 +65,6 @@
                 alert('Hubo un error al cancelar el pedido');
             });
     }
-
     $(document).ready(function () {
         // Función para cargar los pedidos pendientes
         function cargarPedidosPendientes() {
