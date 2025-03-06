@@ -184,6 +184,101 @@
     .text-white {
         color: white !important;
     }
+
+
+    /* Estilos para los ítems del carrito */
+    .cart-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        transition: background-color 0.3s ease;
+    }
+
+    .cart-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .cart-item img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-right: 15px;
+    }
+
+    .cart-item-details {
+        flex-grow: 1;
+        margin-right: 15px;
+    }
+
+    .cart-item-name {
+        font-size: 1rem;
+        font-weight: bold;
+        margin-bottom: 0.25rem;
+    }
+
+    .cart-item-price {
+        font-size: 0.9rem;
+        color: #28a745;
+    }
+
+    .cart-item-quantity {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .cart-item-quantity button {
+        background-color: #f8f9fa;
+        border: 1px solid #ddd;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .cart-item-quantity button:hover {
+        background-color: #e9ecef;
+    }
+
+    .cart-item-quantity input {
+        width: 40px;
+        text-align: center;
+        border: 1px solid #ddd;
+        margin: 0 5px;
+        padding: 5px;
+    }
+
+    .cart-item-remove {
+        color: #dc3545;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    .cart-item-remove:hover {
+        color: #c82333;
+    }
+
+    /* Estilos para el resumen del pedido */
+    .cart-summary {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    .cart-summary h5 {
+        font-size: 1.25rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .cart-summary h4 {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #28a745;
+    }
 </style>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
@@ -236,7 +331,7 @@
 <header class="text-black text-center position-relative py-5">
     <!-- Carrusel de Bootstrap -->
     <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
-        
+
         <div class="carousel-inner">
             <div class="carousel-item active">
                 <img class="d-block w-100" src="img/slider1.png" alt="First slide">
@@ -371,22 +466,34 @@
 
 <!-- Modal del carrito -->
 <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
+            <!-- Encabezado del Modal -->
+            <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="cartModalLabel">Carrito de Compras</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
             </div>
+
+            <!-- Cuerpo del Modal -->
             <div class="modal-body">
+                <!-- Lista de Ítems del Carrito -->
                 <ul id="cart-items" class="list-group list-group-flush">
-                    <!-- Los items del carrito se agregarán aquí dinámicamente -->
+                    <!-- Los ítems se agregarán dinámicamente aquí -->
                 </ul>
-                <div class="mt-3">
-                    <strong>Total: $<span id="cart-total">0.00</span></strong>
+
+                <!-- Resumen del Pedido -->
+                <div class="mt-4 p-3 bg-light rounded">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Total:</h5>
+                        <h4 class="mb-0 text-primary">$<span id="cart-total">0.00</span></h4>
+                    </div>
                 </div>
             </div>
+
+            <!-- Pie del Modal -->
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Seguir Comprando</button>
                 <button id="process-order-button" class="btn btn-primary">Procesar Pedido</button>
             </div>
         </div>

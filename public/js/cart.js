@@ -18,26 +18,26 @@ function updateCart() {
 
     cart.forEach((item, index) => {
       const li = document.createElement("li");
-      li.className = "list-group-item d-flex justify-content-between align-items-center";
+      li.className = "list-group-item cart-item";
       li.innerHTML = `
-        <div class="d-flex align-items-center">
-          <img src="${item.imageUrl}" alt="${item.name}" class="me-2" style="width: 50px; height: 50px; object-fit: cover;">
-          <div>
-            <span class="fw-bold">${item.name}</span>
-            <div class="btn-group btn-group-sm mt-1" role="group">
-              <button type="button" class="btn btn-outline-secondary decrease-quantity" data-index="${index}">-</button>
-              <span class="btn btn-outline-secondary px-2">${item.quantity}</span>
-              <button type="button" class="btn btn-outline-secondary increase-quantity" data-index="${index}">+</button>
-            </div>
-          </div>
-        </div>
-        <div class="d-flex align-items-center">
-          <span class="me-2">$${(item.price * item.quantity).toFixed(2)}</span>
-          <button class="btn btn-sm btn-danger remove-from-cart" data-index="${index}">
-            <i class="bi bi-trash"></i>
-          </button>
-        </div>
-      `;
+              <div class="d-flex align-items-center">
+                  <img src="${item.imageUrl}" alt="${item.name}" class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                  <div class="cart-item-details">
+                      <span class="cart-item-name">${item.name}</span>
+                      <div class="cart-item-quantity mt-2">
+                          <button class="btn btn-sm btn-outline-secondary decrease-quantity" data-index="${index}">-</button>
+                          <span class="btn btn-outline-secondary px-3">${item.quantity}</span>
+                          <button class="btn btn-sm btn-outline-secondary increase-quantity" data-index="${index}">+</button>
+                      </div>
+                  </div>
+              </div>
+              <div class="d-flex align-items-center">
+                  <span class="me-3 cart-item-price">$${(item.price * item.quantity).toFixed(2)}</span>
+                  <button class="btn btn-sm btn-danger remove-from-cart" data-index="${index}">
+                      <i class="bi bi-trash"></i>
+                  </button>
+              </div>
+          `;
       cartItems.appendChild(li);
       total += item.price * item.quantity;
     });
