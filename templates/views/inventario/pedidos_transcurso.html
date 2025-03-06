@@ -6,6 +6,7 @@
                 <th>Cliente</th>
                 <th>Productos</th>
                 <th>Total</th>
+                <th>Fecha de Confirmación</th> <!-- Nueva columna -->
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -37,19 +38,30 @@
                 },
                 { data: 'total', render: function (data) { return `$${data.toFixed(2)}`; } },
                 {
+                    data: 'fecha_confirmacion',
+                    render: function (data) {
+                        if (data) {
+                            const fecha = new Date(data);
+                            return fecha.toLocaleString(); // Formato legible
+                        }
+                        return 'No disponible';
+                    }
+                },
+                {
                     data: '_id',
                     render: function (data, type, row) {
                         return `
-                            <button class="btn btn-sm btn-success" onclick="finalizarPedido('${data}')">
-                                <i class="bi bi-check-lg"></i> Finalizar
-                            </button>
-                            <button class="btn btn-sm btn-info" onclick="mostrarTicket('${data}')">
-                                <i class="bi bi-printer"></i> Ticket
-                            </button>
-                        `;
+                        <button class="btn btn-sm btn-success" onclick="finalizarPedido('${data}')">
+                            <i class="bi bi-check-lg"></i> Finalizar
+                        </button>
+                        <button class="btn btn-sm btn-info" onclick="mostrarTicket('${data}')">
+                            <i class="bi bi-printer"></i> Ticket
+                        </button>
+                    `;
                     }
                 }
-            ]
+            ],
+            order: [[4, 'desc']]  // Ordenar por la columna 4 (fecha_confirmacion) de forma descendente
         });
     });
 

@@ -115,6 +115,35 @@
     .waiting-message p {
         color: #666;
     }
+
+    .waiting-message,
+    .confirmation-message,
+    .cancellation-message {
+        background-color: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+        margin-top: 20px;
+        border: 1px solid #ddd;
+    }
+
+    .waiting-message h3,
+    .confirmation-message h3,
+    .cancellation-message h3 {
+        color: #333;
+        margin-bottom: 1rem;
+    }
+
+    .waiting-message p,
+    .confirmation-message p,
+    .cancellation-message p {
+        color: #666;
+        margin-bottom: 1rem;
+    }
+
+    .btn-danger {
+        margin-right: 10px;
+    }
 </style>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
@@ -399,12 +428,17 @@
 
                             // Mostrar el tiempo estimado de entrega
                             const tiempoEstimado = data.tiempo_estimado || "No especificado";
+                            const tiempoUnidad = tiempoEstimado >= 60 ? "horas" : "minutos"; // Determinar si es en horas o minutos
+                            const tiempoFormateado = tiempoEstimado >= 60 ? (tiempoEstimado / 60).toFixed(1) : tiempoEstimado; // Convertir a horas si es necesario
+
                             confirmationMessage.innerHTML = `
-                        <h3>Pedido Confirmado</h3>
-                        <p>¡Tu pedido ha sido confirmado! Tiempo estimado de entrega: <strong>${tiempoEstimado}</strong>.</p>
-                        <button class="btn btn-danger" onclick="cancelarPedidoCliente('${orderId}')">Cancelar Pedido</button>
-                        <a href="/" class="btn btn-primary">Volver al inicio</a>
-                    `;
+        <h3>¡Pedido Confirmado!</h3>
+        <p>Tu pedido ha sido confirmado y está en proceso de preparación.</p>
+        <p><strong>Tiempo estimado de entrega:</strong> ${tiempoFormateado} ${tiempoUnidad}.</p>
+        <p>Gracias por tu compra. ¡Esperamos que disfrutes tu pedido!</p>
+        <button class="btn btn-danger" onclick="cancelarPedidoCliente('${orderId}')">Cancelar Pedido</button>
+        <a href="/" class="btn btn-primary">Volver al inicio</a>
+    `;
 
                             localStorage.removeItem('cart'); // Limpiar el carrito
                         } else if (data.estado === 'cancelado') {
@@ -414,12 +448,16 @@
 
                             // Mostrar quién canceló el pedido
                             const canceladoPor = data.cancelado_por || "el sistema";
+                            const mensajeCancelacion = canceladoPor === "admin" ?
+                                "Lamentamos informarte que tu pedido ha sido cancelado por nuestro equipo de administración debido a problemas de disponibilidad o stock." :
+                                "Has cancelado tu pedido exitosamente.";
+
                             cancellationMessage.innerHTML = `
-                        <h3>Pedido Cancelado</h3>
-                        <p>Tu pedido ha sido cancelado por <strong>${canceladoPor}</strong>.</p>
-                        <p>Si tienes alguna duda, contáctanos.</p>
-                        <a href="/" class="btn btn-primary">Volver al inicio</a>
-                    `;
+        <h3>Pedido Cancelado</h3>
+        <p>${mensajeCancelacion}</p>
+        <p>Si tienes alguna duda o necesitas más información, no dudes en contactarnos.</p>
+        <a href="/" class="btn btn-primary">Volver al inicio</a>
+    `;
 
                             localStorage.removeItem('cart'); // Limpiar el carrito
                         } else if (data.estado === 'pendiente') {
