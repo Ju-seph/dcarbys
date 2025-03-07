@@ -366,6 +366,26 @@ def obtener_detalles_pedido(pedido_id):
     
 
 
+def finalizar_pedido(pedido_id):
+    try:
+        # Buscar el pedido en la colección de pedidos en tránsito
+        pedido = db.pedidos.find_one({"_id": ObjectId(pedido_id), "estado": "en transcurso"})
+
+        if not pedido:
+            return jsonify({"success": False, "message": "Pedido no encontrado o ya finalizado"}), 404
+
+        # Cambiar el estado del pedido a "finalizado"
+        db.pedidos.update_one(
+            {"_id": ObjectId(pedido_id)},
+            {"$set": {"estado": "finalizado", "fecha_finalizacion": datetime.now()}}
+        )
+
+        return jsonify({"success": True, "message": "Pedido finalizado con éxito"}), 200
+
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
 def limpiar_pedidos_expirados():
     try:
         # Encontrar todos los pedidos expirados

@@ -79,7 +79,7 @@
     }
 
     /* Botones en la columna de acciones */
-    
+
 
     /* Estilos para los botones */
     .btn-sm {
@@ -163,13 +163,21 @@
     // Función para finalizar un pedido
     function finalizarPedido(pedidoId) {
         fetch(`/finalizar_pedido/${pedidoId}`, {
-            method: 'POST'
+            method: 'POST',  // Asegúrate de que sea POST
+            headers: {
+                'Content-Type': 'application/json'
+            }
         })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error en la solicitud');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     alert('Pedido finalizado con éxito');
-                    $('#tablaPedidosTranscurso').DataTable().ajax.reload(null, false);
+                    $('#tablaPedidosTranscurso').DataTable().ajax.reload(null, false); // Recargar la tabla
                 } else {
                     alert('Error al finalizar el pedido: ' + data.message);
                 }

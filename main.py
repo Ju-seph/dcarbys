@@ -173,6 +173,12 @@ def obtener_pedidos_cancelados():
         return jsonify({"success": False, "message": str(e)}), 500
     
 
+
+@app.route('/finalizar_pedido/<pedido_id>', methods=['POST'])  # Cambia GET a POST
+def finalizar_pedido(pedido_id):
+    return ped.finalizar_pedido(pedido_id)
+
+
 @app.route('/obtener_detalles_pedido/<pedido_id>', methods=['GET'])
 def obtener_detalles_pedido_route(pedido_id):
     return ped.obtener_detalles_pedido(pedido_id)

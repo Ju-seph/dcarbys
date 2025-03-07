@@ -1,5 +1,5 @@
 <div class="table-responsive">
-    <table id="tablaPedidosCancelados" width="100%" cellspacing="0" class="table table-striped">
+    <table id="tablaPedidosCancelados" width="100%" cellspacing="0" class="table table-striped table-hover">
         <thead>
             <tr>
                 <th>Número de Pedido</th>
@@ -7,6 +7,8 @@
                 <th>Productos</th>
                 <th>Total</th>
                 <th>Cancelado por</th>
+                <th>Fecha de Cancelación</th> <!-- Nueva columna -->
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -14,6 +16,84 @@
         </tbody>
     </table>
 </div>
+
+<!-- Incluir PDFMake desde un CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+
+<style>
+    /* Estilos para la tabla */
+    #tablaPedidosCancelados {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-size: 0.9em;
+        font-family: sans-serif;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+        background-color: #f8f9fa;
+        /* Color de fondo de la tabla */
+        color: #333333;
+        /* Color del texto en la tabla */
+    }
+
+    /* Encabezado de la tabla */
+    #tablaPedidosCancelados thead tr {
+        background-color: #dc3545;
+        /* Color rojo */
+        color: #ffffff;
+        /* Color del texto en el encabezado */
+    }
+
+    /* Celdas de la tabla */
+    #tablaPedidosCancelados th,
+    #tablaPedidosCancelados td {
+        padding: 12px 15px;
+        border: 1px solid #dddddd;
+        /* Borde de las celdas */
+    }
+
+    /* Filas pares */
+    #tablaPedidosCancelados tbody tr:nth-of-type(even) {
+        background-color: #f3f3f3;
+        /* Fondo gris claro para filas pares */
+    }
+
+    /* Filas impares */
+    #tablaPedidosCancelados tbody tr:nth-of-type(odd) {
+        background-color: #ffffff;
+        /* Fondo blanco para filas impares */
+    }
+
+    /* Última fila */
+    #tablaPedidosCancelados tbody tr:last-of-type {
+        border-bottom: 2px solid #dc3545;
+        /* Borde inferior rojo */
+    }
+
+    /* Efecto hover */
+    #tablaPedidosCancelados tbody tr:hover {
+        background-color: #f8d7da;
+        /* Color rojo claro al pasar el mouse */
+    }
+
+    /* Botones en la columna de acciones */
+    .btn-sm {
+        margin: 2px;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .btn-info {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+    }
+</style>
 
 <script>
     $(document).ready(function () {
@@ -32,8 +112,105 @@
                     }
                 },
                 { data: 'total', render: function (data) { return `$${data.toFixed(2)}`; } },
-                { data: 'cancelado_por' }
-            ]
+                { data: 'cancelado_por' },
+                {
+                    data: 'fecha_cancelacion',
+                    render: function (data) {
+                        if (data) {
+                            const fecha = new Date(data);
+                            // Ajustar la fecha a la zona horaria local
+                            const fechaLocal = new Date(fecha.getTime() - (fecha.getTimezoneOffset() * 60000));
+                            return fechaLocal.toLocaleString(); // Formato legible
+                        }
+                        return 'No disponible';
+                    }
+                },
+                {
+                    data: '_id',
+                    render: function (data, type, row) {
+                        return `
+                            <button class="btn btn-sm btn-info" onclick="mostrarTicket('${data}')">
+                                <i class="bi bi-receipt"></i> Ticket
+                            </button>
+                        `;
+                    }
+                }
+            ],
+            order: [[5, 'desc']],  // Ordenar por la columna 5 (fecha_cancelacion) de forma descendente
+            language: {
+                search: "Buscar:",
+                lengthMenu: "Mostrar _MENU_ registros por página",
+                zeroRecords: "No se encontraron resultados",
+                info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                infoEmpty: "Mostrando 0 a 0 de 0 registros",
+                infoFiltered: "(filtrado de _MAX_ registros totales)",
+                paginate: {
+                    first: "Primero",
+                    last: "Último",
+                    next: "Siguiente",
+                    previous: "Anterior"
+                }
+            },
+            dom: '<"top"lf>rt<"bottom"ip><"clear">',  // Personalizar la disposición de los controles
+            responsive: true  // Hacer la tabla responsive
         });
     });
+
+    // Función para mostrar el ticket en PDF
+    function mostrarTicket(pedidoId) {
+        fetch(`/obtener_detalles_pedido/${pedidoId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const pedido = data.pedido;
+
+                    // Definir el contenido del PDF
+                    const docDefinition = {
+                        content: [
+                            { text: 'Ticket del Pedido', style: 'header' },
+                            `Número de Pedido: ${pedido.numero_pedido}`,
+                            `Cliente: ${pedido.nombre}`,
+                            `Celular: ${pedido.celular}`,
+                            `Ciudad: ${pedido.ciudad}`,
+                            `Dirección: ${pedido.direccion}`,
+                            `Referencia: ${pedido.referencia}`,
+                            `Método de Pago: ${pedido.metodo_pago}`,
+                            `Total: $${pedido.total.toFixed(2)}`,
+                            { text: 'Productos:', style: 'subheader' },
+                            {
+                                table: {
+                                    headerRows: 1,
+                                    widths: ['*', 'auto', 'auto'],
+                                    body: [
+                                        ['Producto', 'Cantidad', 'Precio'],
+                                        ...pedido.productos.map(p => [p.name, p.quantity, `$${p.price * p.quantity}`])
+                                    ]
+                                }
+                            }
+                        ],
+                        styles: {
+                            header: {
+                                fontSize: 18,
+                                bold: true,
+                                margin: [0, 0, 0, 10]
+                            },
+                            subheader: {
+                                fontSize: 14,
+                                bold: true,
+                                margin: [0, 10, 0, 5]
+                            }
+                        }
+                    };
+
+                    // Generar y abrir el PDF
+                    pdfMake.createPdf(docDefinition).open();
+                } else {
+                    alert('Error al obtener los detalles del pedido: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Hubo un error al obtener los detalles del pedido');
+            });
+    }
 </script>
