@@ -66,6 +66,21 @@ def logout_user():
     return usu.logout_user()
 
 # ADMINISTRADOR
+
+@app.route('/usuarios', methods=['GET'])
+def obtener_usuarios():
+    try:
+        # Obtener usuarios de la base de datos
+        usuarios = db.users.find({})
+        lista_usuarios = []
+        for usuario in usuarios:
+            usuario["_id"] = str(usuario["_id"])  # Convertir ObjectId a string
+            lista_usuarios.append(usuario)
+        return jsonify({"data": lista_usuarios}), 200
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    
+
 @app.route('/ver_usuarios', methods=["GET", "POST"])
 def ver_usuarios():
     return usu.ver_usuarios(request)
@@ -186,6 +201,11 @@ def obtener_detalles_pedido_route(pedido_id):
 @app.route('/cancelar_pedido_admin/<pedido_id>', methods=['POST'])
 def cancelar_pedido_admin(pedido_id):
     return ped.cancelar_pedido_admin(pedido_id)
+
+
+@app.route('/cancelar_pedido_asist/<pedido_id>', methods=['POST'])
+def cancelar_pedido_asist(pedido_id):
+    return ped.cancelar_pedido_asist(pedido_id)
 
 @app.route('/estado_pedido/<pedido_id>', methods=['GET'])
 def estado_pedido(pedido_id):

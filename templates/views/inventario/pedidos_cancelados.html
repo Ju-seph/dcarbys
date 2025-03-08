@@ -112,7 +112,12 @@
                     }
                 },
                 { data: 'total', render: function (data) { return `$${data.toFixed(2)}`; } },
-                { data: 'cancelado_por' },
+                {
+                    data: null,
+                    render: function (data) {
+                        return `${data.cancelado_por} (${data.rol_cancelado})`;  // Mostrar nombre y rol
+                    }
+                },
                 {
                     data: 'fecha_cancelacion',
                     render: function (data) {
@@ -155,6 +160,7 @@
             responsive: true  // Hacer la tabla responsive
         });
     });
+
 
     // Función para mostrar el ticket en PDF
     function mostrarTicket(pedidoId) {

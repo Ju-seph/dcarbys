@@ -46,24 +46,27 @@
             });
     }
 
-    // Función para cancelar un pedido como administrador
+
+    // Función para cancelar un pedido como administrador o asistente
     function cancelarPedidoAdmin(pedidoId) {
-        fetch(`/cancelar_pedido_admin/${pedidoId}`, {
-            method: 'POST'
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Pedido cancelado por el administrador');
-                    cargarPedidosPendientes(); // Actualizar la lista de pedidos
-                } else {
-                    alert('Error al cancelar el pedido: ' + data.message);
-                }
+        if (confirm("¿Estás seguro de cancelar este pedido?")) {
+            fetch(`/cancelar_pedido_admin/${pedidoId}`, {
+                method: 'POST'
             })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Hubo un error al cancelar el pedido');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);  // Mostrar el mensaje personalizado
+                        cargarPedidosPendientes();  // Actualizar la lista de pedidos
+                    } else {
+                        alert('Error al cancelar el pedido: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Hubo un error al cancelar el pedido');
+                });
+        }
     }
     $(document).ready(function () {
         // Función para cargar los pedidos pendientes

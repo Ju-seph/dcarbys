@@ -2,7 +2,7 @@ $(document).ready(function () {
     var tabla = $('#table_usuario').DataTable({
         "ajax": {
             "url": "/usuarios",
-            "method": "post"
+            "method": "GET"
         },
         "columns": [
             { "data": "_id", "className": "text-center" }, // Usar "_id" para el identificador

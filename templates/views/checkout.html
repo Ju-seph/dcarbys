@@ -223,7 +223,9 @@
                 </div>
                 <div class="mb-3">
                     <label for="celular" class="form-label">Celular</label>
-                    <input type="tel" class="form-control" id="celular" name="celular" required>
+                    <input type="tel" class="form-control" id="celular" name="celular" pattern="09\d{8}" required>
+                    <small class="form-text text-muted">Ingrese un número de celular válido en Ecuador (ej.
+                        0987654321).</small>
                 </div>
                 <div class="mb-3">
                     <label for="ciudad" class="form-label">Ciudad</label>

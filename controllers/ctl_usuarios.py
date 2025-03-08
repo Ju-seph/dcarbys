@@ -10,26 +10,34 @@ import re
 db = Mongodb().db()
 
 def save_user(request):
-    # Inicializar el diccionario de alertas
     alertas = {"tipo": "", "message": ""}
 
-    # Si es una solicitud GET, renderizar la página de registro
     if request.method == 'GET':
         return render_template("views/usuarios/registro_usuarios.html")
 
-    # Si es una solicitud POST, procesar el registro del usuario
     if request.method == 'POST':
         try:
-            # Obtener datos del formulario
-            nombreUsuario = request.form["u_nombreUsuario"]
-            correo = request.form["u_correo"]
-            clave = request.form["u_clave"]
+            # Normalizar los datos del formulario
+            nombreUsuario = request.form["u_nombreUsuario"].strip().lower()  # Eliminar espacios y convertir a minúsculas
+            correo = request.form["u_correo"].strip().lower()  # Eliminar espacios y convertir a minúsculas
+            clave = request.form["u_clave"].strip()  # Eliminar espacios
+
+            # Validar el formato del correo electrónico
+            if not re.match(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', correo):
+                alertas["tipo"] = "danger"
+                alertas["message"] = "El correo electrónico no es válido."
+                return render_template("views/usuarios/registro_usuarios.html", alertas=alertas)
+
+            # Validar la seguridad de la contraseña (sin caracteres especiales)
+            if not re.match(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)[A-Za-z\d]{8,}$', clave):
+                alertas["tipo"] = "danger"
+                alertas["message"] = "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número."
+                return render_template("views/usuarios/registro_usuarios.html", alertas=alertas)
 
             # Comprobar si el usuario ya existe
             existe = db.users.find_one({"$and": [{"correo": correo}, {"nombreUsuario": nombreUsuario}]})
 
             if existe:
-                # Usuario existente, enviar mensaje de error
                 alertas["tipo"] = "danger"
                 alertas["message"] = "El usuario ya existe. Por favor, elige un nombre de usuario o correo diferente."
                 return render_template("views/usuarios/registro_usuarios.html", alertas=alertas)
@@ -44,19 +52,16 @@ def save_user(request):
             # Guardar en la base de datos
             db.users.insert_one(usuario.getUser())
 
-            # Usuario creado exitosamente
             alertas["tipo"] = "success"
             alertas["message"] = "Usuario creado correctamente. Ahora puedes iniciar sesión."
             return render_template("views/usuarios/login_usuarios.html", alertas=alertas)
 
         except Exception as e:
-            # Manejar errores y enviar mensaje de error
             print(f"Error al crear el usuario: {e}")
             alertas["tipo"] = "danger"
             alertas["message"] = f"Ocurrió un error al crear el usuario: {e}"
             return render_template("views/usuarios/registro_usuarios.html", alertas=alertas)
 
-    # Si el método no es GET ni POST, devolver error 405
     alertas["tipo"] = "warning"
     alertas["message"] = "Método no permitido."
     return render_template("views/usuarios/registro_usuarios.html", alertas=alertas)
@@ -79,32 +84,30 @@ def login_user(request):
             usuario = db.users.find_one({"nombreUsuario": nombreUsuario})
 
             if usuario:
-                # Verificar la contraseña
                 clave_encriptada = usuario["clave"]
                 if ctl_encrypt.decrypt(clave_encriptada) == clave:
-                    # Guardar datos del usuario en la sesión
                     session["usuario_id"] = str(usuario["_id"])
                     session["nombreUsuario"] = usuario["nombreUsuario"]
-                    session["rol"] = usuario.get("rol", "nombreUsuario")  # Asegurar que el rol está definido
+                    session["rol"] = usuario.get("rol", "cliente")
+
                     alertas["tipo"] = "success"
                     alertas["message"] = "Sesión iniciada correctamente."
 
                     # Redirigir según el rol
                     if session["rol"] == "Administrador":
                         return render_template("views/principal.html", alertas=alertas)
+                    elif session["rol"] == "Asistente":
+                        return render_template("views/principal.html", alertas=alertas)
                     else:
                         return redirect(url_for('begin'))
                 else:
-                    # Contraseña incorrecta
                     alertas["tipo"] = "danger"
                     alertas["message"] = "Contraseña incorrecta."
             else:
-                # Usuario no encontrado
                 alertas["tipo"] = "danger"
                 alertas["message"] = "El nombre de usuario no existe."
 
         except Exception as e:
-            # Error general
             alertas["tipo"] = "danger"
             alertas["message"] = f"Error al iniciar sesión: {e}"
 
@@ -181,23 +184,32 @@ def ver_usuarios(request):
 
 
 def create_user(request):
-    # Inicializar el diccionario de alertas
     alertas = {"tipo": "", "message": ""}
 
-    # Si es una solicitud POST, procesar el registro del usuario
     if request.method == 'POST':
         try:
-            # Obtener datos del formulario
-            nombreUsuario = request.form["u_nombreUsuario"]
-            correo = request.form["u_correo"]
-            clave = request.form["u_clave"]
+            # Normalizar los datos del formulario
+            nombreUsuario = request.form["u_nombreUsuario"].strip().lower()  # Eliminar espacios y convertir a minúsculas
+            correo = request.form["u_correo"].strip().lower()  # Eliminar espacios y convertir a minúsculas
+            clave = request.form["u_clave"].strip()  # Eliminar espacios
             rol = request.form["u_rol"]
+
+            # Validar el formato del correo electrónico
+            if not re.match(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', correo):
+                alertas["tipo"] = "danger"
+                alertas["message"] = "El correo electrónico no es válido."
+                return jsonify(alertas), 400
+
+            # Validar la seguridad de la contraseña (sin caracteres especiales)
+            if not re.match(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)[A-Za-z\d]{8,}$', clave):
+                alertas["tipo"] = "danger"
+                alertas["message"] = "La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número."
+                return jsonify(alertas), 400
 
             # Comprobar si el usuario ya existe
             existe = db.users.find_one({"$and": [{"correo": correo}, {"nombreUsuario": nombreUsuario}]})
 
             if existe:
-                # Usuario existente, enviar mensaje de error
                 alertas["tipo"] = "danger"
                 alertas["message"] = "El usuario ya existe. Por favor, elige un nombre de usuario o correo diferente."
                 return jsonify(alertas), 400
@@ -212,19 +224,16 @@ def create_user(request):
             # Guardar en la base de datos
             db.users.insert_one(usuario.getUser())
 
-            # Usuario creado exitosamente
             alertas["tipo"] = "success"
             alertas["message"] = "Usuario creado correctamente."
             return jsonify(alertas), 201
 
         except Exception as e:
-            # Manejar errores y enviar mensaje de error
             print(f"Error al crear el usuario: {e}")
             alertas["tipo"] = "danger"
             alertas["message"] = f"Ocurrió un error al crear el usuario: {e}"
             return jsonify(alertas), 500
 
-    # Si el método no es POST, devolver un error
     alertas["tipo"] = "warning"
     alertas["message"] = "Método no permitido."
     return jsonify(alertas), 405

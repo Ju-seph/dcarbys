@@ -5,14 +5,22 @@ from datetime import datetime, timedelta
 from models.PedidoTemporal import PedidoTemporal
 from models.Pedido import Pedido
 import pymongo
+import re
+
 
 db = Mongodb().db()
+
 
 def procesar_pedido(request):
     if 'usuario_id' not in session:
         return jsonify({"success": False, "message": "Usuario no autenticado"}), 401
 
     data = request.json
+
+    # Validar el número de celular
+    celular = data.get('celular')
+    if not re.match(r'^09\d{8}$', celular):
+        return jsonify({"success": False, "message": "Número de celular no válido. Debe tener 10 dígitos y comenzar con 09."}), 400
 
     try:
         # Crear el pedido temporal
@@ -21,7 +29,7 @@ def procesar_pedido(request):
             usuario_id=session['usuario_id'],
             productos=data['cart'],
             nombre=data['nombre'],
-            celular=data['celular'],
+            celular=celular,
             ciudad=data['ciudad'],
             direccion=data['direccion'],
             referencia=data['referencia'],
@@ -234,6 +242,14 @@ def cancelar_pedido(pedido_id):
 
 def cancelar_pedido_admin(pedido_id):
     try:
+        # Verificar si el usuario está autenticado
+        if 'nombreUsuario' not in session or 'rol' not in session:
+            return jsonify({"success": False, "message": "Usuario no autenticado"}), 401
+
+        # Obtener el nombre de usuario y el rol de la sesión
+        nombre_usuario = session['nombreUsuario']
+        rol_usuario = session['rol']
+
         # Buscar el pedido en la colección de pedidos temporales
         pedido_temporal = db.pedidos_temporales.find_one({"_id": ObjectId(pedido_id)})
 
@@ -246,7 +262,14 @@ def cancelar_pedido_admin(pedido_id):
             # Si el pedido ya está en la colección de pedidos, cambiar su estado a "cancelado"
             db.pedidos.update_one(
                 {"_id": ObjectId(pedido_id)},
-                {"$set": {"estado": "cancelado", "cancelado_por": "admin"}}
+                {
+                    "$set": {
+                        "estado": "cancelado",
+                        "cancelado_por": nombre_usuario,  # Registrar quién canceló
+                        "rol_cancelado": rol_usuario,  # Registrar el rol del usuario
+                        "fecha_cancelacion": datetime.now()  # Registrar la fecha de cancelación
+                    }
+                }
             )
 
             # Restaurar el stock de los productos (solo si el pedido estaba en "en transcurso")
@@ -260,7 +283,7 @@ def cancelar_pedido_admin(pedido_id):
                                 session=db_session
                             )
 
-            return jsonify({"success": True, "message": "Pedido cancelado por el administrador"}), 200
+            return jsonify({"success": True, "message": f"Pedido cancelado por {nombre_usuario} ({rol_usuario})"}), 200
 
         # Si el pedido está en la colección de pedidos temporales, moverlo a la colección de pedidos con estado "cancelado"
         pedido_cancelado = {
@@ -275,7 +298,8 @@ def cancelar_pedido_admin(pedido_id):
             "referencia": pedido_temporal['referencia'],
             "total": pedido_temporal['total'],
             "estado": "cancelado",  # Cambiar el estado a "cancelado"
-            "cancelado_por": "admin",  # Especificar que fue cancelado por el administrador
+            "cancelado_por": nombre_usuario,  # Registrar quién canceló
+            "rol_cancelado": rol_usuario,  # Registrar el rol del usuario
             "fecha_cancelacion": datetime.now()  # Agregar la fecha de cancelación
         }
 
@@ -288,10 +312,12 @@ def cancelar_pedido_admin(pedido_id):
         # Eliminar el pedido temporal
         db.pedidos_temporales.delete_one({"_id": ObjectId(pedido_id)})
 
-        return jsonify({"success": True, "message": "Pedido cancelado por el administrador"}), 200
+        return jsonify({"success": True, "message": f"Pedido cancelado por {nombre_usuario} ({rol_usuario})"}), 200
 
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+    
+    
 
 
 def cancelar_pedido_cliente(pedido_id):

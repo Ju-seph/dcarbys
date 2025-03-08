@@ -15,6 +15,7 @@ class Pedido:
         self.total = total
         self.estado = estado  # Estados: "en transcurso", "finalizado", "cancelado"
         self.cancelado_por = None  # Nuevo campo para almacenar quién canceló el pedido
+        self.rol_cancelado= None
         self.tiempo_estimado = ""  # Nuevo campo para el tiempo estimado
         self.fecha_confirmacion = None
         self.createDateTime = None
