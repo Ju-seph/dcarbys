@@ -3,6 +3,11 @@
 {% block body %}
 
 <style>
+    body {
+        background-color: #f0f0f0;
+        /* Fondo gris claro */
+    }
+
     .text-primary {
         color: red !important;
     }
@@ -290,8 +295,20 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
         /* Sombra */
     }
-</style>
 
+
+    /* Estilos para las categorías */
+    .category-container {
+        background-color: white;
+        /* Fondo blanco para las categorías */
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        /* Espacio entre categorías */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        /* Sombra para resaltar */
+    }
+</style>
 <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
     <div class="container">
         <a class="navbar-brand fw-bold" href="#"><span class="text-primary">D</span>carbys</a>
@@ -311,7 +328,7 @@
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown"
                         role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-person-circle user-icon"></i> <!-- Ícono de usuario -->
+                        <i class="bi bi-person-circle user-icon"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                         <li><span class="dropdown-item">Bienvenido, {{ session.get('nombreUsuario') }}</span></li>
@@ -339,10 +356,9 @@
     </div>
 </nav>
 
-<header class="text-black text-center position-relative py-5">
-    <!-- Carrusel de Bootstrap -->
+<!-- Carrusel fuera del container -->
+<header class="text-black text-center position-relative">
     <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
-
         <div class="carousel-inner">
             <div class="carousel-item active">
                 <img class="d-block w-100" src="img/slider1.png" alt="First slide">
@@ -364,7 +380,6 @@
         </a>
     </div>
 
-    <!-- Texto superpuesto -->
     <div class="position-absolute top-50 start-50 translate-middle text-center">
         <h1 class="display-4 text-white fw-bold" style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);">
             Bienvenidos a <span class="text-primary">D</span>carbys
@@ -376,48 +391,33 @@
             Ver Menú
         </a>
     </div>
-    </div>
 </header>
 
-<section id="menu" class="py-5">
-    <div class="container">
+<!-- Contenido del menú dentro del container -->
+<div class="container mt-4">
+    <section id="menu" class="py-5">
         <h2 class="text-center mb-5">Nuestro Menú</h2>
 
-        <!-- Sección por categoría -->
         {% for categoria in ['Alimentos', 'Bebidas', 'Adicionales'] %}
-        <div class="mb-5">
-            <!-- Título de la categoría -->
+        <div class="category-container">
             <h3 class="category-title text-center mb-4">{{ categoria }}</h3>
-
-            <!-- Grid de productos -->
             <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
                 {% for producto in productos %}
                 {% if producto.categoria == categoria %}
                 <div class="col">
-                    <!-- Card del producto -->
                     <div class="card product-card h-100 shadow-sm">
-                        <!-- Imagen del producto -->
                         {% if producto.imagen_path %}
                         <img src="{{ producto.imagen_path }}" class="card-img-top product-image"
                             alt="{{ producto.nombreProducto }}"
                             onclick="openProductModal('{{ producto.nombreProducto }}', '{{ producto.descripcion }}', '{{ producto.precio }}', '{{ producto.imagen_path }}', '{{ producto.cantidad }}')">
                         {% endif %}
-
-                        <!-- Cuerpo de la card -->
                         <div class="card-body product-body">
-                            <!-- Nombre del producto -->
                             <h5 class="card-title product-title">{{ producto.nombreProducto }}</h5>
-
-                            <!-- Precio -->
                             <p class="product-price mb-2">${{ "%.2f"|format(producto.precio) }}</p>
-
-                            <!-- Disponibilidad -->
                             <p class="small mb-2">
                                 Disponibles: <span class="product-quantity" data-id="{{ producto._id }}">{{
                                     producto.cantidad }}</span>
                             </p>
-
-                            <!-- Botón de agregar al carrito -->
                             <button class="btn btn-primary btn-sm w-100 add-to-cart" data-id="{{ producto._id }}"
                                 data-name="{{ producto.nombreProducto }}" data-price="{{ producto.precio }}"
                                 data-image="{{ producto.imagen_path }}" {% if producto.cantidad <=0 %}disabled{% endif
@@ -432,10 +432,10 @@
             </div>
         </div>
         {% endfor %}
-    </div>
-</section>
+    </section>
+</div>
 
-
+<!-- Footer fuera del container -->
 <footer class="bg-dark text-white py-4">
     <div class="container">
         <div class="row">
@@ -474,21 +474,14 @@
 <div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <!-- Encabezado del Modal -->
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="cartModalLabel">Carrito de Compras</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                     aria-label="Close"></button>
             </div>
-
-            <!-- Cuerpo del Modal -->
             <div class="modal-body">
-                <!-- Lista de Ítems del Carrito -->
                 <ul id="cart-items" class="list-group list-group-flush">
-                    <!-- Los ítems se agregarán dinámicamente aquí -->
                 </ul>
-
-                <!-- Resumen del Pedido -->
                 <div class="mt-4 p-3 bg-light rounded">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Total:</h5>
@@ -496,8 +489,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Pie del Modal -->
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Seguir Comprando</button>
                 <button id="process-order-button" class="btn btn-primary">Procesar Pedido</button>
@@ -532,7 +523,6 @@
 <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
 
 <script>
-    // Smooth scrolling para los enlaces internos
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
@@ -547,20 +537,14 @@
             }
         });
     });
-</script>
 
-
-<script>
-    // Función para abrir el modal y mostrar los detalles del producto
     function openProductModal(name, description, price, image, stock) {
-        // Asignar los valores al modal
         document.getElementById('modalProductName').innerText = name;
         document.getElementById('modalProductDescription').innerText = description;
         document.getElementById('modalProductPrice').innerText = `Precio: $${parseFloat(price).toFixed(2)}`;
         document.getElementById('modalProductStock').innerText = `Disponibles: ${stock}`;
         document.getElementById('modalProductImage').src = image;
 
-        // Mostrar el modal
         const productModal = new bootstrap.Modal(document.getElementById('productModal'));
         productModal.show();
     }
