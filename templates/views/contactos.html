@@ -33,45 +33,442 @@
         font-size: 0.7rem;
     }
 
-    .contact-form {
-        background-color: #f8f9fa;
-        border-radius: 10px;
-        padding: 30px;
+    .product-card {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #ddd;
+        /* Borde para las tarjetas */
+        border-radius: 8px;
+        /* Bordes redondeados */
+        overflow: hidden;
+        /* Evita que el contenido se desborde */
     }
 
-    .map-container {
-        height: 400px;
-        width: 100%;
+    .product-image {
+        height: 120px;
+        /* Reducir la altura de la imagen */
+        object-fit: cover;
     }
+
+    .product-body {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 10px;
+        /* Espaciado interno */
+    }
+
+    .product-title {
+        font-size: 0.9rem;
+        /* Reducir el tamaño del título */
+        font-weight: bold;
+        margin-bottom: 0.3rem;
+    }
+
+    .product-description {
+        font-size: 0.75rem;
+        /* Reducir el tamaño de la descripción */
+        flex-grow: 1;
+        margin-bottom: 0.3rem;
+    }
+
+    .product-price {
+        font-size: 0.9rem;
+        /* Reducir el tamaño del precio */
+        font-weight: bold;
+        color: #28a745;
+        margin-bottom: 0.3rem;
+    }
+
+    .product-quantity {
+        font-size: 0.75rem;
+        /* Reducir el tamaño del texto de disponibilidad */
+    }
+
+    .category-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+        color: red;
+    }
+
+    /* Ajustar el tamaño de los botones */
+    .btn-sm {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    /* Estilos para el ícono de usuario */
+    .user-icon {
+        font-size: 1.2rem;
+        /* Tamaño del ícono */
+        color: #333;
+        /* Color del ícono */
+        margin-left: 10px;
+        /* Espacio a la izquierda */
+        transition: color 0.3s ease;
+        /* Transición suave */
+    }
+
+    .user-icon:hover {
+        color: red;
+        /* Cambiar color al pasar el cursor */
+    }
+
+    /* Estilos para el dropdown */
+    .dropdown-menu {
+        border: none;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        padding: 10px;
+    }
+
+    .dropdown-item {
+        color: #333;
+        font-weight: 500;
+        padding: 8px 16px;
+        border-radius: 4px;
+        transition: background-color 0.3s ease;
+    }
+
+    .dropdown-item:hover {
+        background-color: rgba(255, 0, 0, 0.1);
+        color: red;
+    }
+
+    .dropdown-divider {
+        margin: 5px 0;
+    }
+
+    /* Estilos para el CARRUSEL */
+    .carousel-item {
+        height: 400px;
+        /* Ajusta la altura del carrusel según tus necesidades */
+        background-color: rgba(0, 0, 0, 0.5);
+        /* Fondo oscuro para mejorar la visibilidad del texto */
+    }
+
+    .carousel-item img {
+        object-fit: cover;
+        height: 100%;
+        width: 100%;
+        opacity: 0.7;
+        /* Ajusta la opacidad de las imágenes para que el texto sea más visible */
+    }
+
+    .position-relative {
+        position: relative;
+    }
+
+    .position-absolute {
+        position: absolute;
+    }
+
+    .top-50 {
+        top: 50%;
+    }
+
+    .start-50 {
+        left: 50%;
+    }
+
+    .translate-middle {
+        transform: translate(-50%, -50%);
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .text-white {
+        color: white !important;
+    }
+
+
+    /* Estilos para los ítems del carrito */
+    .cart-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        transition: background-color 0.3s ease;
+    }
+
+    .cart-item:hover {
+        background-color: #f8f9fa;
+    }
+
+    .cart-item img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-right: 15px;
+    }
+
+    .cart-item-details {
+        flex-grow: 1;
+        margin-right: 15px;
+    }
+
+    .cart-item-name {
+        font-size: 1rem;
+        font-weight: bold;
+        margin-bottom: 0.25rem;
+    }
+
+    .cart-item-price {
+        font-size: 0.9rem;
+        color: #28a745;
+    }
+
+    .cart-item-quantity {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .cart-item-quantity button {
+        background-color: #f8f9fa;
+        border: 1px solid #ddd;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .cart-item-quantity button:hover {
+        background-color: #e9ecef;
+    }
+
+    .cart-item-quantity input {
+        width: 40px;
+        text-align: center;
+        border: 1px solid #ddd;
+        margin: 0 5px;
+        padding: 5px;
+    }
+
+    .cart-item-remove {
+        color: #dc3545;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    .cart-item-remove:hover {
+        color: #c82333;
+    }
+
+    /* Estilos para el resumen del pedido */
+    .cart-summary {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    .cart-summary h5 {
+        font-size: 1.25rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .cart-summary h4 {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #28a745;
+    }
+
+    .custom-swal-popup {
+        border-radius: 15px !important;
+        /* Bordes redondeados */
+        border: 2px solid #ff6347 !important;
+        /* Borde personalizado */
+        background-color: #f8f9fa !important;
+        /* Fondo personalizado */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+        /* Sombra */
+    }
+
+    /* Estilos del Header */
+    .contact-header {
+        background-color: red;
+        color: white;
+        padding: 40px 0;
+        /* Reducir el padding vertical */
+        text-align: center;
+    }
+
+    .contact-header h1 {
+        font-size: 2rem;
+        /* Reducir el tamaño de la fuente */
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .contact-header p {
+        font-size: 1rem;
+        /* Reducir el tamaño de la fuente */
+        margin-top: 10px;
+    }
+
+    .logo-container {
+        text-align: center;
+        margin-bottom: 10px;
+        /* Reducir el margen inferior */
+    }
+
+    .logo-container img {
+        max-width: 100px;
+        /* Reducir el tamaño del logo */
+        height: auto;
+    }
+
+    /* Ajustar el margen superior de la sección de contacto */
+    .contact-section {
+        padding: 30px 0;
+        /* Reducir el padding vertical */
+        background-color: #f8f9fa;
+    }
+
+    .contact-info {
+        background-color: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin-top: -50px;
+    }
+
+    .contact-info h3 {
+        color: red;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+
+    .contact-info p {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+    }
+
+    .contact-info a {
+        color: red;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .contact-info a:hover {
+        color: darkred;
+    }
+
+    .social-icons {
+        margin-top: 20px;
+    }
+
+    .social-icons a {
+        font-size: 1.5rem;
+        margin-right: 15px;
+        transition: color 0.3s ease;
+    }
+
+    .social-icons a.facebook {
+        color: #1877F2;
+        /* Color natural de Facebook */
+    }
+
+    .social-icons a.instagram {
+        color: #E4405F;
+        /* Color natural de Instagram */
+    }
+
+    .whatsapp-icon {
+        color: #25D366;
+        /* Color de WhatsApp */
+        font-size: 1.5rem;
+        margin-right: 10px;
+    }
+
+    /* Estilos adicionales inspirados en KFC */
+    .contact-info {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .contact-info p {
+        font-size: 1rem;
+        color: #555;
+    }
+
+    .contact-info a {
+        font-weight: 500;
+    }
+
+    .contact-info .whatsapp-link {
+        display: inline-block;
+        background-color: #25D366;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+    }
+
+    .contact-info .whatsapp-link:hover {
+        background-color: #128C7E;
+    }
+
 </style>
 
+<!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="#"><span class="text-primary">D</span>carbys</a>
+        <!-- Logo y marca -->
+        <a class="navbar-brand fw-bold" href="#">
+            <span class="text-primary">D</span>carbys
+        </a>
+
+        <!-- Botón de toggle para móviles -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
             aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
+
+        <!-- Elementos del navbar -->
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
+                <!-- Enlace al menú -->
                 <li class="nav-item">
-                    <a class="nav-link" href="/">Menú</a>
+                    <a class="nav-link active" href="/">Menú</a>
                 </li>
+
+                <!-- Enlace a contactos -->
                 <li class="nav-item">
-                    <a class="nav-link active" href="/contacto">Contactos</a>
+                    <a class="nav-link" href="/contacto">Contactos</a>
                 </li>
+
+                <!-- Dropdown del usuario -->
                 {% if session.get('usuario_id') %}
-                <li class="nav-item">
-                    <a class="nav-link" href="/logout">Cerrar Sesión</a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown"
+                        role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle user-icon"></i> <!-- Ícono de usuario -->
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <li><span class="dropdown-item">Bienvenido, {{ session.get('nombreUsuario') }}</span></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="/logout">Cerrar Sesión</a></li>
+                    </ul>
                 </li>
                 {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="/registro_usuarios">Registro De Usuario</a>
-                </li>
+                <!-- Enlace a inicio de sesión -->
                 <li class="nav-item">
                     <a class="nav-link" href="/login_usuarios">Iniciar Sesión</a>
                 </li>
                 {% endif %}
+
+                <!-- Ícono del carrito -->
                 <li class="nav-item">
                     <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#cartModal">
                         <span class="cart-icon">
@@ -85,61 +482,104 @@
     </div>
 </nav>
 
-<div class="container mt-5">
-    <h1 class="text-center mb-5">Contáctanos</h1>
-    <div class="row">
-        
-        <div class="col-md-6 mb-4">
-            <h3 class="mb-4">Información de contacto</h3>
-            <ul class="list-unstyled">
-                <li class="mb-3"><i class="bi bi-geo-alt-fill me-2 text-primary"></i> Av. Principal 123, Ciudad</li>
-                <li class="mb-3"><i class="bi bi-telephone-fill me-2 text-primary"></i> +1 234 567 890</li>
-                <li class="mb-3"><i class="bi bi-envelope-fill me-2 text-primary"></i> info@dcarbys.com</li>
-                <li class="mb-3"><i class="bi bi-clock-fill me-2 text-primary"></i> Lunes a Domingo: 11:00 AM - 10:00 PM</li>
-            </ul>
-            <div class="map-container mt-4">
-                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.835253640225!2d144.95373631531996!3d-37.817209979751735!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d4c2b349649%3A0xb6899234e561db11!2sRestaurant!5e0!3m2!1sen!2sus!4v1635176869248!5m2!1sen!2sus" 
-                        width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+<!-- Header con saludo y logo -->
+<section class="contact-header">
+    <div class="container">
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='img/dcalog.png') }}" alt="Dcarbys Logo">
+        </div>
+        <h1>¡Hola! Estamos aquí para ayudarte</h1>
+        <p>Contáctanos para cualquier consulta o pedido.</p>
+    </div>
+</section>
+
+<!-- Modal del carrito -->
+<div class="modal fade" id="cartModal" tabindex="-1" aria-labelledby="cartModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <!-- Encabezado del Modal -->
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="cartModalLabel">Carrito de Compras</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+
+            <!-- Cuerpo del Modal -->
+            <div class="modal-body">
+                <!-- Lista de Ítems del Carrito -->
+                <ul id="cart-items" class="list-group list-group-flush">
+                    <!-- Los ítems se agregarán dinámicamente aquí -->
+                </ul>
+
+                <!-- Resumen del Pedido -->
+                <div class="mt-4 p-3 bg-light rounded">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Total:</h5>
+                        <h4 class="mb-0 text-primary">$<span id="cart-total">0.00</span></h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pie del Modal -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Seguir Comprando</button>
+                <button id="process-order-button" class="btn btn-primary">Procesar Pedido</button>
             </div>
         </div>
     </div>
 </div>
 
-<footer class="bg-dark text-white py-4 mt-5">
-    <div class="container">
-        <div class="row">
-            <div class="col-md-4">
-                <h5>Acerca de Dcarbys</h5>
-                <p>Ofrecemos la mejor comida a domicilio, con ingredientes frescos y sabores únicos.</p>
+<!-- Modal para la descripción del producto -->
+<div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productModalLabel">Detalles del Producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="col-md-4">
-                <h5>Enlaces rápidos</h5>
-                <ul class="list-unstyled">
-                    <li><a href="#" class="text-white text-decoration-none">Política de privacidad</a></li>
-                    <li><a href="#" class="text-white text-decoration-none">Términos y condiciones</a></li>
-                    <li><a href="#" class="text-white text-decoration-none">Preguntas frecuentes</a></li>
-                </ul>
+            <div class="modal-body">
+                <img id="modalProductImage" src="" class="img-fluid mb-3" alt="Imagen del producto">
+                <h4 id="modalProductName" class="mb-3"></h4>
+                <p id="modalProductDescription" class="mb-3"></p>
+                <p id="modalProductPrice" class="fw-bold"></p>
+                <p id="modalProductStock" class="small"></p>
             </div>
-            <div class="col-md-4">
-                <h5>Síguenos</h5>
-                <div class="d-flex gap-3">
-                    <a href="#" class="text-white fs-4"><i class="bi bi-facebook"></i></a>
-                    <a href="#" class="text-white fs-4"><i class="bi bi-instagram"></i></a>
-                    <a href="#" class="bi bi-twitter"></i></a>
-                </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
             </div>
-        </div>
-        <div class="text-center mt-3">
-            <p class="mb-0">&copy; 2024 Dcarbys. Todos los derechos reservados.</p>
         </div>
     </div>
-</footer>
-
-
-
+</div>
 
 <!-- Include cart.js -->
 <script src="{{ url_for('static', filename='js/cart.js') }}"></script>
 
-{% endblock %}
+<!-- Sección de contacto -->
+<section class="contact-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="contact-info text-center">
+                    <h3>Información de Contacto</h3>
+                    <p>
+                        <i class="bi bi-whatsapp whatsapp-icon"></i>
+                        WhatsApp: 0993868829</a> / 0990499326</a>
+                    </p>
+                    <p>
+                        <i class="bi bi-envelope"></i>
+                        Correo Electrónico: <a href="mailto:info@dcarbys.com">info@dcarbys.com</a>
+                    </p>
+                    <div class="social-icons">
+                        <a href="https://www.facebook.com/dcarbys" target="_blank" class="facebook"><i
+                                class="bi bi-facebook"></i></a>
+                        <a href="https://www.instagram.com/dcarbys" target="_blank" class="instagram"><i
+                                class="bi bi-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
+
+{% endblock %}

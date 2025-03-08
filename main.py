@@ -51,6 +51,9 @@ def begin():
     productos = list(db.productos.find({"status": "activo"}))
     return render_template('views/index.html', productos=productos)
 
+@app.route('/contacto', methods=["GET"])
+def contacto():
+    return render_template('views/contactos.html')
 
 # Manejo de session 
 @app.route('/registro_usuarios', methods=["GET", "POST"])

@@ -366,34 +366,58 @@
 
     <!-- Texto superpuesto -->
     <div class="position-absolute top-50 start-50 translate-middle text-center">
-        <h1 class="display-4">Bienvenidos a <span class="text-primary">D</span>carbys</h1>
-        <p class="lead">Descubre sabores únicos con solo un clic</p>
-        <a href="#menu" class="btn btn-light btn-lg">Ver Menú</a>
+        <h1 class="display-4 text-white fw-bold" style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);">
+            Bienvenidos a <span class="text-primary">D</span>carbys
+        </h1>
+        <p class="lead text-white mb-4" style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);">
+            Descubre sabores únicos con solo un clic
+        </p>
+        <a href="#menu" class="btn btn-light btn-lg shadow-sm" style="font-weight: 500;">
+            Ver Menú
+        </a>
+    </div>
     </div>
 </header>
 
 <section id="menu" class="py-5">
     <div class="container">
         <h2 class="text-center mb-5">Nuestro Menú</h2>
+
+        <!-- Sección por categoría -->
         {% for categoria in ['Alimentos', 'Bebidas', 'Adicionales'] %}
-        <div class="mb-4">
-            <h3 class="category-title">{{ categoria }}</h3>
-            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-2">
-                <!-- Reducir el espacio entre tarjetas (g-2) -->
+        <div class="mb-5">
+            <!-- Título de la categoría -->
+            <h3 class="category-title text-center mb-4">{{ categoria }}</h3>
+
+            <!-- Grid de productos -->
+            <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
                 {% for producto in productos %}
                 {% if producto.categoria == categoria %}
                 <div class="col">
-                    <div class="card product-card h-100">
+                    <!-- Card del producto -->
+                    <div class="card product-card h-100 shadow-sm">
+                        <!-- Imagen del producto -->
                         {% if producto.imagen_path %}
                         <img src="{{ producto.imagen_path }}" class="card-img-top product-image"
                             alt="{{ producto.nombreProducto }}"
                             onclick="openProductModal('{{ producto.nombreProducto }}', '{{ producto.descripcion }}', '{{ producto.precio }}', '{{ producto.imagen_path }}', '{{ producto.cantidad }}')">
                         {% endif %}
+
+                        <!-- Cuerpo de la card -->
                         <div class="card-body product-body">
+                            <!-- Nombre del producto -->
                             <h5 class="card-title product-title">{{ producto.nombreProducto }}</h5>
+
+                            <!-- Precio -->
                             <p class="product-price mb-2">${{ "%.2f"|format(producto.precio) }}</p>
-                            <p class="small mb-2">Disponibles: <span class="product-quantity"
-                                    data-id="{{ producto._id }}">{{ producto.cantidad }}</span></p>
+
+                            <!-- Disponibilidad -->
+                            <p class="small mb-2">
+                                Disponibles: <span class="product-quantity" data-id="{{ producto._id }}">{{
+                                    producto.cantidad }}</span>
+                            </p>
+
+                            <!-- Botón de agregar al carrito -->
                             <button class="btn btn-primary btn-sm w-100 add-to-cart" data-id="{{ producto._id }}"
                                 data-name="{{ producto.nombreProducto }}" data-price="{{ producto.precio }}"
                                 data-image="{{ producto.imagen_path }}" {% if producto.cantidad <=0 %}disabled{% endif
@@ -411,39 +435,6 @@
     </div>
 </section>
 
-<section id="ofertas" class="bg-light py-5">
-    <div class="container">
-        <h2 class="text-center mb-4">Ofertas Especiales</h2>
-        <div class="row g-4">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Combo Familiar</h5>
-                        <p class="card-text">4 platos principales + 2 acompañamientos + 4 bebidas</p>
-                        <ul class="list-unstyled mb-3">
-                            <li>Ahorra hasta un 25%</li>
-                            <li>Válido hasta: 31/12/2024</li>
-                        </ul>
-                        <a href="#" class="btn btn-primary">Ordenar ahora</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Menú del Día</h5>
-                        <p class="card-text">Plato principal + acompañamiento + bebida</p>
-                        <ul class="list-unstyled mb-3">
-                            <li>Precio especial: $9.99</li>
-                            <li>Disponible de lunes a viernes</li>
-                        </ul>
-                        <a href="#" class="btn btn-primary">Ver menú</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
 
 <footer class="bg-dark text-white py-4">
     <div class="container">
@@ -463,8 +454,12 @@
             <div class="col-md-4">
                 <h5>Síguenos</h5>
                 <div class="d-flex gap-3">
-                    <a href="#" class="text-white fs-4"><i class="bi bi-facebook"></i></a>
-                    <a href="#" class="text-white fs-4"><i class="bi bi-instagram"></i></a>
+                    <div class="social-icons">
+                        <a href="https://www.facebook.com/dcarbys" target="_blank" class="facebook"><i
+                                class="bi bi-facebook"></i></a>
+                        <a href="https://www.instagram.com/dcarbys" target="_blank" class="instagram"><i
+                                class="bi bi-instagram"></i></a>
+                    </div>
                     <a href="#" class="text-white fs-4"><i class="bi bi-twitter"></i></a>
                 </div>
             </div>
