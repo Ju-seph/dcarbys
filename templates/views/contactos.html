@@ -417,6 +417,82 @@
         background-color: #128C7E;
     }
 
+    /* Estilos para el navbar en modo móvil */
+    @media (max-width: 991.98px) {
+        .navbar-nav .nav-item {
+            background-color: rgba(255, 255, 255, 0.9);
+            /* Fondo blanco semi-transparente */
+            margin: 5px 0;
+            /* Espacio entre elementos */
+            border-radius: 8px;
+            /* Bordes redondeados */
+            padding: 8px 15px;
+            /* Espaciado interno */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            /* Sombra suave */
+        }
+
+        .navbar-nav .nav-link {
+            color: #333 !important;
+            /* Color de texto oscuro */
+            font-weight: 500;
+            /* Texto un poco más grueso */
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: red !important;
+            /* Color al pasar el cursor */
+        }
+
+        .navbar-nav .dropdown-menu {
+            background-color: rgba(255, 255, 255, 0.9);
+            /* Fondo blanco semi-transparente */
+            border: none;
+            /* Sin borde */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            /* Sombra suave */
+            margin-top: 5px;
+            /* Espacio superior */
+        }
+
+        .navbar-nav .dropdown-item {
+            color: #333;
+            /* Color de texto oscuro */
+            padding: 8px 16px;
+            /* Espaciado interno */
+        }
+
+        .navbar-nav .dropdown-item:hover {
+            background-color: rgba(255, 0, 0, 0.1);
+            /* Fondo rojo claro al pasar el cursor */
+            color: red;
+            /* Color de texto rojo */
+        }
+
+        .navbar-nav .cart-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.9);
+            /* Fondo blanco semi-transparente */
+            border-radius: 8px;
+            /* Bordes redondeados */
+            padding: 8px 15px;
+            /* Espaciado interno */
+        }
+
+        .navbar-nav .cart-icon .bi-cart {
+            color: #333;
+            /* Color del ícono */
+        }
+
+        .navbar-nav .cart-count {
+            background-color: red;
+            /* Fondo rojo */
+            color: white;
+            /* Texto blanco */
+        }
+    }
 </style>
 
 <!-- Navbar -->

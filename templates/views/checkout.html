@@ -144,6 +144,139 @@
     .btn-danger {
         margin-right: 10px;
     }
+
+    /* Estilos para el dropdown-menu */
+    .dropdown-menu {
+        background-color: rgba(255, 255, 255, 0.9);
+        /* Fondo blanco semi-transparente */
+        border: none;
+        /* Sin borde */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        /* Sombra suave */
+        border-radius: 8px;
+        /* Bordes redondeados */
+        padding: 10px;
+        /* Espaciado interno */
+    }
+
+    .dropdown-item {
+        color: #333;
+        /* Color de texto oscuro */
+        font-weight: 500;
+        /* Texto un poco más grueso */
+        padding: 8px 16px;
+        /* Espaciado interno */
+        border-radius: 4px;
+        /* Bordes redondeados */
+        transition: background-color 0.3s ease, color 0.3s ease;
+        /* Transición suave */
+    }
+
+    .dropdown-item:hover {
+        background-color: rgba(255, 0, 0, 0.1);
+        /* Fondo rojo claro al pasar el cursor */
+        color: red;
+        /* Color de texto rojo */
+    }
+
+    .dropdown-divider {
+        margin: 5px 0;
+        /* Espacio para el separador */
+    }
+
+    /* Estilos para el ícono de usuario */
+    .user-icon {
+        font-size: 1.2rem;
+        /* Tamaño del ícono */
+        color: #333;
+        /* Color del ícono */
+        margin-left: 10px;
+        /* Espacio a la izquierda */
+        transition: color 0.3s ease;
+        /* Transición suave */
+    }
+
+    .user-icon:hover {
+        color: red;
+        /* Cambiar color al pasar el cursor */
+    }
+
+    /* Estilos para el navbar en modo móvil */
+    @media (max-width: 991.98px) {
+        .navbar-nav .nav-item {
+            background-color: rgba(255, 255, 255, 0.9);
+            /* Fondo blanco semi-transparente */
+            margin: 5px 0;
+            /* Espacio entre elementos */
+            border-radius: 8px;
+            /* Bordes redondeados */
+            padding: 8px 15px;
+            /* Espaciado interno */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            /* Sombra suave */
+        }
+
+        .navbar-nav .nav-link {
+            color: #333 !important;
+            /* Color de texto oscuro */
+            font-weight: 500;
+            /* Texto un poco más grueso */
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: red !important;
+            /* Color al pasar el cursor */
+        }
+
+        .navbar-nav .dropdown-menu {
+            background-color: rgba(255, 255, 255, 0.9);
+            /* Fondo blanco semi-transparente */
+            border: none;
+            /* Sin borde */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            /* Sombra suave */
+            margin-top: 5px;
+            /* Espacio superior */
+        }
+
+        .navbar-nav .dropdown-item {
+            color: #333;
+            /* Color de texto oscuro */
+            padding: 8px 16px;
+            /* Espaciado interno */
+        }
+
+        .navbar-nav .dropdown-item:hover {
+            background-color: rgba(255, 0, 0, 0.1);
+            /* Fondo rojo claro al pasar el cursor */
+            color: red;
+            /* Color de texto rojo */
+        }
+
+        .navbar-nav .cart-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.9);
+            /* Fondo blanco semi-transparente */
+            border-radius: 8px;
+            /* Bordes redondeados */
+            padding: 8px 15px;
+            /* Espaciado interno */
+        }
+
+        .navbar-nav .cart-icon .bi-cart {
+            color: #333;
+            /* Color del ícono */
+        }
+
+        .navbar-nav .cart-count {
+            background-color: red;
+            /* Fondo rojo */
+            color: white;
+            /* Texto blanco */
+        }
+    }
 </style>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
@@ -162,11 +295,18 @@
                     <a class="nav-link" href="/contacto">Contactos</a>
                 </li>
                 {% if session.get('usuario_id') %}
-                <li class="nav-item">
-                    <span class="nav-link">Bienvenido, {{ session.get('nombreUsuario') }}</span>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/logout">Cerrar Sesión</a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown"
+                        role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle user-icon"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                        <li><span class="dropdown-item">Bienvenido, {{ session.get('nombreUsuario') }}</span></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" href="/logout">Cerrar Sesión</a></li>
+                    </ul>
                 </li>
                 {% else %}
                 <li class="nav-item">
