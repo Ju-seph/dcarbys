@@ -256,6 +256,16 @@ def confirmar_pedido_cliente(pedido_id):
 def aceptar_pedido(pedido_id):
     return ped.aceptar_pedido(pedido_id)
 
+@app.route('/obtener_numero_pedidos_pendientes', methods=['GET'])
+def obtener_numero_pedidos_pendientes():
+    try:
+        # Contar los pedidos pendientes
+        count = db.pedidos_temporales.count_documents({"estado": "pendiente"})
+        return jsonify({"success": True, "count": count}), 200
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
 if __name__ == "__main__":
     # Ejecutar la aplicación Flask
     app.run(host=os.getenv("HOST", "0.0.0.0"), port=int(os.getenv("PORT", 5000)))

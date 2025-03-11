@@ -68,6 +68,39 @@
                 });
         }
     }
+
+    let lastCount = 0;
+
+    function actualizarPedidosPendientes() {
+        fetch('/obtener_numero_pedidos_pendientes')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const badge = document.getElementById('pedidos-pendientes-badge');
+                    const tabTitle = document.getElementById('v-pills-pedidos-tab');
+                    if (data.count > 0) {
+                        badge.textContent = data.count;
+                        badge.style.display = 'inline-block';
+                        tabTitle.textContent = `Pedidos (${data.count})`;
+                        document.title = `(${data.count}) Pedidos - Panel de Administración`;
+
+                        // Reproducir sonido si hay un nuevo pedido
+                        if (data.count > lastCount) {
+                            const audio = new Audio('/public/sounds/notification.mp3');
+                            audio.play();
+                        }
+                    } else {
+                        badge.style.display = 'none';
+                        tabTitle.textContent = 'Pedidos';
+                        document.title = 'Pedidos - Panel de Administración';
+                    }
+                    lastCount = data.count;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
     $(document).ready(function () {
         // Función para cargar los pedidos pendientes
         function cargarPedidosPendientes() {
