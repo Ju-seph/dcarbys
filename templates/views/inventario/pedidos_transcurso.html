@@ -79,9 +79,6 @@
     }
 
     /* Botones en la columna de acciones */
-
-
-    /* Estilos para los botones */
     .btn-sm {
         margin: 2px;
     }
@@ -118,10 +115,18 @@
                     data: 'fecha_confirmacion',
                     render: function (data) {
                         if (data) {
-                            const fecha = new Date(data);
-                            // Ajustar la fecha a la zona horaria local
-                            const fechaLocal = new Date(fecha.getTime() - (fecha.getTimezoneOffset() * 60000));
-                            return fechaLocal.toLocaleString(); // Formato legible
+                            const fecha = new Date(data); // Convertir la cadena ISO a un objeto Date
+                            // Formatear la fecha y hora en UTC (sin ajustes de zona horaria)
+                            const opciones = {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit',
+                                timeZone: 'UTC' // Forzar el uso de UTC
+                            };
+                            return fecha.toLocaleString('es-EC', opciones); // Formato personalizado en UTC
                         }
                         return 'No disponible';
                     }
