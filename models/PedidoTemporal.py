@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from bson import ObjectId
 
 class PedidoTemporal:
-    def __init__(self, numero_pedido, usuario_id, productos, nombre, celular, direccion, ciudad, referencia, total, estado="pendiente"):
+    def __init__(self, numero_pedido, usuario_id, productos, nombre, celular, direccion, ciudad, referencia, total, metodo_pago, estado="pendiente"):
         self._id = ObjectId()
         self.numero_pedido = numero_pedido
         self.usuario_id = usuario_id
@@ -13,6 +13,7 @@ class PedidoTemporal:
         self.ciudad = ciudad
         self.referencia = referencia
         self.total = total
+        self.metodo_pago = metodo_pago  # Nuevo campo para el método de pago
         self.estado = estado
         self.estado_administrador = "pendiente"  # Estado del administrador (aceptado/rechazado)
         self.estado_cliente = "pendiente"  # Estado del cliente (confirmado/cancelado)
@@ -42,6 +43,7 @@ class PedidoTemporal:
             direccion=data['direccion'],
             referencia=data['referencia'],
             total=data['total'],
+            metodo_pago=data['metodo_pago'],  # Nuevo campo para el método de pago
             estado=data.get('estado', 'pendiente')
         )
         if '_id' in data:
@@ -53,4 +55,3 @@ class PedidoTemporal:
         if 'expireDateTime' in data:
             pedido.expireDateTime = data['expireDateTime']
         return pedido
-

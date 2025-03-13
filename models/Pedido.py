@@ -2,7 +2,7 @@ from datetime import datetime
 from bson import ObjectId
 
 class Pedido:
-    def __init__(self, numero_pedido, usuario_id, productos, nombre, celular, direccion, ciudad, referencia, total, estado="en transcurso"):
+    def __init__(self, numero_pedido, usuario_id, productos, nombre, celular, direccion, ciudad, referencia, total, metodo_pago, estado="en transcurso"):
         self._id = ObjectId()
         self.numero_pedido = numero_pedido
         self.usuario_id = usuario_id
@@ -13,13 +13,15 @@ class Pedido:
         self.ciudad = ciudad
         self.referencia = referencia
         self.total = total
+        self.metodo_pago = metodo_pago  # Nuevo campo para el método de pago
         self.estado = estado  # Estados: "en transcurso", "finalizado", "cancelado"
         self.cancelado_por = None  # Nuevo campo para almacenar quién canceló el pedido
-        self.rol_cancelado= None
+        self.rol_cancelado = None
         self.tiempo_estimado = ""  # Nuevo campo para el tiempo estimado
         self.fecha_confirmacion = None
         self.createDateTime = None
         self.updateDateTime = None
+
     def getPedido(self):
         return self.__dict__
 
@@ -40,8 +42,9 @@ class Pedido:
             celular=data['celular'],
             direccion=data['direccion'],
             ciudad=data['ciudad'],
-            referencia=data['codigo_postal'],
+            referencia=data['referencia'],
             total=data['total'],
+            metodo_pago=data['metodo_pago'],  # Nuevo campo para el método de pago
             estado=data.get('estado', 'confirmado')
         )
         if '_id' in data:
@@ -65,8 +68,8 @@ class Pedido:
             direccion=pedido_temporal['direccion'],
             ciudad=pedido_temporal['ciudad'],
             referencia=pedido_temporal['referencia'],
-            total=pedido_temporal['total']
+            total=pedido_temporal['total'],
+            metodo_pago=pedido_temporal['metodo_pago']  # Nuevo campo para el método de pago
         )
         pedido.createPedido()
         return pedido
-

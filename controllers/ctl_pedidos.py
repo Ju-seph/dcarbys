@@ -33,7 +33,8 @@ def procesar_pedido(request):
             ciudad=data['ciudad'],
             direccion=data['direccion'],
             referencia=data['referencia'],
-            total=data['total']
+            total=data['total'],
+            metodo_pago=data['metodo_pago']  # Nuevo campo para el método de pago
         )
         pedido_temporal.createPedidoTemporal()
 
@@ -52,50 +53,6 @@ def procesar_pedido(request):
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
-def confirmar_pedido(order_id):
-    try:
-        data = request.get_json()
-        tiempo_estimado = data.get("tiempo_estimado")  # Tiempo estimado en minutos
-
-        # Buscar el pedido temporal
-        pedido_temporal_doc = db.pedidos_temporales.find_one({"_id": ObjectId(order_id)})
-
-        if not pedido_temporal_doc:
-            return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
-
-        # Verificar si el pedido ha expirado
-        if datetime.now() > pedido_temporal_doc['expireDateTime']:
-            # Devolver el stock y eliminar el pedido temporal
-            with db.client.start_session() as db_session:
-                with db_session.start_transaction():
-                    for item in pedido_temporal_doc['productos']:
-                        db.productos.update_one(
-                            {"_id": ObjectId(item['id'])},
-                            {"$inc": {"cantidad": item['quantity']}},
-                            session=db_session
-                        )
-                    db.pedidos_temporales.delete_one({"_id": ObjectId(order_id)}, session=db_session)
-            return jsonify({"success": False, "message": "El pedido ha expirado"}), 400
-
-        # Crear un pedido confirmado a partir del pedido temporal
-        pedido_temporal = PedidoTemporal.from_dict(pedido_temporal_doc)
-        pedido_confirmado = Pedido.from_pedido_temporal(pedido_temporal.getPedidoTemporal())
-        pedido_confirmado.estado = "en transcurso"  # Cambiar el estado a "en transcurso"
-        pedido_confirmado.tiempo_estimado = tiempo_estimado  # Establecer el tiempo estimado
-
-        # Insertar el pedido confirmado en la colección permanente
-        result = db.pedidos.insert_one(pedido_confirmado.getPedido())
-
-        if not result.inserted_id:
-            return jsonify({"success": False, "message": "Error al confirmar el pedido"}), 500
-
-        # Eliminar el pedido temporal
-        db.pedidos_temporales.delete_one({"_id": ObjectId(order_id)})
-
-        return jsonify({"success": True, "message": "Pedido confirmado con éxito"}), 200
-
-    except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
     
 def aceptar_pedido(pedido_id):
     try:
@@ -158,6 +115,7 @@ def aceptar_pedido(pedido_id):
             "ciudad": pedido_temporal['ciudad'],
             "referencia": pedido_temporal['referencia'],
             "total": pedido_temporal['total'],
+            "metodo_pago": pedido_temporal['metodo_pago'],  # Incluir el método de pago
             "estado": "en transcurso",  # Cambiar el estado a "en transcurso"
             "tiempo_estimado": tiempo_estimado,  # Establecer el tiempo estimado
             "fecha_confirmacion": datetime.now()  # Agregar la fecha de confirmación
@@ -178,66 +136,6 @@ def aceptar_pedido(pedido_id):
         return jsonify({"success": False, "message": str(e)}), 500
 
 
-
-def cancelar_pedido(pedido_id):
-    try:
-        # Buscar el pedido en la colección de pedidos temporales
-        pedido_temporal = db.pedidos_temporales.find_one({"_id": ObjectId(pedido_id)})
-
-        if not pedido_temporal:
-            # Si no se encuentra en pedidos temporales, buscar en pedidos confirmados o cancelados
-            pedido = db.pedidos.find_one({"_id": ObjectId(pedido_id)})
-            if not pedido:
-                return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
-
-            # Si el pedido ya está en la colección de pedidos, cambiar su estado a "cancelado"
-            db.pedidos.update_one(
-                {"_id": ObjectId(pedido_id)},
-                {"$set": {"estado": "cancelado", "cancelado_por": "cliente"}}
-            )
-
-            return jsonify({"success": True, "message": "Pedido cancelado con éxito"}), 200
-
-        # Si el pedido está en la colección de pedidos temporales, moverlo a la colección de pedidos con estado "cancelado"
-        pedido_cancelado = {
-            "_id": ObjectId(pedido_id),  # Mantener el mismo _id
-            "numero_pedido": pedido_temporal['numero_pedido'],
-            "usuario_id": pedido_temporal['usuario_id'],
-            "productos": pedido_temporal['productos'],
-            "nombre": pedido_temporal['nombre'],
-            "celular": pedido_temporal['celular'],
-            "direccion": pedido_temporal['direccion'],
-            "ciudad": pedido_temporal['ciudad'],
-            "referencia": pedido_temporal['referencia'],
-            "total": pedido_temporal['total'],
-            "estado": "cancelado",  # Cambiar el estado a "cancelado"
-            "cancelado_por": "cliente",  # Especificar que fue cancelado por el cliente
-            "fecha_cancelacion": datetime.now()  # Agregar la fecha de cancelación
-        }
-
-        # Insertar el pedido cancelado en la colección permanente
-        result = db.pedidos.insert_one(pedido_cancelado)
-
-        if not result.inserted_id:
-            return jsonify({"success": False, "message": "Error al cancelar el pedido"}), 500
-
-        # Devolver el stock de los productos
-        with db.client.start_session() as db_session:
-            with db_session.start_transaction():
-                for item in pedido_temporal['productos']:
-                    db.productos.update_one(
-                        {"_id": ObjectId(item['id'])},
-                        {"$inc": {"cantidad": item['quantity']}},  # Incrementar el stock
-                        session=db_session
-                    )
-                # Eliminar el pedido temporal
-                db.pedidos_temporales.delete_one({"_id": ObjectId(pedido_id)}, session=db_session)
-
-        return jsonify({"success": True, "message": "Pedido cancelado con éxito"}), 200
-
-    except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
-    
 
 
 def cancelar_pedido_admin(pedido_id):
@@ -380,7 +278,7 @@ def obtener_detalles_pedido(pedido_id):
             "ciudad": pedido.get("ciudad"),
             "direccion": pedido.get("direccion"),
             "referencia": pedido.get("referencia"),
-            "metodo_pago": pedido.get("metodo_pago", "No especificado"),  # Campo opcional
+            "metodo_pago": pedido.get("metodo_pago", "No especificado"),  # Incluir el método de pago
             "total": pedido.get("total"),
             "productos": pedido.get("productos", [])  # Lista de productos
         }
