@@ -115,8 +115,8 @@ def checkout():
     if 'usuario_id' not in session:
         session['next'] = url_for('checkout')
         return redirect(url_for('login_user'))
-    
-    return render_template('views/checkout.html')
+    payphone={"token":os.getenv("token"),"storeid":os.getenv("storeid")}
+    return render_template('views/checkout.html', payphone=payphone)
 
 # Nueva ruta para procesar el pedido
 @app.route('/procesar_pedido', methods=['POST'])
