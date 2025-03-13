@@ -404,10 +404,12 @@
                 <link href="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.css" rel="stylesheet">
 
                 <script>
+                    const purchaseNumber = Math.floor(100000 + Math.random() * 900000);
+                    document.getElementById('purchase-number').textContent = purchaseNumber;
                     window.addEventListener('DOMContentLoaded', () => {
                         ppb = new PPaymentButtonBox({
                             token: 'xj2aO22-Xvo6nLsY7qHgp0ekB9H-5Dr_n0XxtD_20WraphPq2OqeitYdzaE8JRZyIT-zF8VBHOvsxwW64xVBCpSQf8QQvMmOwCcem6KdZHtup6Grh9PO_5gpxf7GlxPaeVSb5k6pbDmAIzDhQCCdC2ovDNAT0EwVspuEMs0w5VjDYbZjJfl5GRvzA9YNJ-IgepodORw_15csZMbNXQdBMgY_zs6nMDoKWghinq7JGuQgDkUPzSk4EI3y6Wd7XV7ZVTJbJ8RvAP4pcrWM69oGNGnOcTHV1N5EK6XcYvHpc8DWSyAjmqNWQXMa1YmLM9GJhhgmRgxZJpm2NGwMAXDCx9Y5CKA',
-                            clientTransactionId: 'Clinet-001',
+                            clientTransactionId: purchaseNumber,
                             amount: 315,
                             amountWithoutTax: 200,
                             amountWithTax: 100,
@@ -460,8 +462,7 @@
         let total = 0;
 
         // Generar un número de pedido aleatorio
-        const purchaseNumber = Math.floor(100000 + Math.random() * 900000);
-        document.getElementById('purchase-number').textContent = purchaseNumber;
+        
 
         // Mostrar el resumen del carrito
         cart.forEach(item => {
