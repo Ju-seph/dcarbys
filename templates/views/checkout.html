@@ -329,127 +329,8 @@
     </div>
 </nav>
 
-<div class="container mt-5">
-    <h2>Finalizar Compra</h2>
-    <div class="row">
-        <div class="col-md-8">
-            <h3>Resumen del Pedido</h3>
-            <p>Número de Pedido: <strong id="purchase-number"></strong></p>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Producto</th>
-                        <th>Cantidad</th>
-                        <th>Precio Unitario</th>
-                        <th>Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody id="cart-summary">
-                    <!-- El resumen del carrito se llenará con JavaScript -->
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                        <td><strong id="cart-total"></strong></td>
-                    </tr>
-                </tfoot>
-            </table>
-
-            <form id="checkout-form">
-                <h3>Información de Envío</h3>
-                <div class="mb-3">
-                    <label for="nombre" class="form-label">Nombre Completo</label>
-                    <input type="text" class="form-control" id="nombre" name="nombre" required>
-                </div>
-                <div class="mb-3">
-                    <label for="celular" class="form-label">Celular</label>
-                    <input type="tel" class="form-control" id="celular" name="celular" pattern="09\d{8}" required>
-                    <small class="form-text text-muted">Ingrese un número de celular válido en Ecuador (ej.
-                        0987654321).</small>
-                </div>
-                <div class="mb-3">
-                    <label for="ciudad" class="form-label">Ciudad</label>
-                    <input type="text" class="form-control" id="ciudad" name="ciudad" required>
-                </div>
-                <div class="mb-3">
-                    <label for="direccion" class="form-label">Dirección</label>
-                    <input type="text" class="form-control" id="direccion" name="direccion" required>
-                </div>
-                <div class="mb-3">
-                    <label for="Referencia" class="form-label">Referencia (opcional)</label>
-                    <input type="text" class="form-control" id="Referencia" name="Referencia">
-                </div>
-
-                <!-- Método de pago -->
-                <div class="mb-3">
-                    <label class="form-label">Método de Pago <span class="text-danger">*</span></label>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="metodo_pago" id="pago_efectivo"
-                            value="efectivo" required>
-                        <label class="form-check-label" for="pago_efectivo">
-                            Pago en efectivo
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="metodo_pago" id="pago_boton" value="boton"
-                            disabled>
-                        <label class="form-check-label" for="pago_boton">
-                            Botón de pago (próximamente)
-                        </label>
-                    </div>
-                </div>
-
-                <script src="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js"
-                    type="module"></script>
-                <link href="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.css" rel="stylesheet">
-
-                <script>
-                    const purchaseNumber = Math.floor(100000 + Math.random() * 900000);
-                    document.getElementById('purchase-number').textContent = purchaseNumber;
-                    window.addEventListener('DOMContentLoaded', () => {
-                        ppb = new PPaymentButtonBox({
-                            token:"{{payphone.token}}",
-                            clientTransactionId: purchaseNumber,
-                            amount: document.getElementById("cart-total").value*100,
-                            amountWithoutTax: 200,
-                            amountWithTax: 100,
-                            tax: 15,
-                            currency: "USD",
-                            storeId: "{{payphone.storeid}}",
-                            reference: "Pago por venta Fact#001"
-                        }).render('pp-button');
-                    })
-                </script>
-
-                <div id="pp-button"></div>
-
-                <button type="submit" class="btn btn-primary" id="procesar-pedido" disabled>Procesar Pedido</button>
-            </form>
-
-            <!-- Mensaje de espera -->
-            <div id="waiting-message" class="waiting-message" style="display: none;">
-                <h3>Esperando confirmación</h3>
-                <p>Tu pedido ha sido procesado. Por favor, espera a que el administrador confirme tu pedido.</p>
-            </div>
-
-            <!-- Mensaje de confirmación -->
-            <div id="confirmation-message" class="waiting-message" style="display: none;">
-                <h3>Pedido Confirmado</h3>
-                <p>¡Tu pedido ha sido confirmado! Pronto recibirás más detalles.</p>
-                <a href="/" class="btn btn-primary">Volver al inicio</a>
-            </div>
-
-            <!-- Mensaje de cancelación -->
-            <div id="cancellation-message" class="waiting-message" style="display: none;">
-                <h3>Pedido Cancelado</h3>
-                <p>Tu pedido ha sido cancelado. Si tienes alguna duda, contáctanos.</p>
-                <a href="/" class="btn btn-primary">Volver al inicio</a>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script>
+    
     document.addEventListener('DOMContentLoaded', function () {
         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
         const cartSummary = document.getElementById('cart-summary');
@@ -461,8 +342,9 @@
         const procesarPedidoBtn = document.getElementById('procesar-pedido');
         let total = 0;
 
+
         // Generar un número de pedido aleatorio
-        
+
 
         // Mostrar el resumen del carrito
         cart.forEach(item => {
@@ -480,6 +362,8 @@
         });
 
         cartTotal.textContent = `$${total.toFixed(2)}`;
+
+
 
         // Validar campos obligatorios y habilitar/deshabilitar el botón
         const camposObligatorios = ['nombre', 'celular', 'ciudad', 'direccion'];
@@ -637,4 +521,140 @@
         }
     });
 </script>
+
+<div class="container mt-5">
+    <h2>Finalizar Compra</h2>
+    <div class="row">
+        <div class="col-md-8">
+            <h3>Resumen del Pedido</h3>
+            <p>Número de Pedido: <strong id="purchase-number"></strong></p>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody id="cart-summary">
+                    <!-- El resumen del carrito se llenará con JavaScript -->
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                        <td><strong id="cart-total"></strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <form id="checkout-form">
+                <h3>Información de Envío</h3>
+                <div class="mb-3">
+                    <label for="nombre" class="form-label">Nombre Completo</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre" required>
+                </div>
+                <div class="mb-3">
+                    <label for="celular" class="form-label">Celular</label>
+                    <input type="tel" class="form-control" id="celular" name="celular" pattern="09\d{8}" required>
+                    <small class="form-text text-muted">Ingrese un número de celular válido en Ecuador (ej.
+                        0987654321).</small>
+                </div>
+                <div class="mb-3">
+                    <label for="ciudad" class="form-label">Ciudad</label>
+                    <input type="text" class="form-control" id="ciudad" name="ciudad" required>
+                </div>
+                <div class="mb-3">
+                    <label for="direccion" class="form-label">Dirección</label>
+                    <input type="text" class="form-control" id="direccion" name="direccion" required>
+                </div>
+                <div class="mb-3">
+                    <label for="Referencia" class="form-label">Referencia (opcional)</label>
+                    <input type="text" class="form-control" id="Referencia" name="Referencia">
+                </div>
+
+                <!-- Método de pago -->
+                <div class="mb-3">
+                    <label class="form-label">Método de Pago <span class="text-danger">*</span></label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="metodo_pago" id="pago_efectivo"
+                            value="efectivo" required>
+                        <label class="form-check-label" for="pago_efectivo">
+                            Pago en efectivo
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="metodo_pago" id="pago_boton" value="boton"
+                            disabled>
+                        <label class="form-check-label" for="pago_boton">
+                            Botón de pago (próximamente)
+                        </label>
+                    </div>
+                </div>
+
+                <script src="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js"
+                    type="module"></script>
+                <link href="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.css" rel="stylesheet">
+
+                <script>
+                    let total=0
+                    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+                    cart.forEach(item => {
+                        const subtotal = item.price * item.quantity;
+                        total += subtotal;
+
+                    });
+                    
+
+                    // Asumimos que la proporción entre monto sin impuesto y monto con impuesto es la misma del ejemplo
+                    let amount = total * 100
+                    let amountWithoutTax =  amount*0.15; // Parte sin impuesto
+                   
+                    const purchaseNumber = Math.floor(100000 + Math.random() * 900000);
+                    document.getElementById('purchase-number').textContent = purchaseNumber;
+                    window.addEventListener('DOMContentLoaded', () => {
+                        ppb = new PPaymentButtonBox({
+                            token: "{{payphone.token}}",
+                            clientTransactionId: purchaseNumber,
+                            amount: amount,
+                            amountWithoutTax: amountWithoutTax,
+                            currency: "USD",
+                            storeId: "{{payphone.storeid}}",
+                            reference: "Pago por venta"+purchaseNumber
+                        }).render('pp-button');
+                    })
+                    
+
+                </script>
+
+
+                <div id="pp-button"></div>
+
+                <button type="submit" class="btn btn-primary" id="procesar-pedido" disabled>Procesar Pedido</button>
+            </form>
+
+            <!-- Mensaje de espera -->
+            <div id="waiting-message" class="waiting-message" style="display: none;">
+                <h3>Esperando confirmación</h3>
+                <p>Tu pedido ha sido procesado. Por favor, espera a que el administrador confirme tu pedido.</p>
+            </div>
+
+            <!-- Mensaje de confirmación -->
+            <div id="confirmation-message" class="waiting-message" style="display: none;">
+                <h3>Pedido Confirmado</h3>
+                <p>¡Tu pedido ha sido confirmado! Pronto recibirás más detalles.</p>
+                <a href="/" class="btn btn-primary">Volver al inicio</a>
+            </div>
+
+            <!-- Mensaje de cancelación -->
+            <div id="cancellation-message" class="waiting-message" style="display: none;">
+                <h3>Pedido Cancelado</h3>
+                <p>Tu pedido ha sido cancelado. Si tienes alguna duda, contáctanos.</p>
+                <a href="/" class="btn btn-primary">Volver al inicio</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 {% endblock %}
