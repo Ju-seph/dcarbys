@@ -410,7 +410,7 @@
                         ppb = new PPaymentButtonBox({
                             token:"{{payphone.token}}",
                             clientTransactionId: purchaseNumber,
-                            amount: 315,
+                            amount: document.getElementById("cart-total").value*100,
                             amountWithoutTax: 200,
                             amountWithTax: 100,
                             tax: 15,
