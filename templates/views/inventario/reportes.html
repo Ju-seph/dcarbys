@@ -1,0 +1,128 @@
+<div class="container-fluid">
+    <h3 class="text-center mb-4">Reportes de Ventas</h3>
+
+    <!-- Filtros para el reporte -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <label for="fechaInicio">Fecha de Inicio</label>
+            <input type="date" id="fechaInicio" class="form-control">
+        </div>
+        <div class="col-md-3">
+            <label for="fechaFin">Fecha de Fin</label>
+            <input type="date" id="fechaFin" class="form-control">
+        </div>
+        <div class="col-md-3">
+            <label for="agrupacion">Agrupar por</label>
+            <select id="agrupacion" class="form-control">
+                <option value="dia">Día</option>
+                <option value="semana">Semana</option>
+                <option value="mes">Mes</option>
+            </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <button class="btn btn-primary" onclick="generarReporte()">Generar Reporte</button>
+        </div>
+    </div>
+
+    <!-- Resultados del reporte -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    Producto Más Vendido
+                </div>
+                <div class="card-body" id="productoMasVendido">
+                    <!-- Aquí se mostrará el producto más vendido -->
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    Producto Menos Vendido
+                </div>
+                <div class="card-body" id="productoMenosVendido">
+                    <!-- Aquí se mostrará el producto menos vendido -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico de ventas -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    Gráfico de Ventas
+                </div>
+                <div class="card-body">
+                    <canvas id="graficoVentas" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Incluir Chart.js para gráficos -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    let graficoVentas;
+
+    function generarReporte() {
+        const fechaInicio = document.getElementById('fechaInicio').value;
+        const fechaFin = document.getElementById('fechaFin').value;
+        const agrupacion = document.getElementById('agrupacion').value;
+
+        fetch(`/generar_reporte_ventas?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}&agrupacion=${agrupacion}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mostrar el producto más vendido
+                    document.getElementById('productoMasVendido').innerHTML = `
+                        <p><strong>Producto:</strong> ${data.productoMasVendido.nombre}</p>
+                        <p><strong>Cantidad Vendida:</strong> ${data.productoMasVendido.cantidad}</p>
+                    `;
+
+                    // Mostrar el producto menos vendido
+                    document.getElementById('productoMenosVendido').innerHTML = `
+                        <p><strong>Producto:</strong> ${data.productoMenosVendido.nombre}</p>
+                        <p><strong>Cantidad Vendida:</strong> ${data.productoMenosVendido.cantidad}</p>
+                    `;
+
+                    // Actualizar el gráfico de ventas
+                    if (graficoVentas) {
+                        graficoVentas.destroy();
+                    }
+
+                    const ctx = document.getElementById('graficoVentas').getContext('2d');
+                    graficoVentas = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.graficoVentas.labels,
+                            datasets: [{
+                                label: 'Cantidad Vendida',
+                                data: data.graficoVentas.data,
+                                backgroundColor: 'rgba(219, 22, 22, 0.2)',
+                                borderColor: 'rgba(219, 22, 22, 1)',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    alert('Error al generar el reporte: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Hubo un error al generar el reporte');
+            });
+    }
+</script>

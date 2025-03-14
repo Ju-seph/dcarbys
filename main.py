@@ -279,6 +279,10 @@ def obtener_numero_pedidos_pendientes():
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
+@app.route('/generar_reporte_ventas', methods=['GET'])
+def generar_reporte_ventas_route():
+    return ped.generar_reporte_ventas()
+
 
 if __name__ == "__main__":
     # Ejecutar la aplicación Flask

@@ -174,7 +174,7 @@
                             `Ciudad: ${pedido.ciudad}`,
                             `Dirección: ${pedido.direccion}`,
                             `Referencia: ${pedido.referencia}`,
-                            `Método de Pago: ${pedido.metodo_pago || 'No especificado'}`, // Campo opcional
+                            `Método de Pago: ${pedido.metodo_pago}`, 
                             `Total: $${pedido.total.toFixed(2)}`,
                             `Fecha de Confirmación: ${pedido.fecha_confirmacion ? new Date(pedido.fecha_confirmacion).toLocaleString() : 'No disponible'}`,
                             `Fecha de Finalización: ${pedido.fecha_finalizacion ? new Date(pedido.fecha_finalizacion).toLocaleString() : 'No disponible'}`,
