@@ -202,13 +202,7 @@
                         </div>
                         {% endif %}
 
-                        {% if session.rol == 'Administrador' %}
-                        <!-- Dentro del contenido principal -->
-                        <div class="tab-pane fade" id="v-pills-reportes" role="tabpanel"
-                            aria-labelledby="v-pills-reportes-tab">
-                            {% include '/views/inventario/reportes.html' %}
-                        </div>
-                        {% endif %}
+
 
                         <!-- Gestión de Pedidos (para Administrador y Asistente) -->
                         <div class="tab-pane fade {% if session.rol == 'Asistente' %}show active{% endif %}"
@@ -246,6 +240,14 @@
                                 </div>
                             </div>
                         </div>
+
+                        {% if session.rol == 'Administrador' %}
+                        <!-- Dentro del contenido principal -->
+                        <div class="tab-pane fade" id="v-pills-reportes" role="tabpanel"
+                            aria-labelledby="v-pills-reportes-tab">
+                            {% include '/views/inventario/reportes.html' %}
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
