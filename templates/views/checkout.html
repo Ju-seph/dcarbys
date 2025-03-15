@@ -675,9 +675,10 @@
                         ppb = new PPaymentButtonBox({
                             token: "{{payphone.token}}",
                             clientTransactionId: purchaseNumber,
-                            amount: amount,
-                            amountWithoutTax: amountWithoutTax,
-                            amountWithTax:amountWithTax,
+                            amount: 315,
+                            amountWithoutTax: 200,
+                            amountWithTax:100,
+                            tax: 15,
                             currency: "USD",
                             storeId: "{{payphone.storeid}}",
                             reference: "Pago por venta" + purchaseNumber
