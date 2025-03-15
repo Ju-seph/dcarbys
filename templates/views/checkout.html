@@ -666,7 +666,7 @@
 
                     // Asumimos que la proporción entre monto sin impuesto y monto con impuesto es la misma del ejemplo
                     let amount = Math.round(total * 100)
-                    let amountWithoutTax = Math.round((amount * 0.15)*100); // Parte sin impuesto
+                    let amountWithoutTax = Math.round(amount * 0.15); // Parte sin impuesto
 
                     const purchaseNumber = Math.floor(100000 + Math.random() * 900000);
                     document.getElementById('purchase-number').textContent = purchaseNumber;
