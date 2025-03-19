@@ -70,21 +70,21 @@ def logout_user():
 
 # ADMINISTRADOR
 
-@app.route('/usuarios', methods=['GET'])
-def obtener_usuarios():
-    try:
-        # Obtener usuarios de la base de datos
-        usuarios = db.users.find({})
-        lista_usuarios = []
-        for usuario in usuarios:
-            usuario["_id"] = str(usuario["_id"])  # Convertir ObjectId a string
-            lista_usuarios.append(usuario)
-        return jsonify({"data": lista_usuarios}), 200
-    except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
+@app.route('/edit_usuarios', methods=['POST'])
+def edit_user_route():
+    return usu.edit_user(request)
+
+@app.route('/del_usuarios', methods=['POST'])
+def delete_user_route():
+    return usu.delete_user(request)
+
+@app.route('/obtener_usuario', methods=['POST'])
+def get_user_route():
+    return usu.get_user(request)
+
     
 
-@app.route('/ver_usuarios', methods=["GET", "POST"])
+@app.route('/ver_usuarios', methods=["POST"])
 def ver_usuarios():
     return usu.ver_usuarios(request)
 

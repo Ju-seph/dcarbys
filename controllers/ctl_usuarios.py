@@ -2,6 +2,7 @@ from flask import render_template, session, redirect, url_for, abort,jsonify,jso
 from database.mongodb import Mongodb
 import controllers.ctl_encrypt as ctl_encrypt
 from controllers.ctl_encrypt import encrypt, decrypt
+from datetime import datetime
 from bson.objectid import ObjectId
 from models.user import User
 
@@ -128,55 +129,33 @@ def logout_user():
 # Funciones Dentro de principal.html
 
 def ver_usuarios(request):
-    try:
-        # Verificar si el método es POST
-        if request.method == 'POST':
-            # Obtener el usuario actual de la sesión
-            usuario_actual = session.get("nombreUsuario")
-            rol_actual = session.get("rol")
+    if request.method == 'POST':
+        try:
+            # Obtener todos los usuarios de la base de datos
+            usuarios = db.users.find()
+            lista_usuarios = list(usuarios)
 
-            if not usuario_actual or rol_actual != "Administrador":
-                # Validar que el usuario esté autenticado y sea administrador
-                return jsonify({"message": "Acceso no autorizado."}), 403
+            # Procesar cada usuario
+            for usuario in lista_usuarios:
+                usuario["_id"] = str(usuario["_id"])  # Convertir ObjectId a cadena
+                usuario["id"] = usuario["_id"]        # Agregar un alias "id"
 
-            # Consultar usuarios excluyendo al actual y a otros administradores
-            usuarios = db.users.find({
-                "$and": [
-                    {"nombreUsuario": {"$ne": usuario_actual}},  # Excluir al usuario en sesión
-                    {"rol": {"$ne": "Administrador"}}  # Excluir administradores
-                ]
-            })
-
-            # Verificar si la consulta devuelve resultados
-            if not usuarios:
-                return jsonify({"data": []}), 200
-
-            datos_usuarios = []
-
-            # Procesar los usuarios
-            for user in usuarios:
+                # Desencriptar la clave (si es necesario)
                 try:
-                    # Desencriptar la clave
-                    user["clave"] = ctl_encrypt.decrypt(user["clave"])
+                    usuario["clave"] = ctl_encrypt.decrypt(usuario["clave"])
                 except Exception as e:
-                    print(f"Error al desencriptar clave para el usuario {user.get('nombreUsuario', 'Desconocido')}: {e}")
-                    user["clave"] = "Error al desencriptar"
+                    print(f"Error al desencriptar clave para el usuario {usuario.get('nombreUsuario', 'Desconocido')}: {e}")
+                    usuario["clave"] = "Error al desencriptar"
 
-                # Convertir ObjectId a string y agregar a la lista
-                user["_id"] = str(user["_id"])
-                datos_usuarios.append(user)
+            # Estructura esperada por DataTables
+            datos = {"data": lista_usuarios}
+            return jsonify(datos), 200  # Usar jsonify directamente para JSON válido
 
-            # Preparar respuesta para DataTables
-            datos = {"data": datos_usuarios}
-            return jsonify(datos), 200
+        except Exception as e:
+            print(f"Error al obtener los usuarios: {e}")
+            return jsonify({"message": f"Error al obtener los usuarios: {e}"}), 500
 
-        # Si el método no es POST, devolver error 405
-        return jsonify({"message": "Método no permitido."}), 405
-
-    except Exception as e:
-        # Manejar errores generales
-        print(f"Error al obtener usuarios: {e}")
-        return jsonify({"message": f"Error interno del servidor: {e}"}), 500
+    return jsonify({"message": "Petición Incorrecta"}), 405
 
 
 
@@ -237,3 +216,99 @@ def create_user(request):
     alertas["tipo"] = "warning"
     alertas["message"] = "Método no permitido."
     return jsonify(alertas), 405
+
+
+
+def edit_user(request):
+    alertas = {"tipo": "", "message": ""}
+
+    if request.method == 'POST':
+        try:
+            # Obtener los datos del formulario
+            user_id = request.form["u_id"]
+            nombreUsuario = request.form["u_nombreUsuario"].strip().lower()
+            correo = request.form["u_correo"].strip().lower()
+            rol = request.form["u_rol"]
+
+            # Validar el formato del correo electrónico
+            if not re.match(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$', correo):
+                alertas["tipo"] = "danger"
+                alertas["message"] = "El correo electrónico no es válido."
+                return jsonify(alertas), 400
+
+            # Actualizar el usuario en la base de datos
+            db.users.update_one(
+                {"_id": ObjectId(user_id)},
+                {"$set": {
+                    "nombreUsuario": nombreUsuario,
+                    "correo": correo,
+                    "rol": rol,
+                    "updateDateTime": datetime.now()
+                }}
+            )
+
+            alertas["tipo"] = "success"
+            alertas["message"] = "Usuario actualizado correctamente."
+            return jsonify(alertas), 200
+
+        except Exception as e:
+            print(f"Error al editar el usuario: {e}")
+            alertas["tipo"] = "danger"
+            alertas["message"] = f"Ocurrió un error al editar el usuario: {e}"
+            return jsonify(alertas), 500
+
+    alertas["tipo"] = "warning"
+    alertas["message"] = "Método no permitido."
+    return jsonify(alertas), 405
+
+
+
+def delete_user(request):
+    alertas = {"tipo": "", "message": ""}
+
+    if request.method == 'POST':
+        try:
+            # Obtener el ID del usuario a eliminar
+            user_id = request.form["u_id"]
+
+            # Eliminar el usuario de la base de datos
+            db.users.delete_one({"_id": ObjectId(user_id)})
+
+            alertas["tipo"] = "success"
+            alertas["message"] = "Usuario eliminado correctamente."
+            return jsonify(alertas), 200
+
+        except Exception as e:
+            print(f"Error al eliminar el usuario: {e}")
+            alertas["tipo"] = "danger"
+            alertas["message"] = f"Ocurrió un error al eliminar el usuario: {e}"
+            return jsonify(alertas), 500
+
+    alertas["tipo"] = "warning"
+    alertas["message"] = "Método no permitido."
+    return jsonify(alertas), 405
+
+
+def get_user(request):
+    if request.method == 'POST':
+        try:
+            user_id = request.form["u_id"]
+            usuario = db.users.find_one({"_id": ObjectId(user_id)})
+            if usuario:
+                # Convertir ObjectId a cadena
+                usuario["_id"] = str(usuario["_id"])
+
+                # Desencriptar la clave (opcional)
+                if "clave" in usuario:
+                    try:
+                        usuario["clave"] = ctl_encrypt.decrypt(usuario["clave"])
+                    except Exception as e:
+                        print(f"Error al desencriptar la clave: {e}")
+                        usuario["clave"] = ""  # Dejar vacío si hay un error
+
+                return jsonify({"success": True, "usuario": usuario}), 200
+            else:
+                return jsonify({"success": False, "message": "Usuario no encontrado."}), 404
+        except Exception as e:
+            return jsonify({"success": False, "message": str(e)}), 500
+    return jsonify({"success": False, "message": "Método no permitido."}), 405
