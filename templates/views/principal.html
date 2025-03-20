@@ -295,6 +295,70 @@
         // Llamar a la función al cargar la página
         actualizarPedidosPendientes();
     });
+
+    // Add this to your principal.html file, inside a script tag
+    function checkForNewPayments() {
+        // This function will check for new payments every 10 seconds
+        setInterval(function () {
+            fetch('/obtener_pedidos_transcurso')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.data && data.data.length > 0) {
+                        // Check for new PayPhone payments
+                        const payPhonePayments = data.data.filter(pedido =>
+                            pedido.metodo_pago === 'payphone' &&
+                            pedido.payphone_status === 'Approved' &&
+                            !pedido.notificado
+                        );
+
+                        if (payPhonePayments.length > 0) {
+                            // Show notification for each new payment
+                            payPhonePayments.forEach(pedido => {
+                                // Create a notification
+                                const notification = document.createElement('div');
+                                notification.className = 'alert alert-success alert-dismissible fade show';
+                                notification.innerHTML = `
+                                <strong>¡Nuevo pago con PayPhone!</strong>
+                                <p>Pedido #${pedido.numero_pedido} - ${pedido.nombre}</p>
+                                <p>Total: $${pedido.total.toFixed(2)}</p>
+                                <p>ID de Transacción: ${pedido.payphone_id}</p>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            `;
+
+                                // Add the notification to the page
+                                document.querySelector('#notifications-container').appendChild(notification);
+
+                                // Mark the payment as notified
+                                fetch(`/marcar_notificado/${pedido._id}`, {
+                                    method: 'POST'
+                                });
+
+                                // Refresh the orders table
+                                if (typeof cargarPedidosEnTranscurso === 'function') {
+                                    cargarPedidosEnTranscurso();
+                                }
+                            });
+                        }
+                    }
+                })
+                .catch(error => console.error('Error checking for new payments:', error));
+        }, 10000);
+    }
+
+    // Call the function when the page loads
+    document.addEventListener('DOMContentLoaded', function () {
+        // Create a container for notifications if it doesn't exist
+        if (!document.querySelector('#notifications-container')) {
+            const container = document.createElement('div');
+            container.id = 'notifications-container';
+            container.className = 'position-fixed top-0 end-0 p-3';
+            container.style.zIndex = '1050';
+            document.body.appendChild(container);
+        }
+
+        // Start checking for new payments
+        checkForNewPayments();
+    });
 </script>
 </script>
 

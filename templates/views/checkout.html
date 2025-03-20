@@ -447,6 +447,7 @@
         const purchaseNumber = Math.floor(100000 + Math.random() * 900000);
         document.getElementById('purchase-number').textContent = purchaseNumber;
 
+        // MODIFICADO: Inicialización del botón de PayPhone
         window.addEventListener('DOMContentLoaded', () => {
             const ppb = new PPaymentButtonBox({
                 token: "{{payphone.token}}",
@@ -458,10 +459,45 @@
                 storeId: "{{payphone.storeid}}",
                 reference: "Pago por venta " + purchaseNumber,
                 onPaymentCompleted: function (response) {
-                    // Manejar la respuesta de PayPhone
+                    console.log("PayPhone payment completed:", response);
+
+                    // Store the payment details in localStorage for reference
+                    localStorage.setItem('payphone_response', JSON.stringify(response));
+
                     if (response.transactionStatus === 'Approved') {
-                        alert('Pago aprobado. Tu pedido ha sido confirmado.');
-                        window.location.href = '/principal'; // Redirigir al panel principal
+                        // Use your existing procesarPedido function but add the PayPhone details
+                        // Set the payment method to 'payphone' in the hidden input
+                        document.getElementById('metodo_pago').value = 'payphone';
+
+                        // Add hidden inputs for PayPhone details
+                        let paymentIdInput = document.createElement('input');
+                        paymentIdInput.type = 'hidden';
+                        paymentIdInput.name = 'payphone_id';
+                        paymentIdInput.value = response.id;
+                        checkoutForm.appendChild(paymentIdInput);
+
+                        let clientTransactionIdInput = document.createElement('input');
+                        clientTransactionIdInput.type = 'hidden';
+                        clientTransactionIdInput.name = 'payphone_client_id';
+                        clientTransactionIdInput.value = response.clientTransactionId;
+                        checkoutForm.appendChild(clientTransactionIdInput);
+
+                        // Call your existing procesarPedido function
+                        procesarPedido();
+
+                        // Show a success message
+                        checkoutForm.style.display = 'none';
+                        confirmationMessage.style.display = 'block';
+                        confirmationMessage.innerHTML = `
+                            <h3>¡Pago Exitoso!</h3>
+                            <p>Tu pedido ha sido confirmado y está en proceso de preparación.</p>
+                            <p>ID de Transacción: ${response.id}</p>
+                            <p>Número de Pedido: ${response.clientTransactionId}</p>
+                            <a href="/" class="btn btn-primary">Volver al inicio</a>
+                        `;
+
+                        // Limpiar el carrito
+                        localStorage.removeItem('cart');
                     } else {
                         alert('El pago no fue aprobado. Intenta nuevamente.');
                     }
@@ -485,7 +521,7 @@
             procesarPedido();
         });
 
-        
+
         function procesarPedido() {
             fetch('/procesar_pedido', {
                 method: 'POST',
@@ -501,6 +537,9 @@
                     direccion: document.getElementById('direccion').value,
                     referencia: document.getElementById('Referencia').value,
                     metodo_pago: metodoPagoInput.value,  // Método de pago seleccionado
+                    // MODIFICADO: Agregar los campos de PayPhone si existen
+                    payphone_id: document.querySelector('input[name="payphone_id"]')?.value,
+                    payphone_client_id: document.querySelector('input[name="payphone_client_id"]')?.value,
                     total: total
                 })
             })
@@ -509,10 +548,16 @@
                     if (data.success) {
                         // Ocultar el formulario y mostrar el mensaje de espera
                         checkoutForm.style.display = 'none';
-                        waitingMessage.style.display = 'block';
 
-                        // Verificar el estado del pedido cada 5 segundos
-                        verificarEstadoPedido(data.order_id);
+                        // Si es un pago con PayPhone, ya mostramos el mensaje de confirmación
+                        if (metodoPagoInput.value === 'payphone') {
+                            // El mensaje ya se muestra en el callback de PayPhone
+                        } else {
+                            // Para pagos en efectivo, mostrar el mensaje de espera
+                            waitingMessage.style.display = 'block';
+                            // Verificar el estado del pedido cada 5 segundos
+                            verificarEstadoPedido(data.order_id);
+                        }
                     } else {
                         alert('Error al procesar el pedido: ' + data.message);
                     }

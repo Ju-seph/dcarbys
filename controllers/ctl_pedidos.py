@@ -1,4 +1,4 @@
-from flask import jsonify, session, request
+from flask import jsonify, session, request, json
 from bson.objectid import ObjectId
 from database.mongodb import Mongodb
 from datetime import datetime, timedelta
@@ -34,19 +34,53 @@ def procesar_pedido(request):
             direccion=data['direccion'],
             referencia=data['referencia'],
             total=data['total'],
-            metodo_pago=data['metodo_pago']  # Nuevo campo para el método de pago
+            metodo_pago=data['metodo_pago']  # Método de pago (efectivo o payphone)
         )
+        
+        # Si es un pago con PayPhone, agregar los detalles del pago
+        if data['metodo_pago'] == 'payphone' and 'payphone_id' in data:
+            pedido_temporal.payphone_id = data['payphone_id']
+            pedido_temporal.payphone_status = 'Approved'
+            
+            # Para pagos con PayPhone aprobados, podemos confirmar el pedido inmediatamente
+            # en lugar de esperar la confirmación del administrador
+            pedido_temporal.estado = 'confirmado'
+            pedido_temporal.estado_administrador = 'aceptado'
+            pedido_temporal.estado_cliente = 'confirmado'
+        
         pedido_temporal.createPedidoTemporal()
 
         # Insertar en la base de datos
         result = db.pedidos_temporales.insert_one(pedido_temporal.getPedidoTemporal())
 
         if result.inserted_id:
-            return jsonify({
-                "success": True,
-                "message": "Pedido procesado con éxito",
-                "order_id": str(result.inserted_id)  # Devuelve el _id del pedido temporal
-            }), 200
+            # Si es un pago con PayPhone aprobado, mover directamente a pedidos confirmados
+            if data['metodo_pago'] == 'payphone' and 'payphone_id' in data:
+                # Crear un pedido confirmado a partir del pedido temporal
+                pedido_confirmado = Pedido.from_pedido_temporal(pedido_temporal.getPedidoTemporal())
+                
+                # Agregar los detalles del pago
+                pedido_confirmado.payphone_id = data['payphone_id']
+                pedido_confirmado.payphone_status = 'Approved'
+                pedido_confirmado.fecha_pago = datetime.now()
+                
+                # Insertar el pedido confirmado
+                db.pedidos.insert_one(pedido_confirmado.getPedido())
+                
+                # Eliminar el pedido temporal
+                db.pedidos_temporales.delete_one({"_id": result.inserted_id})
+                
+                return jsonify({
+                    "success": True,
+                    "message": "Pedido confirmado automáticamente con pago PayPhone",
+                    "order_id": str(pedido_confirmado._id)
+                }), 200
+            else:
+                return jsonify({
+                    "success": True,
+                    "message": "Pedido procesado con éxito",
+                    "order_id": str(result.inserted_id)
+                }), 200
         else:
             return jsonify({"success": False, "message": "Error al procesar el pedido"}), 500
 
@@ -394,6 +428,157 @@ def get_format_for_agrupacion(agrupacion):
     else:
         return "%Y-%m-%d"  # Por defecto, agrupar por día
 
+
+def procesar_pago_payphone(request):
+    try:
+        # Get the payment data from PayPhone webhook
+        data = request.json
+        
+        # Extract the important fields
+        client_transaction_id = data.get('clientTransactionId')
+        transaction_id = data.get('id')  # This is the PayPhone transaction ID
+        transaction_status = data.get('transactionStatus')
+        
+        # Log the payment notification
+        print(f"Received PayPhone payment notification: {json.dumps(data)}")
+        
+        # Find the order using the clientTransactionId (which is your purchaseNumber)
+        pedido_temporal = db.pedidos_temporales.find_one({"numero_pedido": client_transaction_id})
+        
+        if pedido_temporal:
+            # If found in temporary orders, update it
+            pedido_id = pedido_temporal["_id"]
+            
+            if transaction_status == "Approved":
+                # Create a confirmed order from the temporary order
+                pedido_confirmado = {
+                    "_id": pedido_id,
+                    "numero_pedido": pedido_temporal['numero_pedido'],
+                    "usuario_id": pedido_temporal['usuario_id'],
+                    "productos": pedido_temporal['productos'],
+                    "nombre": pedido_temporal['nombre'],
+                    "celular": pedido_temporal['celular'],
+                    "direccion": pedido_temporal['direccion'],
+                    "ciudad": pedido_temporal['ciudad'],
+                    "referencia": pedido_temporal['referencia'],
+                    "total": pedido_temporal['total'],
+                    "metodo_pago": "payphone",
+                    "payphone_id": transaction_id,
+                    "payphone_status": transaction_status,
+                    "estado": "en transcurso",
+                    "fecha_confirmacion": datetime.now(),
+                    "fecha_pago": datetime.now()
+                }
+                
+                # Insert the confirmed order
+                result = db.pedidos.insert_one(pedido_confirmado)
+                
+                if not result.inserted_id:
+                    return jsonify({"success": False, "message": "Error al confirmar el pedido"}), 500
+                
+                # Delete the temporary order
+                db.pedidos_temporales.delete_one({"_id": ObjectId(pedido_id)})
+                
+                return jsonify({"success": True, "message": "Pago procesado correctamente"}), 200
+            else:
+                # If payment failed, update the temporary order
+                db.pedidos_temporales.update_one(
+                    {"_id": ObjectId(pedido_id)},
+                    {"$set": {
+                        "estado": "pago_fallido",
+                        "payphone_id": transaction_id,
+                        "payphone_status": transaction_status,
+                        "fecha_pago_fallido": datetime.now()
+                    }}
+                )
+                
+                return jsonify({"success": False, "message": "Pago rechazado"}), 200
+        else:
+            # Check if the order is already in the confirmed orders
+            pedido = db.pedidos.find_one({"numero_pedido": client_transaction_id})
+            
+            if pedido:
+                # Update the payment status
+                db.pedidos.update_one(
+                    {"_id": pedido["_id"]},
+                    {"$set": {
+                        "payphone_id": transaction_id,
+                        "payphone_status": transaction_status,
+                        "fecha_pago": datetime.now() if transaction_status == "Approved" else None,
+                        "fecha_pago_fallido": datetime.now() if transaction_status != "Approved" else None
+                    }}
+                )
+                
+                return jsonify({"success": True, "message": "Información de pago actualizada"}), 200
+            else:
+                return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
+            
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+
+def procesar_pago_payphone():
+    try:
+        # Get the payment data from PayPhone webhook
+        data = request.json
+        
+        # Extract the important fields
+        client_transaction_id = data.get('clientTransactionId')
+        transaction_id = data.get('id')  # This is the PayPhone transaction ID
+        transaction_status = data.get('transactionStatus')
+        
+        print(f"Received PayPhone payment notification: {json.dumps(data)}")
+        
+        # Find the order using the clientTransactionId (which is your purchaseNumber)
+        pedido = db.pedidos_temporales.find_one({"numero_pedido": client_transaction_id})
+        
+        if not pedido:
+            # If not found in temporary orders, check confirmed orders
+            pedido = db.pedidos.find_one({"numero_pedido": client_transaction_id})
+            
+        if not pedido:
+            return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
+        
+        # Update the order with payment information
+        if transaction_status == "Approved":
+            # If the payment was approved, move the order to confirmed status
+            pedido_id = pedido["_id"]
+            
+            # Update the order with payment details
+            db.pedidos.update_one(
+                {"_id": ObjectId(pedido_id)},
+                {"$set": {
+                    "estado": "en transcurso",
+                    "payphone_id": transaction_id,
+                    "payphone_status": transaction_status,
+                    "fecha_pago": datetime.now()
+                }}
+            )
+            
+            # You could also send a notification to the admin dashboard here
+            # This could be done via WebSockets or by setting a flag in the database
+            
+            return jsonify({"success": True, "message": "Pago procesado correctamente"}), 200
+        else:
+            # If the payment failed, update the order status
+            pedido_id = pedido["_id"]
+            db.pedidos.update_one(
+                {"_id": ObjectId(pedido_id)},
+                {"$set": {
+                    "estado": "pago_fallido",
+                    "payphone_id": transaction_id,
+                    "payphone_status": transaction_status,
+                    "fecha_pago_fallido": datetime.now()
+                }}
+            )
+            
+            return jsonify({"success": False, "message": "Pago rechazado"}), 200
+            
+    except Exception as e:
+        print(f"Error processing PayPhone payment: {str(e)}")
+        return jsonify({"success": False, "message": str(e)}), 500
+    
 
 def limpiar_pedidos_expirados():
     try:

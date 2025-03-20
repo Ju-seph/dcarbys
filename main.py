@@ -283,69 +283,20 @@ def obtener_numero_pedidos_pendientes():
 def generar_reporte_ventas_route():
     return ped.generar_reporte_ventas()
 
+#payphone funcion//
 
-
-@app.route('/payphone-webhook', methods=['POST'])
+@app.route('/payphone_webhook', methods=['POST'])
 def payphone_webhook():
+    return ped.procesar_pago_payphone(request)
+
+@app.route('/marcar_notificado/<pedido_id>', methods=['POST'])
+def marcar_notificado(pedido_id):
     try:
-        data = request.json
-
-        if not data:
-            return jsonify({"success": False, "message": "Datos de notificación no válidos"}), 400
-
-        transaction_id = data.get('transactionId')
-        status = data.get('status')
-        amount = data.get('amount')
-        client_transaction_id = data.get('clientTransactionId')
-
-        pedido = db.pedidos_temporales.find_one({"numero_pedido": client_transaction_id})
-
-        if not pedido:
-            return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
-
-        if status == 'approved':
-            # Cambiar el estado del pedido a "confirmado"
-            db.pedidos_temporales.update_one(
-                {"_id": ObjectId(pedido['_id'])},
-                {"$set": {"estado": "confirmado", "fecha_confirmacion": datetime.now()}}
-            )
-
-            # Mover el pedido a la colección de pedidos confirmados
-            pedido_confirmado = {
-                "_id": ObjectId(pedido['_id']),
-                "numero_pedido": pedido['numero_pedido'],
-                "usuario_id": pedido['usuario_id'],
-                "productos": pedido['productos'],
-                "nombre": pedido['nombre'],
-                "celular": pedido['celular'],
-                "direccion": pedido['direccion'],
-                "ciudad": pedido['ciudad'],
-                "referencia": pedido['referencia'],
-                "total": pedido['total'],
-                "metodo_pago": pedido['metodo_pago'],
-                "estado": "confirmado",
-                "fecha_confirmacion": datetime.now()
-            }
-
-            db.pedidos.insert_one(pedido_confirmado)
-
-            # Eliminar el pedido temporal
-            db.pedidos_temporales.delete_one({"_id": ObjectId(pedido['_id'])})
-
-            return jsonify({"success": True, "message": "Pedido confirmado con éxito"}), 200
-
-        elif status == 'declined':
-            # Cambiar el estado del pedido a "cancelado"
-            db.pedidos_temporales.update_one(
-                {"_id": ObjectId(pedido['_id'])},
-                {"$set": {"estado": "cancelado", "fecha_cancelacion": datetime.now()}}
-            )
-
-            return jsonify({"success": True, "message": "Pedido cancelado"}), 200
-
-        else:
-            return jsonify({"success": False, "message": "Estado de transacción no reconocido"}), 400
-
+        db.pedidos.update_one(
+            {"_id": ObjectId(pedido_id)},
+            {"$set": {"notificado": True}}
+        )
+        return jsonify({"success": True}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 

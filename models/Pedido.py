@@ -2,7 +2,7 @@ from datetime import datetime
 from bson import ObjectId
 
 class Pedido:
-    def __init__(self, numero_pedido, usuario_id, productos, nombre, celular, direccion, ciudad, referencia, total, metodo_pago, estado="en transcurso"):
+    def __init__(self, numero_pedido, usuario_id, productos, nombre, celular, direccion, ciudad, referencia, total, metodo_pago, estado="en transcurso", payphone_id=None, payphone_status=None):
         self._id = ObjectId()
         self.numero_pedido = numero_pedido
         self.usuario_id = usuario_id
@@ -13,14 +13,19 @@ class Pedido:
         self.ciudad = ciudad
         self.referencia = referencia
         self.total = total
-        self.metodo_pago = metodo_pago  # Nuevo campo para el método de pago
-        self.estado = estado  # Estados: "en transcurso", "finalizado", "cancelado"
-        self.cancelado_por = None  # Nuevo campo para almacenar quién canceló el pedido
+        self.metodo_pago = metodo_pago
+        self.estado = estado
+        self.cancelado_por = None
         self.rol_cancelado = None
-        self.tiempo_estimado = ""  # Nuevo campo para el tiempo estimado
+        self.tiempo_estimado = ""
         self.fecha_confirmacion = None
         self.createDateTime = None
         self.updateDateTime = None
+        # PayPhone specific fields
+        self.payphone_id = payphone_id
+        self.payphone_status = payphone_status
+        self.fecha_pago = None
+        self.fecha_pago_fallido = None
 
     def getPedido(self):
         return self.__dict__
@@ -44,8 +49,10 @@ class Pedido:
             ciudad=data['ciudad'],
             referencia=data['referencia'],
             total=data['total'],
-            metodo_pago=data['metodo_pago'],  # Nuevo campo para el método de pago
-            estado=data.get('estado', 'confirmado')
+            metodo_pago=data['metodo_pago'],
+            estado=data.get('estado', 'confirmado'),
+            payphone_id=data.get('payphone_id'),
+            payphone_status=data.get('payphone_status')
         )
         if '_id' in data:
             pedido._id = data['_id']
@@ -55,6 +62,10 @@ class Pedido:
             pedido.updateDateTime = data['updateDateTime']
         if 'fecha_confirmacion' in data:
             pedido.fecha_confirmacion = data['fecha_confirmacion']
+        if 'fecha_pago' in data:
+            pedido.fecha_pago = data['fecha_pago']
+        if 'fecha_pago_fallido' in data:
+            pedido.fecha_pago_fallido = data['fecha_pago_fallido']
         return pedido
 
     @classmethod
@@ -73,3 +84,5 @@ class Pedido:
         )
         pedido.createPedido()
         return pedido
+    
+    
