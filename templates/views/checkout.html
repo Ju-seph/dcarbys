@@ -367,7 +367,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Lógica del carrito
         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
         const cartSummary = document.getElementById('cart-summary');
         const cartTotal = document.getElementById('cart-total');
@@ -407,9 +406,10 @@
 
         inputs.forEach(input => input.addEventListener('input', validarCampos));
 
-        // Lógica de selección de tarjetas de método de pago
+        // Lógica de selección de método de pago
         const metodoPagoCards = document.querySelectorAll('.metodo-pago-option');
         const metodoPagoInput = document.getElementById('metodo_pago');
+        const ppButtonContainer = document.getElementById('pp-button');
 
         metodoPagoCards.forEach(card => {
             card.addEventListener('click', function () {
@@ -425,9 +425,52 @@
                 // Actualizar el campo oculto con el valor seleccionado
                 metodoPagoInput.value = metodoPago;
 
-                // Validar campos después de seleccionar el método de pago
-                validarCampos();
+                // Mostrar u ocultar el botón de PayPhone
+                if (metodoPago === 'boton') {
+                    ppButtonContainer.style.display = 'block';
+                    procesarPedidoBtn.style.display = 'none'; // Ocultar el botón de procesar pedido
+                } else {
+                    ppButtonContainer.style.display = 'none';
+                    procesarPedidoBtn.style.display = 'block'; // Mostrar el botón de procesar pedido
+                }
+
+                // Habilitar el botón de procesar pedido si se selecciona un método de pago
+                procesarPedidoBtn.disabled = false;
             });
+        });
+
+        // Inicializar el botón de PayPhone
+        const amount = Math.round(total * 100);
+        const tax = Math.round(amount * 0.15);
+        const amountWithTax = amount - tax;
+
+        const purchaseNumber = Math.floor(100000 + Math.random() * 900000);
+        document.getElementById('purchase-number').textContent = purchaseNumber;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const ppb = new PPaymentButtonBox({
+                token: "{{payphone.token}}",
+                clientTransactionId: purchaseNumber,
+                amount: amount,
+                amountWithTax: amountWithTax,
+                tax: tax,
+                currency: "USD",
+                storeId: "{{payphone.storeid}}",
+                reference: "Pago por venta " + purchaseNumber,
+                onPaymentCompleted: function (response) {
+                    // Manejar la respuesta de PayPhone
+                    if (response.transactionStatus === 'Approved') {
+                        alert('Pago aprobado. Tu pedido ha sido confirmado.');
+                        window.location.href = '/principal'; // Redirigir al panel principal
+                    } else {
+                        alert('El pago no fue aprobado. Intenta nuevamente.');
+                    }
+                },
+                onPaymentError: function (error) {
+                    console.error('Error en el pago:', error);
+                    alert('Hubo un error al procesar el pago. Intenta nuevamente.');
+                }
+            }).render('pp-button');
         });
 
         // Procesar el pedido
@@ -442,6 +485,7 @@
             procesarPedido();
         });
 
+        
         function procesarPedido() {
             fetch('/procesar_pedido', {
                 method: 'POST',
@@ -629,17 +673,16 @@
                             </div>
                         </div>
 
-                        <!-- Opción: Botón de pago (próximamente) -->
+                        <!-- Opción: Botón de pago -->
                         <div class="col-md-6">
-                            <div class="card metodo-pago-option" id="pago-boton-card" data-value="boton"
-                                style="opacity: 0.6;">
+                            <div class="card metodo-pago-option" id="pago-boton-card" data-value="boton">
                                 <div class="card-body d-flex align-items-center">
                                     <div class="me-3">
                                         <i class="bi bi-credit-card fs-2 text-secondary"></i> <!-- Ícono de tarjeta -->
                                     </div>
                                     <div>
                                         <h6 class="card-title mb-1">Botón de pago</h6>
-                                        <p class="card-text text-muted small">Próximamente.</p>
+                                        <p class="card-text text-muted small">Paga con tarjeta de crédito/débito.</p>
                                     </div>
                                 </div>
                             </div>
@@ -650,50 +693,15 @@
                 <!-- Campo oculto para almacenar el método de pago seleccionado -->
                 <input type="hidden" id="metodo_pago" name="metodo_pago" required>
 
+                <!-- Botón de PayPhone (inicialmente oculto) -->
+                <div id="pp-button" style="display: none;"></div>
+
+                <!-- Botón para procesar pedido en efectivo -->
+                <button type="submit" class="btn btn-primary" id="procesar-pedido" disabled>Procesar Pedido</button>
                 <script src="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js"
                     type="module"></script>
                 <link href="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.css" rel="stylesheet">
 
-                <script>
-                    let total = 0
-                    const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-                    cart.forEach(item => {
-                        const subtotal = item.price * item.quantity;
-                        total += subtotal;
-
-                    });
-
-
-                    // Asumimos que la proporción entre monto sin impuesto y monto con impuesto es la misma del ejemplo
-                    let amount = Math.round(total * 100)
-                    let tax = Math.round(amount * 0.15); // Parte sin impuesto
-                    let amountWithTax=amount-tax
-                    
-
-                    const purchaseNumber = Math.floor(100000 + Math.random() * 900000);
-                    document.getElementById('purchase-number').textContent = purchaseNumber;
-                    window.addEventListener('DOMContentLoaded', () => {
-                        ppb = new PPaymentButtonBox({
-                            token: "{{payphone.token}}",
-                            clientTransactionId: purchaseNumber,
-                            amount: amount,
-                            amountWithTax:amountWithTax,
-                            tax:tax,
-                            currency: "USD",
-                            storeId: "{{payphone.storeid}}",
-                            reference: "Pago por venta" + purchaseNumber
-                        }).render('pp-button');
-                    })
-                    
-
-
-
-                </script>
-
-
-                <div id="pp-button"></div>
-
-                <button type="submit" class="btn btn-primary" id="procesar-pedido" disabled>Procesar Pedido</button>
             </form>
 
             <!-- Mensaje de espera -->
@@ -717,7 +725,7 @@
             </div>
         </div>
     </div>
-    
+
 </div>
 
 

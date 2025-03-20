@@ -1,5 +1,5 @@
 <div class="table-responsive">
-    <table id="tablaPedidosPendientes" width="100%" cellspacing="0" class="table table-striped">
+    <table id="tablaPedidosPendientes" width="100%" cellspacing="0" class="table table-striped table-hover">
         <thead>
             <tr>
                 <th>Número de Pedido</th>
@@ -14,6 +14,80 @@
         </tbody>
     </table>
 </div>
+
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+
+<style>
+    /* Estilos para la tabla */
+    #tablaPedidosPendientes {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-size: 0.9em;
+        font-family: sans-serif;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+        background-color: #f8f9fa;
+        /* Color de fondo de la tabla */
+        color: #333333;
+        /* Color del texto en la tabla */
+    }
+
+    /* Encabezado de la tabla */
+    #tablaPedidosPendientes thead tr {
+        background-color: #dc3545;
+        /* Color rojo */
+        color: #ffffff;
+        /* Color del texto en el encabezado */
+    }
+
+    /* Celdas de la tabla */
+    #tablaPedidosPendientes th,
+    #tablaPedidosPendientes td {
+        padding: 12px 15px;
+        border: 1px solid #dddddd;
+        /* Borde de las celdas */
+    }
+
+    /* Filas pares */
+    #tablaPedidosPendientes tbody tr:nth-of-type(even) {
+        background-color: #f3f3f3;
+        /* Fondo gris claro para filas pares */
+    }
+
+    /* Filas impares */
+    #tablaPedidosPendientes tbody tr:nth-of-type(odd) {
+        background-color: #ffffff;
+        /* Fondo blanco para filas impares */
+    }
+
+    /* Última fila */
+    #tablaPedidosPendientes tbody tr:last-of-type {
+        border-bottom: 2px solid #dc3545;
+        /* Borde inferior rojo */
+    }
+
+    /* Efecto hover */
+    #tablaPedidosPendientes tbody tr:hover {
+        background-color: #f8d7da;
+        /* Color rojo claro al pasar el mouse */
+    }
+
+    /* Botones en la columna de acciones */
+    .btn-sm {
+        margin: 2px;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+</style>
 
 <script>
     // Función para aceptar un pedido
@@ -45,7 +119,6 @@
                 alert('Hubo un error al aceptar el pedido');
             });
     }
-
 
     // Función para cancelar un pedido como administrador o asistente
     function cancelarPedidoAdmin(pedidoId) {
@@ -101,6 +174,7 @@
                 console.error('Error:', error);
             });
     }
+
     $(document).ready(function () {
         // Función para cargar los pedidos pendientes
         function cargarPedidosPendientes() {
@@ -136,7 +210,23 @@
                         `;
                     }
                 }
-            ]
+            ],
+            language: {
+                search: "Buscar:",
+                lengthMenu: "Mostrar _MENU_ registros por página",
+                zeroRecords: "No se encontraron resultados",
+                info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                infoEmpty: "Mostrando 0 a 0 de 0 registros",
+                infoFiltered: "(filtrado de _MAX_ registros totales)",
+                paginate: {
+                    first: "Primero",
+                    last: "Último",
+                    next: "Siguiente",
+                    previous: "Anterior"
+                }
+            },
+            dom: '<"top"lf>rt<"bottom"ip><"clear">',  // Personalizar la disposición de los controles
+            responsive: true  // Hacer la tabla responsive
         });
 
         // Actualizar la tabla cada 5 segundos
