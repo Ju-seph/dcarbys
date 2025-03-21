@@ -473,45 +473,16 @@
                         localStorage.setItem('payphone_response', JSON.stringify(response));
 
                         if (response.transactionStatus === 'Approved') {
-                            // Use your existing procesarPedido function but add the PayPhone details
-                            // Set the payment method to 'payphone' in the hidden input
-                            document.getElementById('metodo_pago').value = 'payphone';
+                            // Mostrar mensaje de éxito
+                            alert('¡Pago exitoso! Serás redirigido para completar tu pedido.');
 
-                            // Add hidden inputs for PayPhone details
-                            let paymentIdInput = document.createElement('input');
-                            paymentIdInput.type = 'hidden';
-                            paymentIdInput.id = 'payphone_id';
-                            paymentIdInput.name = 'payphone_id';
-                            paymentIdInput.value = response.id;
-                            checkoutForm.appendChild(paymentIdInput);
-
-                            let clientTransactionIdInput = document.createElement('input');
-                            clientTransactionIdInput.type = 'hidden';
-                            clientTransactionIdInput.id = 'payphone_client_id';
-                            clientTransactionIdInput.name = 'payphone_client_id';
-                            clientTransactionIdInput.value = response.clientTransactionId;
-                            checkoutForm.appendChild(clientTransactionIdInput);
-
-                            // Call your existing procesarPedido function
-                            procesarPedido();
-
-                            // Show a success message
-                            checkoutForm.style.display = 'none';
-                            confirmationMessage.style.display = 'block';
-                            confirmationMessage.innerHTML = `
-                        <h3>¡Pago Exitoso!</h3>
-                        <p>Tu pedido ha sido confirmado y está en proceso de preparación.</p>
-                        <p>ID de Transacción: ${response.id}</p>
-                        <p>Número de Pedido: ${response.clientTransactionId}</p>
-                        <a href="/" class="btn btn-primary">Volver al inicio</a>
-                    `;
-
-                            // Limpiar el carrito
-                            localStorage.removeItem('cart');
+                            // Redirigir a la página de payphone_return con los parámetros de la transacción
+                            window.location.href = '/payphone_return?id=' + response.id + '&clientTransactionId=' + response.clientTransactionId;
                         } else {
                             alert('El pago no fue aprobado. Intenta nuevamente.');
                         }
-                    },
+                    }
+                    ,
                     onPaymentError: function (error) {
                         console.error('Error en el pago:', error);
                         alert('Hubo un error al procesar el pago. Intenta nuevamente.');
