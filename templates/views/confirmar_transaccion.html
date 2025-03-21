@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Confirmando tu pago</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <p>Estamos confirmando tu pago con PayPhone. Por favor, espera un momento...</p>
+                    </div>
+                    <div id="loading" class="text-center my-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                        <p class="mt-2">Procesando tu pago...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Recuperar datos del pago de PayPhone
+        const paymentId = "{{ payment_id }}";
+        const clientTransactionId = "{{ client_transaction_id }}";
+        
+        console.log("Confirmando transacción PayPhone:", paymentId, clientTransactionId);
+        
+        // Crear un formulario para enviar los datos
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/confirmar_transaccion_payphone';
+        form.style.display = 'none';
+        
+        // Añadir los campos necesarios
+        const addField = (name, value) => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value;
+            form.appendChild(input);
+        };
+        
+        addField('payment_id', paymentId);
+        addField('client_transaction_id', clientTransactionId);
+        
+        // Añadir el formulario al documento y enviarlo
+        document.body.appendChild(form);
+        
+        // Enviar el formulario después de un breve retraso
+        setTimeout(() => {
+            form.submit();
+        }, 1000);
+    });
+</script>
+{% endblock %}
