@@ -16,6 +16,7 @@ def procesar_pedido(request):
         return jsonify({"success": False, "message": "Usuario no autenticado"}), 401
 
     data = request.json
+    print("Datos recibidos en procesar_pedido:", data)  # Log para depuración
 
     # Validar el número de celular
     celular = data.get('celular')
@@ -25,7 +26,7 @@ def procesar_pedido(request):
     try:
         # Crear el pedido temporal
         pedido_temporal = PedidoTemporal(
-            numero_pedido=data['purchaseNumber'],
+            numero_pedido=str(data['purchaseNumber']),  # Convertir a string para asegurar compatibilidad
             usuario_id=session['usuario_id'],
             productos=data['cart'],
             nombre=data['nombre'],
@@ -37,55 +38,76 @@ def procesar_pedido(request):
             metodo_pago=data['metodo_pago']  # Método de pago (efectivo o payphone)
         )
         
+        pedido_temporal.createPedidoTemporal()
+        pedido_dict = pedido_temporal.getPedidoTemporal()
+        
         # Si es un pago con PayPhone, agregar los detalles del pago
         if data['metodo_pago'] == 'payphone' and 'payphone_id' in data:
-            pedido_temporal.payphone_id = data['payphone_id']
-            pedido_temporal.payphone_status = 'Approved'
+            print("Procesando pago con PayPhone:", data['payphone_id'])  # Log para depuración
             
-            # Para pagos con PayPhone aprobados, podemos confirmar el pedido inmediatamente
-            # en lugar de esperar la confirmación del administrador
-            pedido_temporal.estado = 'confirmado'
-            pedido_temporal.estado_administrador = 'aceptado'
-            pedido_temporal.estado_cliente = 'confirmado'
+            # Agregar campos de PayPhone al pedido temporal
+            pedido_dict['payphone_id'] = data['payphone_id']
+            pedido_dict['payphone_status'] = 'Approved'
+            pedido_dict['estado'] = 'confirmado'
+            pedido_dict['estado_administrador'] = 'aceptado'
+            pedido_dict['estado_cliente'] = 'confirmado'
         
-        pedido_temporal.createPedidoTemporal()
-
         # Insertar en la base de datos
-        result = db.pedidos_temporales.insert_one(pedido_temporal.getPedidoTemporal())
-
-        if result.inserted_id:
-            # Si es un pago con PayPhone aprobado, mover directamente a pedidos confirmados
-            if data['metodo_pago'] == 'payphone' and 'payphone_id' in data:
-                # Crear un pedido confirmado a partir del pedido temporal
-                pedido_confirmado = Pedido.from_pedido_temporal(pedido_temporal.getPedidoTemporal())
-                
-                # Agregar los detalles del pago
-                pedido_confirmado.payphone_id = data['payphone_id']
-                pedido_confirmado.payphone_status = 'Approved'
-                pedido_confirmado.fecha_pago = datetime.now()
-                
-                # Insertar el pedido confirmado
-                db.pedidos.insert_one(pedido_confirmado.getPedido())
-                
-                # Eliminar el pedido temporal
-                db.pedidos_temporales.delete_one({"_id": result.inserted_id})
-                
-                return jsonify({
-                    "success": True,
-                    "message": "Pedido confirmado automáticamente con pago PayPhone",
-                    "order_id": str(pedido_confirmado._id)
-                }), 200
-            else:
-                return jsonify({
-                    "success": True,
-                    "message": "Pedido procesado con éxito",
-                    "order_id": str(result.inserted_id)
-                }), 200
+        result = db.pedidos_temporales.insert_one(pedido_dict)
+        
+        if not result.inserted_id:
+            return jsonify({"success": False, "message": "Error al insertar el pedido temporal"}), 500
+            
+        # Si es un pago con PayPhone aprobado, mover directamente a pedidos confirmados
+        if data['metodo_pago'] == 'payphone' and 'payphone_id' in data:
+            # Crear un pedido confirmado
+            pedido_confirmado = {
+                "numero_pedido": pedido_dict['numero_pedido'],
+                "usuario_id": pedido_dict['usuario_id'],
+                "productos": pedido_dict['productos'],
+                "nombre": pedido_dict['nombre'],
+                "celular": pedido_dict['celular'],
+                "direccion": pedido_dict['direccion'],
+                "ciudad": pedido_dict['ciudad'],
+                "referencia": pedido_dict['referencia'],
+                "total": pedido_dict['total'],
+                "metodo_pago": 'payphone',
+                "payphone_id": data['payphone_id'],
+                "payphone_status": 'Approved',
+                "estado": "en transcurso",
+                "fecha_confirmacion": datetime.now(),
+                "fecha_pago": datetime.now(),
+                "notificado": False  # Para las notificaciones en el panel de administración
+            }
+            
+            # Insertar el pedido confirmado
+            confirmed_result = db.pedidos.insert_one(pedido_confirmado)
+            
+            if not confirmed_result.inserted_id:
+                return jsonify({"success": False, "message": "Error al confirmar el pedido con PayPhone"}), 500
+            
+            # Eliminar el pedido temporal
+            db.pedidos_temporales.delete_one({"_id": result.inserted_id})
+            
+            print("Pedido con PayPhone confirmado automáticamente:", str(confirmed_result.inserted_id))
+            
+            return jsonify({
+                "success": True,
+                "message": "Pedido confirmado automáticamente con pago PayPhone",
+                "order_id": str(confirmed_result.inserted_id)
+            }), 200
         else:
-            return jsonify({"success": False, "message": "Error al procesar el pedido"}), 500
+            return jsonify({
+                "success": True,
+                "message": "Pedido procesado con éxito",
+                "order_id": str(result.inserted_id)
+            }), 200
 
     except Exception as e:
+        print("Error al procesar pedido:", str(e))  # Log para depuración
         return jsonify({"success": False, "message": str(e)}), 500
+    
+
 
     
 def aceptar_pedido(pedido_id):
