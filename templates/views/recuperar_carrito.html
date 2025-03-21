@@ -25,26 +25,23 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         // Recuperar datos del pago de PayPhone
         const paymentId = "{{ payment_id }}";
         const clientTransactionId = "{{ client_transaction_id }}";
-
+        
         // Recuperar el carrito del localStorage
         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-
+        
         // Recuperar la respuesta de PayPhone si existe
         const payphone_response = JSON.parse(localStorage.getItem('payphone_response') || '{}');
-
-        console.log("Recuperando carrito:", cart);
-        console.log("Respuesta de PayPhone:", payphone_response);
-
+        
         // Crear un formulario para enviar los datos
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = '/procesar_pago_payphone_manual';
         form.style.display = 'none';
-
+        
         // Añadir los campos necesarios
         const addField = (name, value) => {
             const input = document.createElement('input');
@@ -53,20 +50,20 @@
             input.value = value;
             form.appendChild(input);
         };
-
+        
         addField('payment_id', paymentId);
         addField('client_transaction_id', clientTransactionId);
         addField('cart', JSON.stringify(cart));
         addField('payphone_response', JSON.stringify(payphone_response));
-
+        
         // Añadir el formulario al documento y enviarlo
         document.body.appendChild(form);
-
+        
         // Esperar un momento antes de enviar el formulario
         setTimeout(() => {
-            console.log("Enviando formulario con datos de pago...");
             form.submit();
         }, 2000);
     });
 </script>
 {% endblock %}
+
