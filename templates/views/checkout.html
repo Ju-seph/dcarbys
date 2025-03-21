@@ -439,24 +439,25 @@
             });
         });
 
-        // Inicializar el botón de PayPhone
-        const amount = Math.round(total * 100);
-        const tax = Math.round(amount * 0.15);
-        const amountWithTax = amount - tax;
+        const initPayPhoneButton = () => {
+            console.log("Inicializando botón de PayPhone...")
 
-        const purchaseNumber = Math.floor(100000 + Math.random() * 900000);
-        document.getElementById('purchase-number').textContent = purchaseNumber;
+            // Declarar las variables amount, tax, amountWithTax y purchaseNumber
+            // Asegúrate de que estos valores se obtengan correctamente de tu contexto
+            const amount = window.amount || 0 // Valor por defecto de 0
+            const tax = window.tax || 0 // Valor por defecto de 0
+            const amountWithTax = window.amountWithTax || 0 // Valor por defecto de 0
+            const purchaseNumber = window.purchaseNumber || Math.floor(Math.random() * 1000000) // Valor por defecto aleatorio
 
-        // MODIFICADO: Inicialización del botón de PayPhone
-        // Inicializar el botón de PayPhone
-        const initPayPhoneButton = function () {
-            console.log("Inicializando botón de PayPhone...");
-            console.log("Amount:", amount);
-            console.log("Tax:", tax);
-            console.log("AmountWithTax:", amountWithTax);
-            console.log("PurchaseNumber:", purchaseNumber);
+            console.log("Amount:", amount)
+            console.log("Tax:", tax)
+            console.log("AmountWithTax:", amountWithTax)
+            console.log("PurchaseNumber:", purchaseNumber)
 
             try {
+                // Declarar PPaymentButtonBox como una variable global o importarla si es necesario
+                const PPaymentButtonBox = window.PPaymentButtonBox
+
                 const ppb = new PPaymentButtonBox({
                     token: "{{payphone.token}}",
                     clientTransactionId: purchaseNumber.toString(),
@@ -466,33 +467,62 @@
                     currency: "USD",
                     storeId: "{{payphone.storeid}}",
                     reference: "Pago por venta " + purchaseNumber,
-                    onPaymentCompleted: function (response) {
-                        console.log("PayPhone payment completed:", response);
+                    onPaymentCompleted: (response) => {
+                        console.log("PayPhone payment completed:", response)
+
+                        // Llamar a la función de depuración
+                        if (window.debugPayPhonePayment) {
+                            window.debugPayPhonePayment(response)
+                            return
+                        }
 
                         // Store the payment details in localStorage for reference
-                        localStorage.setItem('payphone_response', JSON.stringify(response));
+                        localStorage.setItem("payphone_response", JSON.stringify(response))
 
-                        if (response.transactionStatus === 'Approved') {
+                        if (response.transactionStatus === "Approved") {
                             // Mostrar mensaje de éxito
-                            alert('¡Pago exitoso! Serás redirigido para completar tu pedido.');
+                            alert("¡Pago exitoso! Serás redirigido para completar tu pedido.")
 
-                            // Redirigir a la página de payphone_return con los parámetros de la transacción
-                            window.location.href = '/payphone_return?id=' + response.id + '&clientTransactionId=' + response.clientTransactionId;
+                            // Crear un formulario para enviar los datos del pago
+                            const form = document.createElement("form")
+                            form.method = "POST"
+                            form.action = "/procesar_pago_payphone_manual"
+                            form.style.display = "none"
+
+                            // Añadir los campos necesarios
+                            const addField = (name, value) => {
+                                const input = document.createElement("input")
+                                input.type = "hidden"
+                                input.name = name
+                                input.value = value
+                                form.appendChild(input)
+                            }
+
+                            addField("payment_id", response.id)
+                            addField("client_transaction_id", response.clientTransactionId)
+                            // Declare cart variable. Assuming it's available globally or can be accessed somehow.
+                            // If cart is specific to a scope, adjust accordingly.
+                            const cart = window.cart || [] // Example: Accessing cart from window object
+                            addField("cart", JSON.stringify(cart))
+                            addField("payphone_response", JSON.stringify(response))
+
+                            // Añadir el formulario al documento y enviarlo
+                            document.body.appendChild(form)
+                            form.submit()
                         } else {
-                            alert('El pago no fue aprobado. Intenta nuevamente.');
+                            alert("El pago no fue aprobado. Intenta nuevamente.")
                         }
-                    }
-                    ,
-                    onPaymentError: function (error) {
-                        console.error('Error en el pago:', error);
-                        alert('Hubo un error al procesar el pago. Intenta nuevamente.');
-                    }
-                }).render('pp-button');
-                console.log("Botón de PayPhone inicializado correctamente");
+                    },
+                    onPaymentError: (error) => {
+                        console.error("Error en el pago:", error)
+                        alert("Hubo un error al procesar el pago. Intenta nuevamente.")
+                    },
+                }).render("pp-button")
+                console.log("Botón de PayPhone inicializado correctamente")
             } catch (error) {
-                console.error("Error al inicializar el botón de PayPhone:", error);
+                console.error("Error al inicializar el botón de PayPhone:", error)
             }
-        };
+        }
 
         // Llamar a la función de inicialización después de que el DOM esté cargado
         setTimeout(initPayPhoneButton, 1000);
@@ -659,6 +689,52 @@
                     });
             }, 5000);
         }
+        document.addEventListener("DOMContentLoaded", () => {
+            // Verificar si hay parámetros de PayPhone en la URL
+            const urlParams = new URLSearchParams(window.location.search)
+            const paymentId = urlParams.get("id")
+            const clientTransactionId = urlParams.get("clientTransactionId")
+
+            if (paymentId && clientTransactionId) {
+                console.log("Parámetros de PayPhone detectados en la URL:")
+                console.log("Payment ID:", paymentId)
+                console.log("Client Transaction ID:", clientTransactionId)
+
+                // Guardar en localStorage para referencia
+                localStorage.setItem("payphone_id", paymentId)
+                localStorage.setItem("payphone_client_id", clientTransactionId)
+
+                // Redirigir manualmente a la ruta de retorno
+                window.location.href = "/payphone_return?id=" + paymentId + "&clientTransactionId=" + clientTransactionId
+            }
+
+            // Modificar la función onPaymentCompleted para añadir más logs
+            window.debugPayPhonePayment = (response) => {
+                console.log("DEBUG - PayPhone payment completed:", response)
+
+                // Store the payment details in localStorage for reference
+                localStorage.setItem("payphone_response", JSON.stringify(response))
+
+                if (response.transactionStatus === "Approved") {
+                    // Mostrar mensaje de éxito
+                    console.log("DEBUG - Pago aprobado, redirigiendo...")
+                    alert("¡Pago exitoso! Serás redirigido para completar tu pedido.")
+
+                    // Redirigir a la página de payphone_return con los parámetros de la transacción
+                    const redirectUrl = "/payphone_return?id=" + response.id + "&clientTransactionId=" + response.clientTransactionId
+                    console.log("DEBUG - URL de redirección:", redirectUrl)
+
+                    // Usar setTimeout para asegurar que el log se muestre antes de la redirección
+                    setTimeout(() => {
+                        window.location.href = redirectUrl
+                    }, 1000)
+                } else {
+                    console.log("DEBUG - Pago rechazado:", response.transactionStatus)
+                    alert("El pago no fue aprobado. Intenta nuevamente.")
+                }
+            }
+        })
+
     });
 </script>
 
@@ -786,7 +862,10 @@
         </div>
     </div>
 
+
 </div>
+
+
 
 
 {% endblock %}
