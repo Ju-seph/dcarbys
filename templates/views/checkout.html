@@ -426,7 +426,7 @@
                 metodoPagoInput.value = metodoPago;
 
                 // Mostrar u ocultar el botón de PayPhone
-                if (metodoPago === 'boton') {
+                if (metodoPago === 'payphone') {
                     ppButtonContainer.style.display = 'block';
                     procesarPedidoBtn.style.display = 'none'; // Ocultar el botón de procesar pedido
                 } else {
@@ -764,7 +764,7 @@
 
                         <!-- Opción: Botón de pago -->
                         <div class="col-md-6">
-                            <div class="card metodo-pago-option" id="pago-boton-card" data-value="boton">
+                            <div class="card metodo-pago-option" id="pago-boton-card" data-value="payphone">
                                 <div class="card-body d-flex align-items-center">
                                     <div class="me-3">
                                         <i class="bi bi-credit-card fs-2 text-secondary"></i> <!-- Ícono de tarjeta -->

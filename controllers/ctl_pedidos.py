@@ -16,7 +16,7 @@ def procesar_pedido(request):
         return jsonify({"success": False, "message": "Usuario no autenticado"}), 401
 
     data = request.json
-    print("Datos recibidos en procesar_pedido:", data)  # Log para depuración
+    print("Datos recibidos en procesar_pedido:", json.dumps(data))  # Log para depuración
 
     # Validar el número de celular
     celular = data.get('celular')
@@ -53,10 +53,14 @@ def procesar_pedido(request):
             pedido_dict['estado_cliente'] = 'confirmado'
         
         # Insertar en la base de datos
+        print("Insertando pedido temporal en la base de datos:", json.dumps(pedido_dict))
         result = db.pedidos_temporales.insert_one(pedido_dict)
         
         if not result.inserted_id:
+            print("Error al insertar el pedido temporal")
             return jsonify({"success": False, "message": "Error al insertar el pedido temporal"}), 500
+            
+        print("Pedido temporal insertado con ID:", str(result.inserted_id))
             
         # Si es un pago con PayPhone aprobado, mover directamente a pedidos confirmados
         if data['metodo_pago'] == 'payphone' and 'payphone_id' in data:
@@ -80,11 +84,15 @@ def procesar_pedido(request):
                 "notificado": False  # Para las notificaciones en el panel de administración
             }
             
+            print("Insertando pedido confirmado en la base de datos:", json.dumps(pedido_confirmado))
             # Insertar el pedido confirmado
             confirmed_result = db.pedidos.insert_one(pedido_confirmado)
             
             if not confirmed_result.inserted_id:
+                print("Error al insertar el pedido confirmado")
                 return jsonify({"success": False, "message": "Error al confirmar el pedido con PayPhone"}), 500
+            
+            print("Pedido confirmado insertado con ID:", str(confirmed_result.inserted_id))
             
             # Eliminar el pedido temporal
             db.pedidos_temporales.delete_one({"_id": result.inserted_id})
@@ -105,7 +113,10 @@ def procesar_pedido(request):
 
     except Exception as e:
         print("Error al procesar pedido:", str(e))  # Log para depuración
+        import traceback
+        traceback.print_exc()  # Imprimir el stack trace completo
         return jsonify({"success": False, "message": str(e)}), 500
+
     
 
 
