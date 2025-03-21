@@ -32,10 +32,13 @@
         
         console.log("Confirmando transacción PayPhone:", paymentId, clientTransactionId);
         
+        // Recuperar el carrito del localStorage
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        
         // Crear un formulario para enviar los datos
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = '/confirmar_transaccion_payphone';
+        form.action = '/procesar_pago_payphone_manual';
         form.style.display = 'none';
         
         // Añadir los campos necesarios
@@ -49,14 +52,17 @@
         
         addField('payment_id', paymentId);
         addField('client_transaction_id', clientTransactionId);
+        addField('cart', JSON.stringify(cart));
         
         // Añadir el formulario al documento y enviarlo
         document.body.appendChild(form);
         
         // Enviar el formulario después de un breve retraso
         setTimeout(() => {
+            console.log("Enviando formulario con datos de pago...");
             form.submit();
         }, 1000);
     });
 </script>
 {% endblock %}
+

@@ -322,7 +322,7 @@ def payphone_return():
         flash("Por favor inicia sesión para completar tu pedido", "info")
         return redirect(url_for('login_user'))
     
-    # Verificar si ya existe un pedido con este ID de transacción
+    # Buscar si ya existe un pedido con este ID de transacción
     pedido = db.pedidos.find_one({"payphone_id": payment_id})
     if pedido:
         flash("Tu pedido ya ha sido procesado correctamente", "success")
@@ -331,10 +331,62 @@ def payphone_return():
                               payment_id=payment_id, 
                               client_transaction_id=client_transaction_id)
     
-    # Renderizar una página que automáticamente envíe una solicitud a confirmar_transaccion_payphone
-    return render_template('views/confirmar_transaccion.html', 
-                          payment_id=payment_id, 
-                          client_transaction_id=client_transaction_id)
+    # Buscar el pedido temporal por el número de pedido (clientTransactionId)
+    pedido_temporal = db.pedidos_temporales.find_one({"numero_pedido": client_transaction_id})
+    
+    if not pedido_temporal:
+        # Si no existe un pedido temporal, renderizar la plantilla para recuperar el carrito
+        return render_template('views/confirmar_transaccion.html', 
+                              payment_id=payment_id, 
+                              client_transaction_id=client_transaction_id)
+    
+    # Si existe un pedido temporal, crear un pedido confirmado
+    try:
+        pedido_confirmado = {
+            "numero_pedido": pedido_temporal['numero_pedido'],
+            "usuario_id": pedido_temporal['usuario_id'],
+            "productos": pedido_temporal['productos'],
+            "nombre": pedido_temporal.get('nombre', session.get('nombreUsuario', 'Usuario')),
+            "celular": pedido_temporal.get('celular', ''),
+            "direccion": pedido_temporal.get('direccion', ''),
+            "ciudad": pedido_temporal.get('ciudad', ''),
+            "referencia": pedido_temporal.get('referencia', ''),
+            "total": pedido_temporal['total'],
+            "metodo_pago": 'payphone',
+            "payphone_id": payment_id,
+            "payphone_status": 'Approved',
+            "estado": "en transcurso",
+            "fecha_confirmacion": datetime.now(),
+            "fecha_pago": datetime.now(),
+            "notificado": False
+        }
+        
+        # Insertar el pedido confirmado
+        result = db.pedidos.insert_one(pedido_confirmado)
+        
+        if result.inserted_id:
+            # Eliminar el pedido temporal
+            db.pedidos_temporales.delete_one({"_id": pedido_temporal['_id']})
+            
+            # Mostrar mensaje de éxito
+            flash("¡Tu pedido ha sido confirmado con éxito!", "success")
+            
+            # Redirigir a la página de confirmación
+            return render_template('views/confirmacion_pedido.html', 
+                                  pedido=pedido_confirmado, 
+                                  payment_id=payment_id, 
+                                  client_transaction_id=client_transaction_id)
+        else:
+            flash("Error al confirmar el pedido", "danger")
+            return redirect(url_for('begin'))
+            
+    except Exception as e:
+        print(f"Error al confirmar pedido: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        flash("Error al confirmar el pedido", "danger")
+        return redirect(url_for('begin'))
+
 
 
 
@@ -344,9 +396,9 @@ def procesar_pago_payphone_manual():
         payment_id = request.form.get('payment_id')
         client_transaction_id = request.form.get('client_transaction_id')
         cart_json = request.form.get('cart')
-        payphone_response_json = request.form.get('payphone_response')
         
         print(f"Procesando pago manual: payment_id={payment_id}, clientTransactionId={client_transaction_id}")
+        print(f"Cart JSON: {cart_json}")
         
         if not payment_id or not client_transaction_id:
             flash("Error en el proceso de pago. Parámetros incompletos.", "danger")
@@ -364,11 +416,17 @@ def procesar_pago_payphone_manual():
         pedido = db.pedidos.find_one({"payphone_id": payment_id})
         if pedido:
             flash("Tu pedido ya ha sido procesado correctamente", "success")
-            return redirect(url_for('begin'))
+            return render_template('views/confirmacion_pedido.html', 
+                                  pedido=pedido, 
+                                  payment_id=payment_id, 
+                                  client_transaction_id=client_transaction_id)
         
-        # Parsear el carrito y la respuesta de PayPhone
-        cart = json.loads(cart_json) if cart_json else []
-        payphone_response = json.loads(payphone_response_json) if payphone_response_json else {}
+        # Parsear el carrito
+        try:
+            cart = json.loads(cart_json) if cart_json else []
+        except json.JSONDecodeError as e:
+            print(f"Error al decodificar JSON: {str(e)}")
+            cart = []
         
         if not cart:
             flash("No hay productos en el carrito", "warning")
@@ -397,10 +455,18 @@ def procesar_pago_payphone_manual():
             "notificado": False
         }
         
+        # Crear versión serializable para depuración
+        pedido_confirmado_serializable = pedido_confirmado.copy()
+        pedido_confirmado_serializable['fecha_confirmacion'] = pedido_confirmado_serializable['fecha_confirmacion'].isoformat()
+        pedido_confirmado_serializable['fecha_pago'] = pedido_confirmado_serializable['fecha_pago'].isoformat()
+        
+        print("Insertando pedido confirmado:", json.dumps(pedido_confirmado_serializable))
+        
         # Insertar el pedido confirmado
         result = db.pedidos.insert_one(pedido_confirmado)
         
         if result.inserted_id:
+            print(f"Pedido confirmado insertado con ID: {result.inserted_id}")
             # Limpiar el carrito
             flash("¡Tu pedido ha sido confirmado con éxito!", "success")
             
@@ -410,6 +476,7 @@ def procesar_pago_payphone_manual():
                                   payment_id=payment_id, 
                                   client_transaction_id=client_transaction_id)
         else:
+            print("Error al insertar el pedido confirmado")
             flash("Error al confirmar el pedido", "danger")
             return redirect(url_for('begin'))
             
@@ -419,6 +486,8 @@ def procesar_pago_payphone_manual():
         traceback.print_exc()
         flash("Error al procesar el pedido", "danger")
         return redirect(url_for('begin'))
+
+
 
 
 
@@ -500,6 +569,43 @@ def confirmar_transaccion_payphone():
         import traceback
         traceback.print_exc()
         return jsonify({"success": False, "message": str(e)}), 500
+
+
+
+
+
+@app.route('/debug_payphone', methods=['GET'])
+def debug_payphone():
+    """
+    Ruta para depurar la integración de PayPhone.
+    Muestra los parámetros de la URL y la sesión.
+    """
+    # Obtener todos los parámetros de la URL
+    params = {key: value for key, value in request.args.items()}
+    
+    # Obtener todos los datos de la sesión
+    session_data = {key: session.get(key) for key in session}
+    
+    # Mostrar los datos
+    return jsonify({
+        "url_params": params,
+        "session_data": session_data,
+        "message": "Esta es una ruta de depuración para PayPhone"
+    })
+
+@app.route('/test_payphone_redirect', methods=['GET'])
+def test_payphone_redirect():
+    """
+    Ruta para probar la redirección de PayPhone.
+    Simula una redirección de PayPhone con parámetros de prueba.
+    """
+    # Simular parámetros de PayPhone
+    payment_id = "12345"
+    client_transaction_id = "67890"
+    
+    # Redirigir a la ruta payphone_return con los parámetros simulados
+    return redirect(url_for('payphone_return', id=payment_id, clientTransactionId=client_transaction_id))
+
 
 
 if __name__ == "__main__":
