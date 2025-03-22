@@ -8,7 +8,7 @@ function showAlert(message, type = "success", imageUrl = null) {
         toast: true,
         position: "top", // Cambiamos a "top" para que aparezca en la parte superior
         showConfirmButton: false,
-        timer: 1000,
+        timer: 2000,
         timerProgressBar: true,
         customClass: {
             popup: "custom-swal-popup", // Clase personalizada para el marco

@@ -18,51 +18,107 @@
                         </div>
                         <p class="mt-2">Procesando tu pago...</p>
                     </div>
+                    <div id="resultado" class="mt-3"></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Recuperar datos del pago de PayPhone
-        const paymentId = "{{ payment_id }}";
-        const clientTransactionId = "{{ client_transaction_id }}";
-        
-        console.log("Confirmando transacción PayPhone:", paymentId, clientTransactionId);
-        
-        // Recuperar el carrito del localStorage
-        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-        
-        // Crear un formulario para enviar los datos
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '/procesar_pago_payphone_manual';
-        form.style.display = 'none';
-        
-        // Añadir los campos necesarios
-        const addField = (name, value) => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = name;
-            input.value = value;
-            form.appendChild(input);
-        };
-        
-        addField('payment_id', paymentId);
-        addField('client_transaction_id', clientTransactionId);
-        addField('cart', JSON.stringify(cart));
-        
-        // Añadir el formulario al documento y enviarlo
-        document.body.appendChild(form);
-        
-        // Enviar el formulario después de un breve retraso
-        setTimeout(() => {
-            console.log("Enviando formulario con datos de pago...");
-            form.submit();
-        }, 1000);
+    // Función para obtener parámetros de la URL
+    function getQueryVariable(variable) {
+        var query = window.location.search.substring(1);
+        var vars = query.split("&");
+        for (var i = 0; i < vars.length; i++) {
+            var pair = vars[i].split("=");
+            if (pair[0] == variable) {
+                return pair[1];
+            }
+        }
+        return false;
+    }
+
+    $(document).ready(function () {
+        // Obtener los parámetros de la URL
+        var id = getQueryVariable('id');
+        var clientTransactionId = getQueryVariable('clientTransactionId');
+
+        console.log("ID de transacción:", id);
+        console.log("ID de transacción del cliente:", clientTransactionId);
+
+        if (!id || !clientTransactionId) {
+            $("#resultado").html('<div class="alert alert-danger">Error: Parámetros de transacción no encontrados</div>');
+            return;
+        }
+
+        // Guardar el carrito en localStorage para referencia
+        var cart = JSON.parse(localStorage.getItem('cart') || '[]');
+
+        // Primero, intentar confirmar la transacción con la API de PayPhone
+        $.ajax({
+            url: "/confirmar_transaccion_payphone",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify({
+                "id": id,
+                "clientTransactionId": clientTransactionId
+            }),
+            success: function (response) {
+                console.log("Respuesta de confirmación:", response);
+
+                if (response.success) {
+                    $("#resultado").html('<div class="alert alert-success">¡Pago confirmado! Redirigiendo...</div>');
+
+                    // Redirigir a la página de confirmación
+                    setTimeout(function () {
+                        window.location.href = "/confirmacion_pedido?id=" + id + "&clientTransactionId=" + clientTransactionId;
+                    }, 2000);
+                } else {
+                    // Si falla la confirmación con la API, intentar el método manual
+                    enviarFormularioManual();
+                }
+            },
+            error: function (error) {
+                console.error("Error al confirmar transacción:", error);
+                $("#resultado").html('<div class="alert alert-warning">No se pudo confirmar con la API. Intentando método alternativo...</div>');
+
+                // Si falla la confirmación con la API, intentar el método manual
+                enviarFormularioManual();
+            }
+        });
+
+        // Función para enviar el formulario manual como respaldo
+        function enviarFormularioManual() {
+            // Crear un formulario para enviar los datos
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/procesar_pago_payphone_manual';
+
+            // Añadir los campos necesarios
+            var addField = function (name, value) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = name;
+                input.value = value;
+                form.appendChild(input);
+            };
+
+            addField('payment_id', id);
+            addField('client_transaction_id', clientTransactionId);
+            addField('cart', JSON.stringify(cart));
+
+            // Añadir el formulario al documento y enviarlo
+            document.body.appendChild(form);
+
+            $("#resultado").html('<div class="alert alert-info">Procesando pago manualmente...</div>');
+
+            // Enviar el formulario después de un breve retraso
+            setTimeout(function () {
+                form.submit();
+            }, 1000);
+        }
     });
 </script>
 {% endblock %}
-

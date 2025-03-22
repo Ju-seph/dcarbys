@@ -466,22 +466,24 @@
                     currency: "USD",
                     storeId: "{{payphone.storeid}}",
                     reference: "Pago por venta " + purchaseNumber,
-                    onPaymentCompleted: function (response) {
-                        console.log("PayPhone payment completed:", response);
 
-                        // Store the payment details in localStorage for reference
-                        localStorage.setItem('payphone_response', JSON.stringify(response));
+                    onPaymentCompleted:
+                        function (response) {
+                            console.log("PayPhone payment completed:", response);
 
-                        if (response.transactionStatus === 'Approved') {
-                            // Mostrar mensaje de éxito
-                            alert('¡Pago exitoso! Serás redirigido para completar tu pedido.');
+                            // Store the payment details in localStorage for reference
+                            localStorage.setItem('payphone_response', JSON.stringify(response));
 
-                            // Redirigir a la página de payphone_return con los parámetros de la transacción
-                            window.location.href = '/payphone_return?id=' + response.id + '&clientTransactionId=' + response.clientTransactionId;
-                        } else {
-                            alert('El pago no fue aprobado. Intenta nuevamente.');
+                            if (response.transactionStatus === 'Approved') {
+                                // Mostrar mensaje de éxito
+                                alert('¡Pago exitoso! Serás redirigido para completar tu pedido.');
+
+                                // Redirigir a la página de payphone_return con los parámetros de la transacción
+                                window.location.href = '/payphone_return?id=' + response.id + '&clientTransactionId=' + response.clientTransactionId;
+                            } else {
+                                alert('El pago no fue aprobado. Intenta nuevamente.');
+                            }
                         }
-                    }
                     ,
                     onPaymentError: function (error) {
                         console.error('Error en el pago:', error);
