@@ -56,33 +56,32 @@
         // Guardar el carrito en localStorage para referencia
         var cart = JSON.parse(localStorage.getItem('cart') || '[]');
 
-        // Primero, intentar confirmar la transacción con la API de PayPhone
+        // Realizar la solicitud a la API de PayPhone para confirmar la transacción
         $.ajax({
-            url: "/confirmar_transaccion_payphone",
+            url: "https://pay.payphonetodoesposible.com/api/button/V2/Confirm",
             type: "POST",
-            contentType: "application/json",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer {{payphone.token}}"
+            },
             data: JSON.stringify({
-                "id": id,
-                "clientTransactionId": clientTransactionId
+                "id": parseInt(id),
+                "clientTxId": clientTransactionId
             }),
             success: function (response) {
-                console.log("Respuesta de confirmación:", response);
+                console.log("Respuesta de PayPhone:", response);
+                $("#resultado").html(
+                    '<div class="alert alert-success">Pago confirmado con PayPhone. Procesando pedido...</div>'
+                );
 
-                if (response.success) {
-                    $("#resultado").html('<div class="alert alert-success">¡Pago confirmado! Redirigiendo...</div>');
-
-                    // Redirigir a la página de confirmación
-                    setTimeout(function () {
-                        window.location.href = "/confirmacion_pedido?id=" + id + "&clientTransactionId=" + clientTransactionId;
-                    }, 2000);
-                } else {
-                    // Si falla la confirmación con la API, intentar el método manual
-                    enviarFormularioManual();
-                }
+                // Enviar los datos al servidor para procesar el pedido
+                enviarFormularioManual();
             },
             error: function (error) {
-                console.error("Error al confirmar transacción:", error);
-                $("#resultado").html('<div class="alert alert-warning">No se pudo confirmar con la API. Intentando método alternativo...</div>');
+                console.error("Error en la solicitud a PayPhone:", error);
+                $("#resultado").html(
+                    '<div class="alert alert-warning">No se pudo confirmar con la API de PayPhone. Intentando método alternativo...</div>'
+                );
 
                 // Si falla la confirmación con la API, intentar el método manual
                 enviarFormularioManual();

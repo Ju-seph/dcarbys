@@ -331,10 +331,14 @@ def payphone_return():
                               payment_id=payment_id, 
                               client_transaction_id=client_transaction_id)
     
+    # Pasar el token de PayPhone a la plantilla
+    payphone = {"token": os.getenv("token"), "storeid": os.getenv("storeid")}
+    
     # Renderizar la plantilla para confirmar la transacción
     return render_template('views/confirmar_transaccion.html', 
                           payment_id=payment_id, 
-                          client_transaction_id=client_transaction_id)
+                          client_transaction_id=client_transaction_id,
+                          payphone=payphone)
 
 
 
@@ -378,8 +382,11 @@ def procesar_pago_payphone_manual():
             cart = []
         
         if not cart:
-            flash("No hay productos en el carrito", "warning")
-            return redirect(url_for('begin'))
+            # Intentar recuperar el carrito de la sesión
+            cart = session.get('cart', [])
+            if not cart:
+                flash("No hay productos en el carrito", "warning")
+                return redirect(url_for('begin'))
         
         # Calcular el total
         total = sum(item.get('price', 0) * item.get('quantity', 0) for item in cart)
@@ -435,6 +442,8 @@ def procesar_pago_payphone_manual():
         traceback.print_exc()
         flash("Error al procesar el pedido", "danger")
         return redirect(url_for('begin'))
+
+
 
 
 
