@@ -345,8 +345,16 @@ def procesar_pago_payphone_manual():
         client_transaction_id = request.form.get('client_transaction_id')
         cart_json = request.form.get('cart')
         
+        # Obtener datos de envío del formulario
+        nombre = request.form.get('nombre')
+        celular = request.form.get('celular')
+        ciudad = request.form.get('ciudad')
+        direccion = request.form.get('direccion')
+        referencia = request.form.get('referencia')
+        
         print(f"Procesando pago manual: payment_id={payment_id}, clientTransactionId={client_transaction_id}")
         print(f"Cart JSON: {cart_json}")
+        print(f"Datos de envío: nombre={nombre}, celular={celular}, ciudad={ciudad}, direccion={direccion}")
         
         if not payment_id or not client_transaction_id:
             flash("Error en el proceso de pago. Parámetros incompletos.", "danger")
@@ -400,11 +408,11 @@ def procesar_pago_payphone_manual():
             "numero_pedido": client_transaction_id,
             "usuario_id": session['usuario_id'],
             "productos": cart,
-            "nombre": session.get('nombreUsuario', 'Usuario'),
-            "celular": session.get('celular', ''),
-            "direccion": session.get('direccion', ''),
-            "ciudad": session.get('ciudad', ''),
-            "referencia": '',
+            "nombre": nombre or session.get('nombreUsuario', 'Usuario'),
+            "celular": celular or session.get('celular', ''),
+            "direccion": direccion or session.get('direccion', ''),
+            "ciudad": ciudad or session.get('ciudad', ''),
+            "referencia": referencia or '',
             "total": total,
             "metodo_pago": 'payphone',
             "payphone_id": payment_id,
@@ -439,6 +447,8 @@ def procesar_pago_payphone_manual():
         traceback.print_exc()
         flash("Error al procesar el pedido", "danger")
         return redirect(url_for('begin'))
+
+
 
 
 

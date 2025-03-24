@@ -55,6 +55,13 @@
         // Guardar el carrito en localStorage para referencia
         var cart = JSON.parse(localStorage.getItem('cart') || '[]');
 
+        // Obtener los datos del formulario de checkout si existen
+        var nombre = localStorage.getItem('checkout_nombre') || '';
+        var celular = localStorage.getItem('checkout_celular') || '';
+        var ciudad = localStorage.getItem('checkout_ciudad') || '';
+        var direccion = localStorage.getItem('checkout_direccion') || '';
+        var referencia = localStorage.getItem('checkout_referencia') || '';
+
         // Crear un formulario para enviar los datos
         var form = document.createElement('form');
         form.method = 'POST';
@@ -72,6 +79,13 @@
         addField('payment_id', id);
         addField('client_transaction_id', clientTransactionId);
         addField('cart', JSON.stringify(cart));
+
+        // Añadir los datos de envío
+        addField('nombre', nombre);
+        addField('celular', celular);
+        addField('ciudad', ciudad);
+        addField('direccion', direccion);
+        addField('referencia', referencia);
 
         // Añadir el formulario al documento y enviarlo
         document.body.appendChild(form);

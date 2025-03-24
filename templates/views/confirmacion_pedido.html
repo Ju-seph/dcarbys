@@ -246,6 +246,13 @@
     // Limpiar el carrito al cargar esta página
     localStorage.removeItem('cart');
 
+    // Limpiar datos del formulario guardados
+    localStorage.removeItem('checkout_nombre');
+    localStorage.removeItem('checkout_celular');
+    localStorage.removeItem('checkout_ciudad');
+    localStorage.removeItem('checkout_direccion');
+    localStorage.removeItem('checkout_referencia');
+
     // Actualizar el contador del carrito
     document.addEventListener('DOMContentLoaded', function () {
         const cartCountElement = document.getElementById('cart-count');

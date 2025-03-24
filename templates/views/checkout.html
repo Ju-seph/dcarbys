@@ -417,6 +417,32 @@
 
         inputs.forEach(input => input.addEventListener('input', validarCampos));
 
+        // Guardar datos del formulario en localStorage cuando cambian
+        inputs.forEach(input => {
+            input.addEventListener('change', function () {
+                localStorage.setItem('checkout_' + input.id, input.value);
+            });
+
+            // Cargar datos guardados si existen
+            const savedValue = localStorage.getItem('checkout_' + input.id);
+            if (savedValue) {
+                input.value = savedValue;
+            }
+        });
+
+        // También guardar la referencia
+        const referenciaInput = document.getElementById('Referencia');
+        if (referenciaInput) {
+            referenciaInput.addEventListener('change', function () {
+                localStorage.setItem('checkout_referencia', referenciaInput.value);
+            });
+
+            const savedReferencia = localStorage.getItem('checkout_referencia');
+            if (savedReferencia) {
+                referenciaInput.value = savedReferencia;
+            }
+        }
+
         // Lógica de selección de método de pago
         const metodoPagoCards = document.querySelectorAll('.metodo-pago-option');
         const metodoPagoInput = document.getElementById('metodo_pago');
@@ -514,6 +540,15 @@
             if (!metodoPagoInput.value) {
                 alert('Por favor, selecciona un método de pago.');
                 return;
+            }
+
+            // Guardar los datos del formulario en localStorage antes de enviar
+            inputs.forEach(input => {
+                localStorage.setItem('checkout_' + input.id, input.value);
+            });
+
+            if (referenciaInput) {
+                localStorage.setItem('checkout_referencia', referenciaInput.value);
             }
 
             procesarPedido();
@@ -642,6 +677,12 @@
                             `;
 
                             localStorage.removeItem('cart');
+                            // Limpiar datos del formulario guardados
+                            localStorage.removeItem('checkout_nombre');
+                            localStorage.removeItem('checkout_celular');
+                            localStorage.removeItem('checkout_ciudad');
+                            localStorage.removeItem('checkout_direccion');
+                            localStorage.removeItem('checkout_referencia');
                         } else if (data.estado === 'cancelado') {
                             clearInterval(interval);
                             waitingMessage.style.display = 'none';
@@ -660,6 +701,12 @@
                             `;
 
                             localStorage.removeItem('cart');
+                            // Limpiar datos del formulario guardados
+                            localStorage.removeItem('checkout_nombre');
+                            localStorage.removeItem('checkout_celular');
+                            localStorage.removeItem('checkout_ciudad');
+                            localStorage.removeItem('checkout_direccion');
+                            localStorage.removeItem('checkout_referencia');
                         } else if (data.estado === 'pendiente') {
                             console.log("El pedido sigue pendiente de confirmación.");
                         }
@@ -672,6 +719,9 @@
 
         // Exponer la función cancelarPedidoCliente al ámbito global
         window.cancelarPedidoCliente = cancelarPedidoCliente;
+
+        // Validar campos al cargar la página
+        validarCampos();
     });
 </script>
 
