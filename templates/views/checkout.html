@@ -367,6 +367,17 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Verificar si hay parámetros de PayPhone en la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentId = urlParams.get('id');
+        const clientTransactionId = urlParams.get('clientTransactionId');
+
+        if (paymentId && clientTransactionId) {
+            console.log("Detectados parámetros de PayPhone en la URL:", paymentId, clientTransactionId);
+            // Redirigir a la página de confirmación
+            window.location.href = '/payphone_return?id=' + paymentId + '&clientTransactionId=' + clientTransactionId;
+        }
+
         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
         const cartSummary = document.getElementById('cart-summary');
         const cartTotal = document.getElementById('cart-total');
@@ -428,11 +439,10 @@
                 // Mostrar u ocultar el botón de PayPhone
                 if (metodoPago === 'payphone') {
                     ppButtonContainer.style.display = 'block';
-                    // Mantener visible el botón de procesar pedido
-                    procesarPedidoBtn.style.display = 'block';
+                    procesarPedidoBtn.style.display = 'none'; // Ocultar el botón de procesar pedido
                 } else {
                     ppButtonContainer.style.display = 'none';
-                    procesarPedidoBtn.style.display = 'block';
+                    procesarPedidoBtn.style.display = 'block'; // Mostrar el botón de procesar pedido
                 }
 
                 // Habilitar el botón de procesar pedido si se selecciona un método de pago
@@ -466,6 +476,7 @@
                     currency: "USD",
                     storeId: "{{payphone.storeid}}",
                     reference: "Pago por venta " + purchaseNumber,
+                    callbackUrl: window.location.origin + "/payphone_return", // URL de retorno específica
                     onPaymentCompleted: function (response) {
                         console.log("PayPhone payment completed:", response);
 

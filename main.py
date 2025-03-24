@@ -338,7 +338,6 @@ def payphone_return():
 
 
 
-
 @app.route('/procesar_pago_payphone_manual', methods=['POST'])
 def procesar_pago_payphone_manual():
     try:
@@ -440,6 +439,8 @@ def procesar_pago_payphone_manual():
         traceback.print_exc()
         flash("Error al procesar el pedido", "danger")
         return redirect(url_for('begin'))
+
+
 
 
 
