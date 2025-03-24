@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, jsonify, session, redirect, url_for, flash
+from flask import Flask, request, render_template, jsonify, session, redirect, url_for, flash, send_from_directory
 from bson.objectid import ObjectId
 from werkzeug.utils import secure_filename
 import controllers.index as indx
@@ -453,11 +453,6 @@ def procesar_pago_payphone_manual():
 
 
 
-
-
-
-
-
 @app.route('/confirmar_transaccion_payphone', methods=['POST'])
 def confirmar_transaccion_payphone():
     try:
@@ -606,6 +601,14 @@ def test_payphone_redirect():
     # Redirigir a la ruta payphone_return con los parámetros simulados
     return redirect(url_for('payphone_return', id=payment_id, clientTransactionId=client_transaction_id))
 
+
+
+
+# Ruta para servir el archivo de sonido
+@app.route('/static/sound/notification.mp3')
+def serve_notification_sound():
+    """Sirve el archivo de sonido desde static/sound/"""
+    return send_from_directory('static/sound', 'notification.mp3')
 
 
 if __name__ == "__main__":

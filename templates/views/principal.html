@@ -146,6 +146,33 @@
             transform: translateY(0);
         }
     }
+
+    /* Estilos para el botón de sonido */
+    .sound-toggle {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1050;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: rgb(219, 22, 22);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .sound-toggle:hover {
+        transform: scale(1.1);
+    }
+
+    .sound-toggle i {
+        font-size: 1.5rem;
+    }
 </style>
 
 <div class="container-fluid py-4">
@@ -288,7 +315,87 @@
 <!-- Contenedor para notificaciones -->
 <div id="notifications-container"></div>
 
+<!-- Botón para activar/desactivar sonido -->
+<div class="sound-toggle" id="sound-toggle" title="Activar/Desactivar sonido">
+    <i class="bi bi-volume-up" id="sound-icon"></i>
+</div>
+
+<!-- Audio para prueba manual -->
+<audio id="notification-sound" src="{{ url_for('static', filename='sound/notification.mp3') }}" preload="auto"></audio>
+
 <script>
+    // Variables para el manejo del sonido
+    let soundEnabled = true;
+    const soundToggle = document.getElementById('sound-toggle');
+    const soundIcon = document.getElementById('sound-icon');
+    const notificationSound = document.getElementById('notification-sound');
+
+    // Función para reproducir el sonido de notificación
+    function playNotificationSound() {
+        if (soundEnabled) {
+            try {
+                // Reiniciar el audio para poder reproducirlo múltiples veces
+                notificationSound.currentTime = 0;
+
+                // Reproducir con manejo de promesa (para navegadores modernos)
+                const playPromise = notificationSound.play();
+
+                if (playPromise !== undefined) {
+                    playPromise.then(_ => {
+                        console.log("Reproducción de sonido iniciada correctamente");
+                    }).catch(error => {
+                        console.error("Error al reproducir el sonido:", error);
+                        // Intentar reproducir después de una interacción del usuario
+                        document.addEventListener('click', function audioUnlock() {
+                            notificationSound.play();
+                            document.removeEventListener('click', audioUnlock);
+                        }, { once: true });
+                    });
+                }
+            } catch (e) {
+                console.error("Error al reproducir el sonido de notificación:", e);
+            }
+        }
+    }
+
+    // Evento para activar/desactivar sonido
+    soundToggle.addEventListener('click', function () {
+        soundEnabled = !soundEnabled;
+        if (soundEnabled) {
+            soundIcon.className = 'bi bi-volume-up';
+            soundToggle.title = 'Desactivar sonido';
+            // Reproducir un sonido de prueba para verificar que funciona
+            playNotificationSound();
+        } else {
+            soundIcon.className = 'bi bi-volume-mute';
+            soundToggle.title = 'Activar sonido';
+        }
+
+        // Guardar preferencia en localStorage
+        localStorage.setItem('notificationSoundEnabled', soundEnabled);
+    });
+
+    // Cargar preferencia de sonido guardada
+    document.addEventListener('DOMContentLoaded', function () {
+        const savedPreference = localStorage.getItem('notificationSoundEnabled');
+        if (savedPreference !== null) {
+            soundEnabled = savedPreference === 'true';
+            if (!soundEnabled) {
+                soundIcon.className = 'bi bi-volume-mute';
+                soundToggle.title = 'Activar sonido';
+            }
+        }
+
+        // Desbloquear audio con la primera interacción del usuario
+        document.addEventListener('click', function audioUnlock() {
+            notificationSound.play().then(() => {
+                notificationSound.pause();
+                notificationSound.currentTime = 0;
+            }).catch(e => console.log("Error al desbloquear audio:", e));
+            document.removeEventListener('click', audioUnlock);
+        }, { once: true });
+    });
+
     $(document).ready(function () {
         $('#tablaUsuarios, #tablaInventario').DataTable({
             language: {
@@ -324,7 +431,6 @@
     // Función para cargar pedidos en transcurso
     function cargarPedidosEnTranscurso() {
         // Esta función debe ser implementada para recargar la tabla de pedidos en transcurso
-        // Puedes implementarla según tu lógica específica
         console.log("Recargando pedidos en transcurso...");
 
         // Ejemplo de implementación:
@@ -362,6 +468,11 @@
                         );
 
                         if (payPhonePayments.length > 0) {
+                            // Reproducir sonido de notificación si hay nuevos pagos
+                            if (payPhonePayments.length > 0) {
+                                playNotificationSound();
+                            }
+
                             // Mostrar notificación para cada nuevo pago
                             payPhonePayments.forEach(pedido => {
                                 // Crear una notificación
@@ -377,14 +488,6 @@
 
                                 // Añadir la notificación a la página
                                 document.querySelector('#notifications-container').appendChild(notification);
-
-                                // Reproducir un sonido de notificación si está disponible
-                                try {
-                                    const audio = new Audio('/static/notification.mp3');
-                                    audio.play();
-                                } catch (e) {
-                                    console.log("No se pudo reproducir el sonido de notificación");
-                                }
 
                                 // Marcar el pago como notificado
                                 fetch(`/marcar_notificado/${pedido._id}`, {
@@ -407,8 +510,6 @@
     $(document).ready(function () {
         // Actualizar cada 5 segundos
         setInterval(actualizarPedidosPendientes, 5000);
-
-        // Llamar a la función al cargar la  5000);
 
         // Llamar a la función al cargar la página
         actualizarPedidosPendientes();
