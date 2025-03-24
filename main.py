@@ -331,14 +331,10 @@ def payphone_return():
                               payment_id=payment_id, 
                               client_transaction_id=client_transaction_id)
     
-    # Pasar el token de PayPhone a la plantilla
-    payphone = {"token": os.getenv("token"), "storeid": os.getenv("storeid")}
-    
     # Renderizar la plantilla para confirmar la transacción
     return render_template('views/confirmar_transaccion.html', 
                           payment_id=payment_id, 
-                          client_transaction_id=client_transaction_id,
-                          payphone=payphone)
+                          client_transaction_id=client_transaction_id)
 
 
 
@@ -382,14 +378,23 @@ def procesar_pago_payphone_manual():
             cart = []
         
         if not cart:
-            # Intentar recuperar el carrito de la sesión
-            cart = session.get('cart', [])
-            if not cart:
-                flash("No hay productos en el carrito", "warning")
-                return redirect(url_for('begin'))
+            flash("No hay productos en el carrito", "warning")
+            return redirect(url_for('begin'))
         
         # Calcular el total
         total = sum(item.get('price', 0) * item.get('quantity', 0) for item in cart)
+        
+        # Reducir el stock de los productos
+        try:
+            for item in cart:
+                if 'id' in item:
+                    # Actualizar el stock del producto
+                    db.productos.update_one(
+                        {"_id": ObjectId(item['id'])},
+                        {"$inc": {"cantidad": -item['quantity']}}
+                    )
+        except Exception as e:
+            print(f"Error al actualizar el stock: {str(e)}")
         
         # Crear un pedido confirmado directamente
         pedido_confirmado = {
@@ -410,13 +415,6 @@ def procesar_pago_payphone_manual():
             "fecha_pago": datetime.now(),
             "notificado": False
         }
-        
-        # Crear versión serializable para depuración
-        pedido_confirmado_serializable = pedido_confirmado.copy()
-        pedido_confirmado_serializable['fecha_confirmacion'] = pedido_confirmado_serializable['fecha_confirmacion'].isoformat()
-        pedido_confirmado_serializable['fecha_pago'] = pedido_confirmado_serializable['fecha_pago'].isoformat()
-        
-        print("Insertando pedido confirmado:", json.dumps(pedido_confirmado_serializable))
         
         # Insertar el pedido confirmado
         result = db.pedidos.insert_one(pedido_confirmado)
@@ -561,6 +559,7 @@ def confirmacion_pedido():
                           pedido=pedido, 
                           payment_id=payment_id, 
                           client_transaction_id=client_transaction_id)
+
 
 
 

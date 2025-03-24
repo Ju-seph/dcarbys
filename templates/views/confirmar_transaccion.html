@@ -25,7 +25,6 @@
     </div>
 </div>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script>
     // Función para obtener parámetros de la URL
     function getQueryVariable(variable) {
@@ -40,7 +39,7 @@
         return false;
     }
 
-    $(document).ready(function () {
+    document.addEventListener('DOMContentLoaded', function () {
         // Obtener los parámetros de la URL
         var id = getQueryVariable('id');
         var clientTransactionId = getQueryVariable('clientTransactionId');
@@ -49,75 +48,40 @@
         console.log("ID de transacción del cliente:", clientTransactionId);
 
         if (!id || !clientTransactionId) {
-            $("#resultado").html('<div class="alert alert-danger">Error: Parámetros de transacción no encontrados</div>');
+            document.getElementById("resultado").innerHTML = '<div class="alert alert-danger">Error: Parámetros de transacción no encontrados</div>';
             return;
         }
 
         // Guardar el carrito en localStorage para referencia
         var cart = JSON.parse(localStorage.getItem('cart') || '[]');
 
-        // Realizar la solicitud a la API de PayPhone para confirmar la transacción
-        $.ajax({
-            url: "https://pay.payphonetodoesposible.com/api/button/V2/Confirm",
-            type: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer {{payphone.token}}"
-            },
-            data: JSON.stringify({
-                "id": parseInt(id),
-                "clientTxId": clientTransactionId
-            }),
-            success: function (response) {
-                console.log("Respuesta de PayPhone:", response);
-                $("#resultado").html(
-                    '<div class="alert alert-success">Pago confirmado con PayPhone. Procesando pedido...</div>'
-                );
+        // Crear un formulario para enviar los datos
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/procesar_pago_payphone_manual';
 
-                // Enviar los datos al servidor para procesar el pedido
-                enviarFormularioManual();
-            },
-            error: function (error) {
-                console.error("Error en la solicitud a PayPhone:", error);
-                $("#resultado").html(
-                    '<div class="alert alert-warning">No se pudo confirmar con la API de PayPhone. Intentando método alternativo...</div>'
-                );
+        // Añadir los campos necesarios
+        var addField = function (name, value) {
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = name;
+            input.value = value;
+            form.appendChild(input);
+        };
 
-                // Si falla la confirmación con la API, intentar el método manual
-                enviarFormularioManual();
-            }
-        });
+        addField('payment_id', id);
+        addField('client_transaction_id', clientTransactionId);
+        addField('cart', JSON.stringify(cart));
 
-        // Función para enviar el formulario manual como respaldo
-        function enviarFormularioManual() {
-            // Crear un formulario para enviar los datos
-            var form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/procesar_pago_payphone_manual';
+        // Añadir el formulario al documento y enviarlo
+        document.body.appendChild(form);
 
-            // Añadir los campos necesarios
-            var addField = function (name, value) {
-                var input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = name;
-                input.value = value;
-                form.appendChild(input);
-            };
-
-            addField('payment_id', id);
-            addField('client_transaction_id', clientTransactionId);
-            addField('cart', JSON.stringify(cart));
-
-            // Añadir el formulario al documento y enviarlo
-            document.body.appendChild(form);
-
-            $("#resultado").html('<div class="alert alert-info">Procesando pago manualmente...</div>');
-
-            // Enviar el formulario después de un breve retraso
-            setTimeout(function () {
-                form.submit();
-            }, 1000);
-        }
+        // Enviar el formulario después de un breve retraso para mostrar el spinner
+        setTimeout(function () {
+            console.log("Enviando formulario con datos de pago...");
+            form.submit();
+        }, 2000);
     });
 </script>
 {% endblock %}
+

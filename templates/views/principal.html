@@ -114,6 +114,38 @@
     .bg-danger {
         background-color: #25b45c !important;
     }
+
+    /* Estilos para las notificaciones */
+    #notifications-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1050;
+        max-width: 350px;
+    }
+
+    .notification {
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+        color: #155724;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        animation: fadeIn 0.5s;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 </style>
 
 <div class="container-fluid py-4">
@@ -202,8 +234,6 @@
                         </div>
                         {% endif %}
 
-
-
                         <!-- Gestión de Pedidos (para Administrador y Asistente) -->
                         <div class="tab-pane fade {% if session.rol == 'Asistente' %}show active{% endif %}"
                             id="v-pills-pedidos" role="tabpanel" aria-labelledby="v-pills-pedidos-tab">
@@ -255,6 +285,9 @@
     </div>
 </div>
 
+<!-- Contenedor para notificaciones -->
+<div id="notifications-container"></div>
+
 <script>
     $(document).ready(function () {
         $('#tablaUsuarios, #tablaInventario').DataTable({
@@ -268,43 +301,60 @@
         });
     });
 
-    $(document).ready(function () {
-        // Función para actualizar el número de pedidos pendientes
-        function actualizarPedidosPendientes() {
-            fetch('/obtener_numero_pedidos_pendientes')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        const badge = document.getElementById('pedidos-pendientes-badge');
-                        if (data.count > 0) {
-                            badge.textContent = data.count;
-                            badge.style.display = 'inline-block';
-                        } else {
-                            badge.style.display = 'none';
-                        }
+    // Función para actualizar el número de pedidos pendientes
+    function actualizarPedidosPendientes() {
+        fetch('/obtener_numero_pedidos_pendientes')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const badge = document.getElementById('pedidos-pendientes-badge');
+                    if (data.count > 0) {
+                        badge.textContent = data.count;
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
 
-        // Actualizar cada 5 segundos
-        setInterval(actualizarPedidosPendientes, 5000);
+    // Función para cargar pedidos en transcurso
+    function cargarPedidosEnTranscurso() {
+        // Esta función debe ser implementada para recargar la tabla de pedidos en transcurso
+        // Puedes implementarla según tu lógica específica
+        console.log("Recargando pedidos en transcurso...");
 
-        // Llamar a la función al cargar la página
-        actualizarPedidosPendientes();
-    });
+        // Ejemplo de implementación:
+        fetch('/obtener_pedidos_transcurso')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.data) {
+                    // Aquí actualizarías la tabla con los nuevos datos
+                    // Por ejemplo, si tienes una tabla con id "tablaPedidosTranscurso":
+                    const tabla = document.getElementById('tablaPedidosTranscurso');
+                    if (tabla) {
+                        // Lógica para actualizar la tabla
+                        // ...
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error al cargar pedidos en transcurso:', error);
+            });
+    }
 
-    // Add this to your principal.html file, inside a script tag
+    // Función para verificar nuevos pagos con PayPhone
     function checkForNewPayments() {
-        // This function will check for new payments every 10 seconds
+        // Esta función verificará nuevos pagos cada 10 segundos
         setInterval(function () {
             fetch('/obtener_pedidos_transcurso')
                 .then(response => response.json())
                 .then(data => {
                     if (data.data && data.data.length > 0) {
-                        // Check for new PayPhone payments
+                        // Buscar pagos con PayPhone no notificados
                         const payPhonePayments = data.data.filter(pedido =>
                             pedido.metodo_pago === 'payphone' &&
                             pedido.payphone_status === 'Approved' &&
@@ -312,28 +362,36 @@
                         );
 
                         if (payPhonePayments.length > 0) {
-                            // Show notification for each new payment
+                            // Mostrar notificación para cada nuevo pago
                             payPhonePayments.forEach(pedido => {
-                                // Create a notification
+                                // Crear una notificación
                                 const notification = document.createElement('div');
                                 notification.className = 'alert alert-success alert-dismissible fade show';
                                 notification.innerHTML = `
-                                <strong>¡Nuevo pago con PayPhone!</strong>
-                                <p>Pedido #${pedido.numero_pedido} - ${pedido.nombre}</p>
-                                <p>Total: $${pedido.total.toFixed(2)}</p>
-                                <p>ID de Transacción: ${pedido.payphone_id}</p>
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            `;
+                                    <strong>¡Nuevo pago con PayPhone!</strong>
+                                    <p>Pedido #${pedido.numero_pedido} - ${pedido.nombre}</p>
+                                    <p>Total: $${pedido.total.toFixed(2)}</p>
+                                    <p>ID de Transacción: ${pedido.payphone_id}</p>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                `;
 
-                                // Add the notification to the page
+                                // Añadir la notificación a la página
                                 document.querySelector('#notifications-container').appendChild(notification);
 
-                                // Mark the payment as notified
+                                // Reproducir un sonido de notificación si está disponible
+                                try {
+                                    const audio = new Audio('/static/notification.mp3');
+                                    audio.play();
+                                } catch (e) {
+                                    console.log("No se pudo reproducir el sonido de notificación");
+                                }
+
+                                // Marcar el pago como notificado
                                 fetch(`/marcar_notificado/${pedido._id}`, {
                                     method: 'POST'
                                 });
 
-                                // Refresh the orders table
+                                // Actualizar la tabla de pedidos
                                 if (typeof cargarPedidosEnTranscurso === 'function') {
                                     cargarPedidosEnTranscurso();
                                 }
@@ -341,25 +399,23 @@
                         }
                     }
                 })
-                .catch(error => console.error('Error checking for new payments:', error));
+                .catch(error => console.error('Error al verificar nuevos pagos:', error));
         }, 10000);
     }
 
-    // Call the function when the page loads
-    document.addEventListener('DOMContentLoaded', function () {
-        // Create a container for notifications if it doesn't exist
-        if (!document.querySelector('#notifications-container')) {
-            const container = document.createElement('div');
-            container.id = 'notifications-container';
-            container.className = 'position-fixed top-0 end-0 p-3';
-            container.style.zIndex = '1050';
-            document.body.appendChild(container);
-        }
+    // Inicializar funciones al cargar la página
+    $(document).ready(function () {
+        // Actualizar cada 5 segundos
+        setInterval(actualizarPedidosPendientes, 5000);
 
-        // Start checking for new payments
+        // Llamar a la función al cargar la  5000);
+
+        // Llamar a la función al cargar la página
+        actualizarPedidosPendientes();
+
+        // Iniciar la verificación de nuevos pagos
         checkForNewPayments();
     });
-</script>
 </script>
 
 {% endblock %}

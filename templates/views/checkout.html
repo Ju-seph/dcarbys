@@ -428,14 +428,15 @@
                 // Mostrar u ocultar el botón de PayPhone
                 if (metodoPago === 'payphone') {
                     ppButtonContainer.style.display = 'block';
-                    procesarPedidoBtn.style.display = 'none'; // Ocultar el botón de procesar pedido
+                    // Mantener visible el botón de procesar pedido
+                    procesarPedidoBtn.style.display = 'block';
                 } else {
                     ppButtonContainer.style.display = 'none';
-                    procesarPedidoBtn.style.display = 'block'; // Mostrar el botón de procesar pedido
+                    procesarPedidoBtn.style.display = 'block';
                 }
 
                 // Habilitar el botón de procesar pedido si se selecciona un método de pago
-                procesarPedidoBtn.disabled = false;
+                validarCampos();
             });
         });
 
@@ -447,7 +448,6 @@
         const purchaseNumber = Math.floor(100000 + Math.random() * 900000);
         document.getElementById('purchase-number').textContent = purchaseNumber;
 
-        // MODIFICADO: Inicialización del botón de PayPhone
         // Inicializar el botón de PayPhone
         const initPayPhoneButton = function () {
             console.log("Inicializando botón de PayPhone...");
@@ -466,25 +466,22 @@
                     currency: "USD",
                     storeId: "{{payphone.storeid}}",
                     reference: "Pago por venta " + purchaseNumber,
+                    onPaymentCompleted: function (response) {
+                        console.log("PayPhone payment completed:", response);
 
-                    onPaymentCompleted:
-                        function (response) {
-                            console.log("PayPhone payment completed:", response);
+                        // Store the payment details in localStorage for reference
+                        localStorage.setItem('payphone_response', JSON.stringify(response));
 
-                            // Store the payment details in localStorage for reference
-                            localStorage.setItem('payphone_response', JSON.stringify(response));
+                        if (response.transactionStatus === 'Approved') {
+                            // Mostrar mensaje de éxito
+                            alert('¡Pago exitoso! Serás redirigido para completar tu pedido.');
 
-                            if (response.transactionStatus === 'Approved') {
-                                // Mostrar mensaje de éxito
-                                alert('¡Pago exitoso! Serás redirigido para completar tu pedido.');
-
-                                // Redirigir a la página de payphone_return con los parámetros de la transacción
-                                window.location.href = '/payphone_return?id=' + response.id + '&clientTransactionId=' + response.clientTransactionId;
-                            } else {
-                                alert('El pago no fue aprobado. Intenta nuevamente.');
-                            }
+                            // Redirigir a la página de payphone_return con los parámetros de la transacción
+                            window.location.href = '/payphone_return?id=' + response.id + '&clientTransactionId=' + response.clientTransactionId;
+                        } else {
+                            alert('El pago no fue aprobado. Intenta nuevamente.');
                         }
-                    ,
+                    },
                     onPaymentError: function (error) {
                         console.error('Error en el pago:', error);
                         alert('Hubo un error al procesar el pago. Intenta nuevamente.');
@@ -661,6 +658,9 @@
                     });
             }, 5000);
         }
+
+        // Exponer la función cancelarPedidoCliente al ámbito global
+        window.cancelarPedidoCliente = cancelarPedidoCliente;
     });
 </script>
 
@@ -716,7 +716,6 @@
                 </div>
 
                 <!-- Método de pago -->
-                <!-- Método de pago -->
                 <div class="mb-4">
                     <label class="form-label fw-bold mb-3">Método de Pago <span class="text-danger">*</span></label>
                     <div class="row g-3">
@@ -760,6 +759,7 @@
 
                 <!-- Botón para procesar pedido en efectivo -->
                 <button type="submit" class="btn btn-primary" id="procesar-pedido" disabled>Procesar Pedido</button>
+
                 <script src="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js"
                     type="module"></script>
                 <link href="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.css" rel="stylesheet">
@@ -773,22 +773,20 @@
             </div>
 
             <!-- Mensaje de confirmación -->
-            <div id="confirmation-message" class="waiting-message" style="display: none;">
+            <div id="confirmation-message" class="confirmation-message" style="display: none;">
                 <h3>Pedido Confirmado</h3>
                 <p>¡Tu pedido ha sido confirmado! Pronto recibirás más detalles.</p>
                 <a href="/" class="btn btn-primary">Volver al inicio</a>
             </div>
 
             <!-- Mensaje de cancelación -->
-            <div id="cancellation-message" class="waiting-message" style="display: none;">
+            <div id="cancellation-message" class="cancellation-message" style="display: none;">
                 <h3>Pedido Cancelado</h3>
                 <p>Tu pedido ha sido cancelado. Si tienes alguna duda, contáctanos.</p>
                 <a href="/" class="btn btn-primary">Volver al inicio</a>
             </div>
         </div>
     </div>
-
 </div>
-
 
 {% endblock %}
