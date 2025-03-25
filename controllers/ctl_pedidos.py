@@ -4,6 +4,7 @@ from database.mongodb import Mongodb
 from datetime import datetime, timedelta
 from models.PedidoTemporal import PedidoTemporal
 from models.Pedido import Pedido
+from timezone_utils import get_ecuador_time
 import pymongo
 import re
 
@@ -38,7 +39,8 @@ def procesar_pedido(request):
             metodo_pago=data['metodo_pago']  # Método de pago (efectivo o payphone)
         )
         
-        pedido_temporal.createPedidoTemporal()
+        # Usar la hora de Ecuador
+        pedido_temporal.createPedidoTemporal(get_ecuador_time())
         pedido_dict = pedido_temporal.getPedidoTemporal()
         
         # Insertar en la base de datos
@@ -62,7 +64,6 @@ def procesar_pedido(request):
         import traceback
         traceback.print_exc()  # Imprimir el stack trace completo
         return jsonify({"success": False, "message": str(e)}), 500
-
 
 
 
@@ -119,6 +120,9 @@ def aceptar_pedido(pedido_id):
                         session=db_session
                     )
 
+        # Usar la hora de Ecuador
+        ecuador_time = get_ecuador_time()
+
         # Crear un pedido confirmado a partir del pedido temporal
         pedido_confirmado = {
             "_id": ObjectId(pedido_id),  # Mantener el mismo _id
@@ -134,7 +138,7 @@ def aceptar_pedido(pedido_id):
             "metodo_pago": pedido_temporal['metodo_pago'],  # Incluir el método de pago
             "estado": "en transcurso",  # Cambiar el estado a "en transcurso"
             "tiempo_estimado": tiempo_estimado,  # Establecer el tiempo estimado
-            "fecha_confirmacion": datetime.now()  # Agregar la fecha de confirmación
+            "fecha_confirmacion": ecuador_time  # Agregar la fecha de confirmación con hora de Ecuador
         }
 
         # Insertar el pedido confirmado en la colección permanente
@@ -153,7 +157,6 @@ def aceptar_pedido(pedido_id):
 
 
 
-
 def cancelar_pedido_admin(pedido_id):
     try:
         # Verificar si el usuario está autenticado
@@ -163,6 +166,9 @@ def cancelar_pedido_admin(pedido_id):
         # Obtener el nombre de usuario y el rol de la sesión
         nombre_usuario = session['nombreUsuario']
         rol_usuario = session['rol']
+
+        # Usar la hora de Ecuador
+        ecuador_time = get_ecuador_time()
 
         # Buscar el pedido en la colección de pedidos temporales
         pedido_temporal = db.pedidos_temporales.find_one({"_id": ObjectId(pedido_id)})
@@ -181,7 +187,7 @@ def cancelar_pedido_admin(pedido_id):
                         "estado": "cancelado",
                         "cancelado_por": nombre_usuario,  # Registrar quién canceló
                         "rol_cancelado": rol_usuario,  # Registrar el rol del usuario
-                        "fecha_cancelacion": datetime.now()  # Registrar la fecha de cancelación
+                        "fecha_cancelacion": ecuador_time  # Registrar la fecha de cancelación con hora de Ecuador
                     }
                 }
             )
@@ -214,7 +220,7 @@ def cancelar_pedido_admin(pedido_id):
             "estado": "cancelado",  # Cambiar el estado a "cancelado"
             "cancelado_por": nombre_usuario,  # Registrar quién canceló
             "rol_cancelado": rol_usuario,  # Registrar el rol del usuario
-            "fecha_cancelacion": datetime.now()  # Agregar la fecha de cancelación
+            "fecha_cancelacion": ecuador_time  # Agregar la fecha de cancelación con hora de Ecuador
         }
 
         # Insertar el pedido cancelado en la colección permanente
@@ -314,10 +320,13 @@ def finalizar_pedido(pedido_id):
         if not pedido:
             return jsonify({"success": False, "message": "Pedido no encontrado o ya finalizado"}), 404
 
+        # Usar la hora de Ecuador
+        ecuador_time = get_ecuador_time()
+
         # Cambiar el estado del pedido a "finalizado"
         db.pedidos.update_one(
             {"_id": ObjectId(pedido_id)},
-            {"$set": {"estado": "finalizado", "fecha_finalizacion": datetime.now()}}
+            {"$set": {"estado": "finalizado", "fecha_finalizacion": ecuador_time}}
         )
 
         return jsonify({"success": True, "message": "Pedido finalizado con éxito"}), 200
@@ -411,93 +420,6 @@ def get_format_for_agrupacion(agrupacion):
         return "%Y-%m-%d"  # Por defecto, agrupar por día
 
 
-def procesar_pago_payphone(request):
-    try:
-        # Get the payment data from PayPhone webhook
-        data = request.json
-        
-        # Extract the important fields
-        client_transaction_id = data.get('clientTransactionId')
-        transaction_id = data.get('id')  # This is the PayPhone transaction ID
-        transaction_status = data.get('transactionStatus')
-        
-        # Log the payment notification
-        print(f"Received PayPhone payment notification: {json.dumps(data)}")
-        
-        # Find the order using the clientTransactionId (which is your purchaseNumber)
-        pedido_temporal = db.pedidos_temporales.find_one({"numero_pedido": client_transaction_id})
-        
-        if pedido_temporal:
-            # If found in temporary orders, update it
-            pedido_id = pedido_temporal["_id"]
-            
-            if transaction_status == "Approved":
-                # Create a confirmed order from the temporary order
-                pedido_confirmado = {
-                    "_id": pedido_id,
-                    "numero_pedido": pedido_temporal['numero_pedido'],
-                    "usuario_id": pedido_temporal['usuario_id'],
-                    "productos": pedido_temporal['productos'],
-                    "nombre": pedido_temporal['nombre'],
-                    "celular": pedido_temporal['celular'],
-                    "direccion": pedido_temporal['direccion'],
-                    "ciudad": pedido_temporal['ciudad'],
-                    "referencia": pedido_temporal['referencia'],
-                    "total": pedido_temporal['total'],
-                    "metodo_pago": "payphone",
-                    "payphone_id": transaction_id,
-                    "payphone_status": transaction_status,
-                    "estado": "en transcurso",
-                    "fecha_confirmacion": datetime.now(),
-                    "fecha_pago": datetime.now()
-                }
-                
-                # Insert the confirmed order
-                result = db.pedidos.insert_one(pedido_confirmado)
-                
-                if not result.inserted_id:
-                    return jsonify({"success": False, "message": "Error al confirmar el pedido"}), 500
-                
-                # Delete the temporary order
-                db.pedidos_temporales.delete_one({"_id": ObjectId(pedido_id)})
-                
-                return jsonify({"success": True, "message": "Pago procesado correctamente"}), 200
-            else:
-                # If payment failed, update the temporary order
-                db.pedidos_temporales.update_one(
-                    {"_id": ObjectId(pedido_id)},
-                    {"$set": {
-                        "estado": "pago_fallido",
-                        "payphone_id": transaction_id,
-                        "payphone_status": transaction_status,
-                        "fecha_pago_fallido": datetime.now()
-                    }}
-                )
-                
-                return jsonify({"success": False, "message": "Pago rechazado"}), 200
-        else:
-            # Check if the order is already in the confirmed orders
-            pedido = db.pedidos.find_one({"numero_pedido": client_transaction_id})
-            
-            if pedido:
-                # Update the payment status
-                db.pedidos.update_one(
-                    {"_id": pedido["_id"]},
-                    {"$set": {
-                        "payphone_id": transaction_id,
-                        "payphone_status": transaction_status,
-                        "fecha_pago": datetime.now() if transaction_status == "Approved" else None,
-                        "fecha_pago_fallido": datetime.now() if transaction_status != "Approved" else None
-                    }}
-                )
-                
-                return jsonify({"success": True, "message": "Información de pago actualizada"}), 200
-            else:
-                return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
-            
-    except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
-
 
 
 def procesar_pago_payphone(request):
@@ -517,6 +439,9 @@ def procesar_pago_payphone(request):
         
         # Find the order using the clientTransactionId (which is your purchaseNumber)
         pedido_temporal = db.pedidos_temporales.find_one({"numero_pedido": client_transaction_id})
+        
+        # Usar la hora de Ecuador
+        ecuador_time = get_ecuador_time()
         
         if pedido_temporal:
             print(f"Pedido temporal encontrado: {pedido_temporal['_id']}")
@@ -549,8 +474,8 @@ def procesar_pago_payphone(request):
                     "payphone_id": transaction_id,
                     "payphone_status": transaction_status,
                     "estado": "en transcurso",
-                    "fecha_confirmacion": datetime.now(),
-                    "fecha_pago": datetime.now(),
+                    "fecha_confirmacion": ecuador_time,
+                    "fecha_pago": ecuador_time,
                     "notificado": False
                 }
                 
@@ -583,8 +508,8 @@ def procesar_pago_payphone(request):
                     {"$set": {
                         "payphone_id": transaction_id,
                         "payphone_status": transaction_status,
-                        "fecha_pago": datetime.now() if transaction_status == "Approved" else None,
-                        "fecha_pago_fallido": datetime.now() if transaction_status != "Approved" else None
+                        "fecha_pago": ecuador_time if transaction_status == "Approved" else None,
+                        "fecha_pago_fallido": ecuador_time if transaction_status != "Approved" else None
                     }}
                 )
                 
@@ -597,7 +522,7 @@ def procesar_pago_payphone(request):
                     "numero_pedido": client_transaction_id,
                     "payphone_id": transaction_id,
                     "payphone_status": transaction_status,
-                    "fecha_registro": datetime.now(),
+                    "fecha_registro": ecuador_time,
                     "procesado": False
                 }
                 
@@ -612,12 +537,16 @@ def procesar_pago_payphone(request):
         return jsonify({"success": False, "message": str(e)}), 500
 
 
+
     
 
 def limpiar_pedidos_expirados():
     try:
+        # Usar la hora de Ecuador
+        ecuador_time = get_ecuador_time()
+        
         # Encontrar todos los pedidos expirados
-        pedidos_expirados = db.pedidos_temporales.find({"expireDateTime": {"$lt": datetime.now()}})
+        pedidos_expirados = db.pedidos_temporales.find({"expireDateTime": {"$lt": ecuador_time}})
 
         for pedido in pedidos_expirados:
             # Devolver el stock de cada producto
@@ -633,3 +562,4 @@ def limpiar_pedidos_expirados():
         return jsonify({"success": True, "message": "Pedidos expirados limpiados con éxito"}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+

@@ -24,8 +24,15 @@ class PedidoTemporal:
     def getPedidoTemporal(self):
         return self.__dict__
 
-    def createPedidoTemporal(self):
-        self.createDateTime = datetime.now()
+    def createPedidoTemporal(self, custom_datetime=None):
+        """
+        Crea un pedido temporal con la fecha proporcionada o la fecha actual
+        
+        Args:
+            custom_datetime (datetime, optional): Fecha personalizada para el pedido
+        """
+        # Usar la fecha personalizada si se proporciona, de lo contrario usar datetime.now()
+        self.createDateTime = custom_datetime or datetime.now()
         self.expireDateTime = self.createDateTime + timedelta(minutes=15)
 
     def updatePedidoTemporal(self):
@@ -55,3 +62,4 @@ class PedidoTemporal:
         if 'expireDateTime' in data:
             pedido.expireDateTime = data['expireDateTime']
         return pedido
+

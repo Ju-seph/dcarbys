@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 import os
 import json
 from datetime import datetime
+from timezone_utils import get_ecuador_time, format_ecuador_time
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
 from models.Pedido import Pedido  # Importar la clase Pedido
@@ -375,7 +376,8 @@ def procesar_pago_payphone_manual():
             return render_template('views/confirmacion_pedido.html', 
                                   pedido=pedido, 
                                   payment_id=payment_id, 
-                                  client_transaction_id=client_transaction_id)
+                                  client_transaction_id=client_transaction_id,
+                                  format_time=format_ecuador_time)
         
         # Parsear el carrito
         try:
@@ -403,6 +405,9 @@ def procesar_pago_payphone_manual():
         except Exception as e:
             print(f"Error al actualizar el stock: {str(e)}")
         
+        # Usar la hora de Ecuador
+        ecuador_time = get_ecuador_time()
+        
         # Crear un pedido confirmado directamente
         pedido_confirmado = {
             "numero_pedido": client_transaction_id,
@@ -418,8 +423,8 @@ def procesar_pago_payphone_manual():
             "payphone_id": payment_id,
             "payphone_status": 'Approved',
             "estado": "en transcurso",
-            "fecha_confirmacion": datetime.now(),
-            "fecha_pago": datetime.now(),
+            "fecha_confirmacion": ecuador_time,
+            "fecha_pago": ecuador_time,
             "notificado": False
         }
         
@@ -435,7 +440,8 @@ def procesar_pago_payphone_manual():
             return render_template('views/confirmacion_pedido.html', 
                                   pedido=pedido_confirmado, 
                                   payment_id=payment_id, 
-                                  client_transaction_id=client_transaction_id)
+                                  client_transaction_id=client_transaction_id,
+                                  format_time=format_ecuador_time)
         else:
             print("Error al insertar el pedido confirmado")
             flash("Error al confirmar el pedido", "danger")
@@ -447,6 +453,8 @@ def procesar_pago_payphone_manual():
         traceback.print_exc()
         flash("Error al procesar el pedido", "danger")
         return redirect(url_for('begin'))
+
+
 
 
 

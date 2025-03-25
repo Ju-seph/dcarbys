@@ -90,7 +90,7 @@
 </style>
 
 <script>
-    // Función para aceptar un pedido
+    // Modifica la función aceptarPedido para evitar el error después del éxito
     function aceptarPedido(pedidoId) {
         const tiempoEstimado = prompt("Ingrese el tiempo estimado de entrega (en minutos):");
         if (!tiempoEstimado || isNaN(tiempoEstimado)) {
@@ -105,11 +105,19 @@
             },
             body: JSON.stringify({ tiempo_estimado: tiempoEstimado })
         })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     alert('Pedido aceptado con éxito');
-                    cargarPedidosPendientes();
+                    // Recargar la tabla después de un breve retraso
+                    setTimeout(() => {
+                        $('#tablaPedidosPendientes').DataTable().ajax.reload(null, false);
+                    }, 500);
                 } else {
                     alert('Error al aceptar el pedido: ' + data.message);
                 }
@@ -120,17 +128,25 @@
             });
     }
 
-    // Función para cancelar un pedido como administrador o asistente
+    // Modifica la función cancelarPedidoAdmin para evitar el error después del éxito
     function cancelarPedidoAdmin(pedidoId) {
         if (confirm("¿Estás seguro de cancelar este pedido?")) {
             fetch(`/cancelar_pedido_admin/${pedidoId}`, {
                 method: 'POST'
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Error HTTP: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if (data.success) {
                         alert(data.message);  // Mostrar el mensaje personalizado
-                        cargarPedidosPendientes();  // Actualizar la lista de pedidos
+                        // Recargar la tabla después de un breve retraso
+                        setTimeout(() => {
+                            $('#tablaPedidosPendientes').DataTable().ajax.reload(null, false);
+                        }, 500);
                     } else {
                         alert('Error al cancelar el pedido: ' + data.message);
                     }
@@ -175,12 +191,12 @@
             });
     }
 
-    $(document).ready(function () {
-        // Función para cargar los pedidos pendientes
-        function cargarPedidosPendientes() {
-            $('#tablaPedidosPendientes').DataTable().ajax.reload(null, false);
-        }
+    // Corrige la función cargarPedidosPendientes para que esté disponible globalmente
+    window.cargarPedidosPendientes = function () {
+        $('#tablaPedidosPendientes').DataTable().ajax.reload(null, false);
+    };
 
+    $(document).ready(function () {
         // Inicializar la tabla
         var tabla = $('#tablaPedidosPendientes').DataTable({
             ajax: {
@@ -230,6 +246,12 @@
         });
 
         // Actualizar la tabla cada 5 segundos
-        setInterval(cargarPedidosPendientes, 5000);
+        setInterval(function () {
+            try {
+                tabla.ajax.reload(null, false);
+            } catch (error) {
+                console.error("Error al recargar la tabla:", error);
+            }
+        }, 5000);
     });
 </script>

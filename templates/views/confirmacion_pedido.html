@@ -160,8 +160,14 @@
         </div>
         <div class="detail-row">
             <span class="detail-label">Fecha:</span>
-            <span>{{ pedido.fecha_confirmacion.strftime('%d/%m/%Y %H:%M') if pedido.fecha_confirmacion else 'No
-                disponible' }}</span>
+            <span>
+                {% if format_time %}
+                {{ format_time(pedido.fecha_confirmacion) }}
+                {% else %}
+                {{ pedido.fecha_confirmacion.strftime('%d/%m/%Y %H:%M') if pedido.fecha_confirmacion else 'No
+                disponible' }}
+                {% endif %}
+            </span>
         </div>
         <div class="detail-row">
             <span class="detail-label">Estado:</span>
