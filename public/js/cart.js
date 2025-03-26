@@ -162,110 +162,123 @@ async function verificarStockDisponible() {
 // Función para procesar el pedido
 async function processOrder() {
     if (cart.length === 0) {
-        showAlert("Tu carrito está vacío. Agrega productos antes de procesar el pedido.", "warning");
-        return;
+        showAlert("Tu carrito está vacío. Agrega productos antes de procesar el pedido.", "warning")
+        return
     }
 
     // Mostrar un indicador de carga
     Swal.fire({
-        title: 'Verificando disponibilidad...',
-        text: 'Por favor espera mientras verificamos el stock de los productos',
+        title: "Verificando disponibilidad...",
+        text: "Por favor espera mientras verificamos el stock de los productos",
         allowOutsideClick: false,
         didOpen: () => {
-            Swal.showLoading();
-        }
-    });
+            Swal.showLoading()
+        },
+    })
 
     // Verificar el stock antes de proceder al checkout
-    const verificacion = await verificarStockDisponible();
+    const verificacion = await verificarStockDisponible()
 
     // Si la verificación es exitosa, intentar reservar el stock
     if (verificacion.success) {
         // Crear un objeto con los productos y cantidades del carrito
-        const productosCarrito = cart.map(item => ({
+        const productosCarrito = cart.map((item) => ({
             id: item.id,
-            quantity: item.quantity
-        }));
+            quantity: item.quantity,
+        }))
 
         try {
             // Reservar el stock
-            const reservaResponse = await fetch('/reservar_stock', {
-                method: 'POST',
+            const reservaResponse = await fetch("/reservar_stock", {
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
+                    "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ productos: productosCarrito })
-            });
+                body: JSON.stringify({ productos: productosCarrito }),
+            })
 
-            const reservaData = await reservaResponse.json();
+            const reservaData = await reservaResponse.json()
 
             // Cerrar el indicador de carga
-            Swal.close();
+            Swal.close()
+
+            // Verificar si necesitamos redirigir al login
+            if (reservaData.redirect) {
+                Swal.fire({
+                    icon: "info",
+                    title: "Inicio de sesión requerido",
+                    text: reservaData.message,
+                    confirmButtonText: "Iniciar sesión",
+                }).then(() => {
+                    window.location.href = reservaData.redirect
+                })
+                return
+            }
 
             if (reservaData.success) {
                 // Si la reserva es exitosa, guardar el ID de reserva y redirigir al checkout
                 if (reservaData.reserva_id) {
-                    localStorage.setItem('reserva_id', reservaData.reserva_id);
+                    localStorage.setItem("reserva_id", reservaData.reserva_id)
                 }
-                window.location.href = "/checkout";
+                window.location.href = "/checkout"
             } else {
                 // Si hay problemas al reservar, mostrar mensaje de error
                 if (reservaData.productosNoDisponibles && reservaData.productosNoDisponibles.length > 0) {
                     // Mostrar los productos que no tienen suficiente stock
-                    let mensaje = "Los siguientes productos no tienen suficiente stock:<br><ul>";
-                    reservaData.productosNoDisponibles.forEach(producto => {
-                        mensaje += `<li>${producto.name} (Disponible: ${producto.stockActual}, Solicitado: ${producto.stockSolicitado})</li>`;
-                    });
-                    mensaje += "</ul>";
+                    let mensaje = "Los siguientes productos no tienen suficiente stock:<br><ul>"
+                    reservaData.productosNoDisponibles.forEach((producto) => {
+                        mensaje += `<li>${producto.name} (Disponible: ${producto.stockActual}, Solicitado: ${producto.stockSolicitado})</li>`
+                    })
+                    mensaje += "</ul>"
 
                     Swal.fire({
-                        icon: 'error',
-                        title: 'Stock insuficiente',
+                        icon: "error",
+                        title: "Stock insuficiente",
                         html: mensaje,
-                        confirmButtonText: 'Actualizar carrito'
+                        confirmButtonText: "Actualizar carrito",
                     }).then((result) => {
                         if (result.isConfirmed) {
                             // Actualizar el carrito con las cantidades disponibles
-                            actualizarCarritoConStockDisponible(reservaData.productosNoDisponibles);
+                            actualizarCarritoConStockDisponible(reservaData.productosNoDisponibles)
                         }
-                    });
+                    })
                 } else {
                     // Mensaje genérico si no hay detalles específicos
-                    showAlert(reservaData.message || "No hay suficiente stock para completar tu pedido.", "error");
+                    showAlert(reservaData.message || "No hay suficiente stock para completar tu pedido.", "error")
                 }
             }
         } catch (error) {
-            console.error('Error al reservar el stock:', error);
-            Swal.close();
-            showAlert("Error al procesar tu pedido. Por favor, intenta nuevamente.", "error");
+            console.error("Error al reservar el stock:", error)
+            Swal.close()
+            showAlert("Error al procesar tu pedido. Por favor, intenta nuevamente.", "error")
         }
     } else {
         // Cerrar el indicador de carga
-        Swal.close();
+        Swal.close()
 
         // Si hay problemas de stock, mostrar mensaje de error
         if (verificacion.productosNoDisponibles && verificacion.productosNoDisponibles.length > 0) {
             // Mostrar los productos que no tienen suficiente stock
-            let mensaje = "Los siguientes productos no tienen suficiente stock:<br><ul>";
-            verificacion.productosNoDisponibles.forEach(producto => {
-                mensaje += `<li>${producto.name} (Disponible: ${producto.stockActual}, Solicitado: ${producto.stockSolicitado})</li>`;
-            });
-            mensaje += "</ul>";
+            let mensaje = "Los siguientes productos no tienen suficiente stock:<br><ul>"
+            verificacion.productosNoDisponibles.forEach((producto) => {
+                mensaje += `<li>${producto.name} (Disponible: ${producto.stockActual}, Solicitado: ${producto.stockSolicitado})</li>`
+            })
+            mensaje += "</ul>"
 
             Swal.fire({
-                icon: 'error',
-                title: 'Stock insuficiente',
+                icon: "error",
+                title: "Stock insuficiente",
                 html: mensaje,
-                confirmButtonText: 'Actualizar carrito'
+                confirmButtonText: "Actualizar carrito",
             }).then((result) => {
                 if (result.isConfirmed) {
                     // Actualizar el carrito con las cantidades disponibles
-                    actualizarCarritoConStockDisponible(verificacion.productosNoDisponibles);
+                    actualizarCarritoConStockDisponible(verificacion.productosNoDisponibles)
                 }
-            });
+            })
         } else {
             // Mensaje genérico si no hay detalles específicos
-            showAlert(verificacion.message || "No hay suficiente stock para completar tu pedido.", "error");
+            showAlert(verificacion.message || "No hay suficiente stock para completar tu pedido.", "error")
         }
     }
 }

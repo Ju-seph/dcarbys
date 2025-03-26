@@ -640,9 +640,15 @@ def reservar_stock():
     """
     # Verificar si el usuario está autenticado
     if 'usuario_id' not in session:
+        # Redirigir al login con un mensaje
+        flash("Debes iniciar sesión para reservar productos", "warning")
+        # Guardar la URL actual para redirigir después del login
+        session['next'] = url_for('checkout')
+        # Devolver respuesta JSON con redirección
         return jsonify({
             "success": False, 
-            "message": "Debes iniciar sesión para reservar productos"
+            "message": "Debes iniciar sesión para reservar productos",
+            "redirect": url_for('login_user')
         }), 401
     
     # Si el usuario está autenticado, proceder con la reserva

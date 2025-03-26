@@ -621,13 +621,11 @@
 
         // Manejar la salida de la página
         window.addEventListener('beforeunload', function (e) {
-            // Si estamos procesando un pago con PayPhone, no mostrar el mensaje de confirmación
-            if (isPayPhoneProcessing) {
-                return undefined;
-            }
-
+            // Solo mostrar el mensaje de confirmación si hay una reserva y NO estamos procesando un pago con PayPhone
             const reservaId = localStorage.getItem('reserva_id');
-            if (reservaId) {
+            const isPayPhonePayment = metodoPagoInput.value === 'payphone';
+
+            if (reservaId && !isPayPhonePayment) {
                 // No podemos hacer una petición fetch aquí porque beforeunload no lo permite
                 // Solo mostramos un mensaje de confirmación
                 const message = '¿Estás seguro de que quieres salir? Tu pedido será cancelado.';
@@ -776,12 +774,6 @@
                     onPaymentCompleted: function (response) {
                         console.log("PayPhone payment completed:", response);
 
-                        // Marcar que estamos procesando un pago con PayPhone
-                        isPayPhoneProcessing = true;
-
-                        // Mostrar el modal de procesamiento
-                        payphoneModal.style.display = 'flex';
-
                         // Store the payment details in localStorage for reference
                         localStorage.setItem('payphone_response', JSON.stringify(response));
 
@@ -802,27 +794,23 @@
                             // Redirigir a la página de payphone_return con los parámetros de la transacción
                             window.location.href = '/payphone_return?id=' + response.id + '&clientTransactionId=' + response.clientTransactionId;
                         } else {
-                            // Ocultar el modal de procesamiento
-                            payphoneModal.style.display = 'none';
-
-                            // Marcar que ya no estamos procesando un pago con PayPhone
-                            isPayPhoneProcessing = false;
-
                             alert('El pago no fue aprobado. Intenta nuevamente.');
                         }
                     },
                     onPaymentError: function (error) {
                         console.error('Error en el pago:', error);
-
-                        // Ocultar el modal de procesamiento
-                        payphoneModal.style.display = 'none';
-
-                        // Marcar que ya no estamos procesando un pago con PayPhone
-                        isPayPhoneProcessing = false;
-
                         alert('Hubo un error al procesar el pago. Intenta nuevamente.');
                     }
                 }).render('pp-button');
+
+                // Mostrar mensaje informativo sobre el diálogo de salida
+                Swal.fire({
+                    title: 'Información importante',
+                    html: 'Cuando hagas clic en el botón de pago, aparecerá un diálogo preguntando si deseas salir del sitio.<br><br><strong>Debes hacer clic en "Salir" para continuar con el pago.</strong>',
+                    icon: 'info',
+                    confirmButtonText: 'Entendido'
+                });
+
                 console.log("Botón de PayPhone inicializado correctamente");
             } catch (error) {
                 console.error("Error al inicializar el botón de PayPhone:", error);
