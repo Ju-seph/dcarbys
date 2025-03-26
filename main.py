@@ -638,6 +638,14 @@ def reservar_stock():
     """
     Endpoint para reservar el stock de los productos en un pedido
     """
+    # Verificar si el usuario está autenticado
+    if 'usuario_id' not in session:
+        return jsonify({
+            "success": False, 
+            "message": "Debes iniciar sesión para reservar productos"
+        }), 401
+    
+    # Si el usuario está autenticado, proceder con la reserva
     return ped.reservar_stock_pedido(request)
 
 @app.route('/cancelar_reserva/<reserva_id>', methods=['POST'])
@@ -695,3 +703,4 @@ def serve_notification_sound():
 if __name__ == "__main__":
     # Ejecutar la aplicación Flask
     app.run(host=os.getenv("HOST", "0.0.0.0"), port=int(os.getenv("PORT", 5000)))
+

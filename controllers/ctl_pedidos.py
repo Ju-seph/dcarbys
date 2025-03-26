@@ -225,16 +225,16 @@ def cancelar_pedido_admin(pedido_id):
                 }
             )
 
-            # Restaurar el stock de los productos (solo si el pedido estaba en "en transcurso")
-            if pedido['estado'] == "en transcurso":
-                with db.client.start_session() as db_session:
-                    with db_session.start_transaction():
-                        for item in pedido['productos']:
-                            db.productos.update_one(
-                                {"_id": ObjectId(item['id'])},
-                                {"$inc": {"cantidad": item['quantity']}},  # Incrementar el stock
-                                session=db_session
-                            )
+            # Restaurar el stock de los productos (siempre, independientemente del estado)
+            # Esto asegura que el stock se devuelva incluso si el pedido estaba en otro estado
+            with db.client.start_session() as db_session:
+                with db_session.start_transaction():
+                    for item in pedido['productos']:
+                        db.productos.update_one(
+                            {"_id": ObjectId(item['id'])},
+                            {"$inc": {"cantidad": item['quantity']}},  # Incrementar el stock
+                            session=db_session
+                        )
 
             return jsonify({"success": True, "message": f"Pedido cancelado por {nombre_usuario} ({rol_usuario})"}), 200
 
@@ -247,7 +247,17 @@ def cancelar_pedido_admin(pedido_id):
                 {"$set": {"estado": "cancelada", "fecha_cancelacion": ecuador_time}}
             )
             
-            # No es necesario devolver el stock ya que la reserva ya lo tenía reservado
+            # Devolver el stock de los productos reservados
+            reserva = db.reservas_stock.find_one({"_id": ObjectId(reserva_id)})
+            if reserva:
+                with db.client.start_session() as db_session:
+                    with db_session.start_transaction():
+                        for producto in reserva['productos']:
+                            db.productos.update_one(
+                                {"_id": ObjectId(producto['id'])},
+                                {"$inc": {"cantidad": producto['cantidad']}},
+                                session=db_session
+                            )
         else:
             # Si no hay reserva, devolver el stock de los productos
             with db.client.start_session() as db_session:
@@ -294,6 +304,8 @@ def cancelar_pedido_admin(pedido_id):
 
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+
+
     
 
 
@@ -765,6 +777,7 @@ def cancelar_reserva_stock(reserva_id):
         traceback.print_exc()
         return jsonify({"success": False, "message": f"Error al cancelar reserva: {str(e)}"}), 500
     
+
 
 def limpiar_reservas_expiradas():
     """

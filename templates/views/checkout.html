@@ -340,6 +340,49 @@
     .checkout-logo span {
         color: red;
     }
+
+    /* Estilos para el modal de procesamiento de PayPhone */
+    .payphone-processing-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1050;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .payphone-processing-content {
+        background-color: white;
+        padding: 30px;
+        border-radius: 10px;
+        text-align: center;
+        max-width: 500px;
+        width: 90%;
+    }
+
+    .payphone-spinner {
+        border: 5px solid #f3f3f3;
+        border-top: 5px solid #dc3545;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 2s linear infinite;
+        margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 </style>
 
 <div class="container mt-5">
@@ -473,8 +516,21 @@
     </div>
 </div>
 
+<!-- Modal para procesamiento de PayPhone -->
+<div id="payphone-processing-modal" class="payphone-processing-modal">
+    <div class="payphone-processing-content">
+        <div class="payphone-spinner"></div>
+        <h4>Procesando tu pago</h4>
+        <p>Por favor, no cierres esta ventana mientras procesamos tu pago con PayPhone.</p>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // Variables para el modal de PayPhone
+        const payphoneModal = document.getElementById('payphone-processing-modal');
+        let isPayPhoneProcessing = false;
+
         // Verificar si hay parámetros de PayPhone en la URL
         const urlParams = new URLSearchParams(window.location.search);
         const paymentId = urlParams.get('id');
@@ -523,16 +579,40 @@
                                 console.log('Reserva cancelada:', data);
                                 // Eliminar el ID de reserva del localStorage
                                 localStorage.removeItem('reserva_id');
+                                // Limpiar el carrito
+                                localStorage.removeItem('cart');
+                                // Limpiar datos del formulario guardados
+                                localStorage.removeItem('checkout_nombre');
+                                localStorage.removeItem('checkout_celular');
+                                localStorage.removeItem('checkout_ciudad');
+                                localStorage.removeItem('checkout_direccion');
+                                localStorage.removeItem('checkout_referencia');
                                 // Redirigir al menú
                                 window.location.href = '/';
                             })
                             .catch(error => {
                                 console.error('Error al cancelar la reserva:', error);
-                                // Redirigir al menú de todas formas
+                                // Limpiar el carrito de todas formas
+                                localStorage.removeItem('cart');
+                                // Limpiar datos del formulario guardados
+                                localStorage.removeItem('checkout_nombre');
+                                localStorage.removeItem('checkout_celular');
+                                localStorage.removeItem('checkout_ciudad');
+                                localStorage.removeItem('checkout_direccion');
+                                localStorage.removeItem('checkout_referencia');
+                                // Redirigir al menú
                                 window.location.href = '/';
                             });
                     } else {
                         // Si no hay ID de reserva, simplemente redirigir
+                        // Limpiar el carrito
+                        localStorage.removeItem('cart');
+                        // Limpiar datos del formulario guardados
+                        localStorage.removeItem('checkout_nombre');
+                        localStorage.removeItem('checkout_celular');
+                        localStorage.removeItem('checkout_ciudad');
+                        localStorage.removeItem('checkout_direccion');
+                        localStorage.removeItem('checkout_referencia');
                         window.location.href = '/';
                     }
                 }
@@ -541,6 +621,11 @@
 
         // Manejar la salida de la página
         window.addEventListener('beforeunload', function (e) {
+            // Si estamos procesando un pago con PayPhone, no mostrar el mensaje de confirmación
+            if (isPayPhoneProcessing) {
+                return undefined;
+            }
+
             const reservaId = localStorage.getItem('reserva_id');
             if (reservaId) {
                 // No podemos hacer una petición fetch aquí porque beforeunload no lo permite
@@ -553,11 +638,23 @@
 
         // Cuando la página se cierra o se navega a otra página
         window.addEventListener('unload', function () {
+            // Si estamos procesando un pago con PayPhone, no cancelar la reserva
+            if (isPayPhoneProcessing) {
+                return;
+            }
+
             const reservaId = localStorage.getItem('reserva_id');
             if (reservaId) {
                 // Usar sendBeacon para enviar la solicitud de cancelación
                 navigator.sendBeacon(`/cancelar_reserva/${reservaId}`);
                 localStorage.removeItem('reserva_id');
+                localStorage.removeItem('cart');
+                // Limpiar datos del formulario guardados
+                localStorage.removeItem('checkout_nombre');
+                localStorage.removeItem('checkout_celular');
+                localStorage.removeItem('checkout_ciudad');
+                localStorage.removeItem('checkout_direccion');
+                localStorage.removeItem('checkout_referencia');
             }
         });
 
@@ -679,6 +776,12 @@
                     onPaymentCompleted: function (response) {
                         console.log("PayPhone payment completed:", response);
 
+                        // Marcar que estamos procesando un pago con PayPhone
+                        isPayPhoneProcessing = true;
+
+                        // Mostrar el modal de procesamiento
+                        payphoneModal.style.display = 'flex';
+
                         // Store the payment details in localStorage for reference
                         localStorage.setItem('payphone_response', JSON.stringify(response));
 
@@ -686,17 +789,37 @@
                             // Eliminar el ID de reserva ya que el pago fue exitoso
                             localStorage.removeItem('reserva_id');
 
-                            // Mostrar mensaje de éxito
-                            alert('¡Pago exitoso! Serás redirigido para completar tu pedido.');
+                            // Limpiar el carrito
+                            localStorage.removeItem('cart');
+
+                            // Limpiar datos del formulario guardados
+                            localStorage.removeItem('checkout_nombre');
+                            localStorage.removeItem('checkout_celular');
+                            localStorage.removeItem('checkout_ciudad');
+                            localStorage.removeItem('checkout_direccion');
+                            localStorage.removeItem('checkout_referencia');
 
                             // Redirigir a la página de payphone_return con los parámetros de la transacción
                             window.location.href = '/payphone_return?id=' + response.id + '&clientTransactionId=' + response.clientTransactionId;
                         } else {
+                            // Ocultar el modal de procesamiento
+                            payphoneModal.style.display = 'none';
+
+                            // Marcar que ya no estamos procesando un pago con PayPhone
+                            isPayPhoneProcessing = false;
+
                             alert('El pago no fue aprobado. Intenta nuevamente.');
                         }
                     },
                     onPaymentError: function (error) {
                         console.error('Error en el pago:', error);
+
+                        // Ocultar el modal de procesamiento
+                        payphoneModal.style.display = 'none';
+
+                        // Marcar que ya no estamos procesando un pago con PayPhone
+                        isPayPhoneProcessing = false;
+
                         alert('Hubo un error al procesar el pago. Intenta nuevamente.');
                     }
                 }).render('pp-button');
@@ -819,6 +942,14 @@
                 .then(data => {
                     if (data.success) {
                         alert('Pedido cancelado con éxito');
+                        // Limpiar el carrito
+                        localStorage.removeItem('cart');
+                        // Limpiar datos del formulario guardados
+                        localStorage.removeItem('checkout_nombre');
+                        localStorage.removeItem('checkout_celular');
+                        localStorage.removeItem('checkout_ciudad');
+                        localStorage.removeItem('checkout_direccion');
+                        localStorage.removeItem('checkout_referencia');
                         window.location.href = '/';
                     } else {
                         alert('Error al cancelar el pedido: ' + data.message);
