@@ -15,6 +15,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
 from models.Pedido import Pedido  # Importar la clase Pedido
 
+
 db = Mongodb().db()
 
 # Cargar variables de entorno
@@ -32,8 +33,10 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Configurar el planificador
+# Configurar el planificador para limpiar pedidos y reservas expiradas
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=ped.limpiar_pedidos_expirados, trigger="interval", minutes=5)
+scheduler.add_job(func=ped.limpiar_reservas_expiradas, trigger="interval", minutes=1)  # Ejecutar cada minuto
 scheduler.start()
 
 # Asegurarse de que el planificador se detenga cuando la aplicación se cierre
@@ -458,9 +461,6 @@ def procesar_pago_payphone_manual():
 
 
 
-
-
-
 @app.route('/confirmar_transaccion_payphone', methods=['POST'])
 def confirmar_transaccion_payphone():
     try:
@@ -573,6 +573,79 @@ def confirmacion_pedido():
                           pedido=pedido, 
                           payment_id=payment_id, 
                           client_transaction_id=client_transaction_id)
+
+
+
+
+@app.route('/verificar_stock', methods=['POST'])
+def verificar_stock():
+    try:
+        data = request.json
+        productos = data.get('productos', [])
+        
+        if not productos:
+            return jsonify({"success": True, "message": "No hay productos para verificar"}), 200
+        
+        productos_no_disponibles = []
+        
+        # Verificar el stock de cada producto
+        for producto_carrito in productos:
+            producto_id = producto_carrito.get('id')
+            cantidad_solicitada = producto_carrito.get('quantity', 0)
+            
+            # Buscar el producto en la base de datos
+            producto_db = db.productos.find_one({"_id": ObjectId(producto_id)})
+            
+            if not producto_db:
+                productos_no_disponibles.append({
+                    "id": producto_id,
+                    "name": "Producto no encontrado",
+                    "stockActual": 0,
+                    "stockSolicitado": cantidad_solicitada
+                })
+                continue
+            
+            # Verificar si hay suficiente stock
+            if producto_db.get('cantidad', 0) < cantidad_solicitada:
+                productos_no_disponibles.append({
+                    "id": producto_id,
+                    "name": producto_db.get('nombreProducto', 'Producto'),
+                    "stockActual": producto_db.get('cantidad', 0),
+                    "stockSolicitado": cantidad_solicitada
+                })
+        
+        # Si hay productos sin suficiente stock, devolver error
+        if productos_no_disponibles:
+            return jsonify({
+                "success": False,
+                "message": "Algunos productos no tienen suficiente stock",
+                "productosNoDisponibles": productos_no_disponibles
+            }), 200
+        
+        # Si todos los productos tienen suficiente stock, devolver éxito
+        return jsonify({"success": True, "message": "Stock verificado correctamente"}), 200
+    
+    except Exception as e:
+        print(f"Error al verificar stock: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "message": f"Error al verificar stock: {str(e)}"}), 500
+
+
+
+@app.route('/reservar_stock', methods=['POST'])
+def reservar_stock():
+    """
+    Endpoint para reservar el stock de los productos en un pedido
+    """
+    return ped.reservar_stock_pedido(request)
+
+@app.route('/cancelar_reserva/<reserva_id>', methods=['POST'])
+def cancelar_reserva(reserva_id):
+    """
+    Endpoint para cancelar una reserva de stock
+    """
+    return ped.cancelar_reserva_stock(reserva_id)
 
 
 

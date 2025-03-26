@@ -125,15 +125,176 @@ function addToCart(button) {
     updateCart();
 }
 
+// Función para verificar el stock antes de procesar el pedido
+async function verificarStockDisponible() {
+    try {
+        // Si el carrito está vacío, no hay nada que verificar
+        if (cart.length === 0) {
+            return { success: true, message: "Carrito vacío" };
+        }
+
+        // Crear un objeto con los productos y cantidades del carrito
+        const productosCarrito = cart.map(item => ({
+            id: item.id,
+            quantity: item.quantity
+        }));
+
+        // Enviar la solicitud al servidor para verificar el stock
+        const response = await fetch('/verificar_stock', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ productos: productosCarrito })
+        });
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error al verificar el stock:', error);
+        return {
+            success: false,
+            message: "Error al verificar el stock. Por favor, intenta nuevamente."
+        };
+    }
+}
+
 // Función para procesar el pedido
-function processOrder() {
+async function processOrder() {
     if (cart.length === 0) {
         showAlert("Tu carrito está vacío. Agrega productos antes de procesar el pedido.", "warning");
         return;
     }
 
-    // Redirigir directamente a la página de checkout
-    window.location.href = "/checkout";
+    // Mostrar un indicador de carga
+    Swal.fire({
+        title: 'Verificando disponibilidad...',
+        text: 'Por favor espera mientras verificamos el stock de los productos',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    // Verificar el stock antes de proceder al checkout
+    const verificacion = await verificarStockDisponible();
+
+    // Si la verificación es exitosa, intentar reservar el stock
+    if (verificacion.success) {
+        // Crear un objeto con los productos y cantidades del carrito
+        const productosCarrito = cart.map(item => ({
+            id: item.id,
+            quantity: item.quantity
+        }));
+
+        try {
+            // Reservar el stock
+            const reservaResponse = await fetch('/reservar_stock', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ productos: productosCarrito })
+            });
+
+            const reservaData = await reservaResponse.json();
+
+            // Cerrar el indicador de carga
+            Swal.close();
+
+            if (reservaData.success) {
+                // Si la reserva es exitosa, guardar el ID de reserva y redirigir al checkout
+                if (reservaData.reserva_id) {
+                    localStorage.setItem('reserva_id', reservaData.reserva_id);
+                }
+                window.location.href = "/checkout";
+            } else {
+                // Si hay problemas al reservar, mostrar mensaje de error
+                if (reservaData.productosNoDisponibles && reservaData.productosNoDisponibles.length > 0) {
+                    // Mostrar los productos que no tienen suficiente stock
+                    let mensaje = "Los siguientes productos no tienen suficiente stock:<br><ul>";
+                    reservaData.productosNoDisponibles.forEach(producto => {
+                        mensaje += `<li>${producto.name} (Disponible: ${producto.stockActual}, Solicitado: ${producto.stockSolicitado})</li>`;
+                    });
+                    mensaje += "</ul>";
+
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Stock insuficiente',
+                        html: mensaje,
+                        confirmButtonText: 'Actualizar carrito'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Actualizar el carrito con las cantidades disponibles
+                            actualizarCarritoConStockDisponible(reservaData.productosNoDisponibles);
+                        }
+                    });
+                } else {
+                    // Mensaje genérico si no hay detalles específicos
+                    showAlert(reservaData.message || "No hay suficiente stock para completar tu pedido.", "error");
+                }
+            }
+        } catch (error) {
+            console.error('Error al reservar el stock:', error);
+            Swal.close();
+            showAlert("Error al procesar tu pedido. Por favor, intenta nuevamente.", "error");
+        }
+    } else {
+        // Cerrar el indicador de carga
+        Swal.close();
+
+        // Si hay problemas de stock, mostrar mensaje de error
+        if (verificacion.productosNoDisponibles && verificacion.productosNoDisponibles.length > 0) {
+            // Mostrar los productos que no tienen suficiente stock
+            let mensaje = "Los siguientes productos no tienen suficiente stock:<br><ul>";
+            verificacion.productosNoDisponibles.forEach(producto => {
+                mensaje += `<li>${producto.name} (Disponible: ${producto.stockActual}, Solicitado: ${producto.stockSolicitado})</li>`;
+            });
+            mensaje += "</ul>";
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Stock insuficiente',
+                html: mensaje,
+                confirmButtonText: 'Actualizar carrito'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Actualizar el carrito con las cantidades disponibles
+                    actualizarCarritoConStockDisponible(verificacion.productosNoDisponibles);
+                }
+            });
+        } else {
+            // Mensaje genérico si no hay detalles específicos
+            showAlert(verificacion.message || "No hay suficiente stock para completar tu pedido.", "error");
+        }
+    }
+}
+
+// Función para actualizar el carrito con el stock disponible
+function actualizarCarritoConStockDisponible(productosNoDisponibles) {
+    let carritoActualizado = false;
+
+    // Actualizar las cantidades en el carrito según el stock disponible
+    productosNoDisponibles.forEach(producto => {
+        const itemIndex = cart.findIndex(item => item.id === producto.id);
+        if (itemIndex !== -1) {
+            if (producto.stockActual > 0) {
+                // Si hay algo de stock, actualizar la cantidad
+                cart[itemIndex].quantity = producto.stockActual;
+                carritoActualizado = true;
+            } else {
+                // Si no hay stock, eliminar el producto del carrito
+                cart.splice(itemIndex, 1);
+                carritoActualizado = true;
+            }
+        }
+    });
+
+    // Actualizar el carrito en la interfaz
+    if (carritoActualizado) {
+        updateCart();
+        showAlert("Tu carrito ha sido actualizado con las cantidades disponibles.", "info");
+    }
 }
 
 // Función para inicializar el carrito

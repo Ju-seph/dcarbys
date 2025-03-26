@@ -25,6 +25,22 @@ def procesar_pedido(request):
         return jsonify({"success": False, "message": "Número de celular no válido. Debe tener 10 dígitos y comenzar con 09."}), 400
 
     try:
+        # Verificar si hay una reserva asociada
+        reserva_id = data.get('reserva_id')
+        reserva = None
+        
+        if reserva_id:
+            reserva = db.reservas_stock.find_one({"_id": ObjectId(reserva_id), "estado": "activa"})
+            
+            if not reserva:
+                return jsonify({"success": False, "message": "La reserva ha expirado o no es válida. Por favor, intenta nuevamente."}), 400
+            
+            # Marcar la reserva como utilizada
+            db.reservas_stock.update_one(
+                {"_id": ObjectId(reserva_id)},
+                {"$set": {"estado": "utilizada", "fecha_utilizacion": datetime.now()}}
+            )
+        
         # Crear el pedido temporal
         pedido_temporal = PedidoTemporal(
             numero_pedido=str(data['purchaseNumber']),  # Convertir a string para asegurar compatibilidad
@@ -42,6 +58,10 @@ def procesar_pedido(request):
         # Usar la hora de Ecuador
         pedido_temporal.createPedidoTemporal(get_ecuador_time())
         pedido_dict = pedido_temporal.getPedidoTemporal()
+        
+        # Si hay una reserva, agregar el ID de la reserva al pedido
+        if reserva:
+            pedido_dict['reserva_id'] = str(reserva['_id'])
         
         # Insertar en la base de datos
         result = db.pedidos_temporales.insert_one(pedido_dict)
@@ -83,7 +103,7 @@ def aceptar_pedido(pedido_id):
             return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
 
         # Verificar si el pedido ha expirado
-        if datetime.now() > pedido_temporal['expireDateTime']:
+        if datetime.now() > pedido_temporal.get('expireDateTime', datetime.now()):
             # Devolver el stock y eliminar el pedido temporal
             with db.client.start_session() as db_session:
                 with db_session.start_transaction():
@@ -96,29 +116,38 @@ def aceptar_pedido(pedido_id):
                     db.pedidos_temporales.delete_one({"_id": ObjectId(pedido_id)}, session=db_session)
             return jsonify({"success": False, "message": "El pedido ha expirado"}), 400
 
-        # Verificar el stock de los productos antes de aceptar el pedido
-        with db.client.start_session() as db_session:
-            with db_session.start_transaction():
-                insufficient_stock = []
-                for item in pedido_temporal['productos']:
-                    producto = db.productos.find_one({"_id": ObjectId(item['id'])}, session=db_session)
-                    if not producto or producto['cantidad'] < item['quantity']:
-                        insufficient_stock.append(item['name'])
+        # Verificar si hay una reserva asociada al pedido
+        reserva_id = pedido_temporal.get('reserva_id')
+        if reserva_id:
+            # Si hay una reserva, marcarla como utilizada
+            db.reservas_stock.update_one(
+                {"_id": ObjectId(reserva_id)},
+                {"$set": {"estado": "utilizada", "fecha_utilizacion": datetime.now()}}
+            )
+        else:
+            # Si no hay reserva, verificar el stock de los productos antes de aceptar el pedido
+            with db.client.start_session() as db_session:
+                with db_session.start_transaction():
+                    insufficient_stock = []
+                    for item in pedido_temporal['productos']:
+                        producto = db.productos.find_one({"_id": ObjectId(item['id'])}, session=db_session)
+                        if not producto or producto['cantidad'] < item['quantity']:
+                            insufficient_stock.append(item['name'])
 
-                if insufficient_stock:
-                    db_session.abort_transaction()
-                    return jsonify({
-                        "success": False,
-                        "message": f"No hay suficiente stock para: {', '.join(insufficient_stock)}"
-                    }), 400
+                    if insufficient_stock:
+                        db_session.abort_transaction()
+                        return jsonify({
+                            "success": False,
+                            "message": f"No hay suficiente stock para: {', '.join(insufficient_stock)}"
+                        }), 400
 
-                # Si hay suficiente stock, proceder con la actualización del inventario
-                for item in pedido_temporal['productos']:
-                    db.productos.update_one(
-                        {"_id": ObjectId(item['id'])},
-                        {"$inc": {"cantidad": -item['quantity']}},  # Reducir el stock
-                        session=db_session
-                    )
+                    # Si hay suficiente stock, proceder con la actualización del inventario
+                    for item in pedido_temporal['productos']:
+                        db.productos.update_one(
+                            {"_id": ObjectId(item['id'])},
+                            {"$inc": {"cantidad": -item['quantity']}},  # Reducir el stock
+                            session=db_session
+                        )
 
         # Usar la hora de Ecuador
         ecuador_time = get_ecuador_time()
@@ -140,6 +169,10 @@ def aceptar_pedido(pedido_id):
             "tiempo_estimado": tiempo_estimado,  # Establecer el tiempo estimado
             "fecha_confirmacion": ecuador_time  # Agregar la fecha de confirmación con hora de Ecuador
         }
+
+        # Si había una reserva, incluir su ID en el pedido confirmado
+        if reserva_id:
+            pedido_confirmado['reserva_id'] = reserva_id
 
         # Insertar el pedido confirmado en la colección permanente
         result = db.pedidos.insert_one(pedido_confirmado)
@@ -205,6 +238,27 @@ def cancelar_pedido_admin(pedido_id):
 
             return jsonify({"success": True, "message": f"Pedido cancelado por {nombre_usuario} ({rol_usuario})"}), 200
 
+        # Verificar si hay una reserva asociada al pedido temporal
+        reserva_id = pedido_temporal.get('reserva_id')
+        if reserva_id:
+            # Si hay una reserva, marcarla como cancelada
+            db.reservas_stock.update_one(
+                {"_id": ObjectId(reserva_id)},
+                {"$set": {"estado": "cancelada", "fecha_cancelacion": ecuador_time}}
+            )
+            
+            # No es necesario devolver el stock ya que la reserva ya lo tenía reservado
+        else:
+            # Si no hay reserva, devolver el stock de los productos
+            with db.client.start_session() as db_session:
+                with db_session.start_transaction():
+                    for item in pedido_temporal['productos']:
+                        db.productos.update_one(
+                            {"_id": ObjectId(item['id'])},
+                            {"$inc": {"cantidad": item['quantity']}},  # Incrementar el stock
+                            session=db_session
+                        )
+
         # Si el pedido está en la colección de pedidos temporales, moverlo a la colección de pedidos con estado "cancelado"
         pedido_cancelado = {
             "_id": ObjectId(pedido_id),  # Mantener el mismo _id
@@ -223,6 +277,10 @@ def cancelar_pedido_admin(pedido_id):
             "fecha_cancelacion": ecuador_time  # Agregar la fecha de cancelación con hora de Ecuador
         }
 
+        # Si había una reserva, incluir su ID en el pedido cancelado
+        if reserva_id:
+            pedido_cancelado['reserva_id'] = reserva_id
+
         # Insertar el pedido cancelado en la colección permanente
         result = db.pedidos.insert_one(pedido_cancelado)
 
@@ -236,7 +294,6 @@ def cancelar_pedido_admin(pedido_id):
 
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
-    
     
 
 
@@ -446,6 +503,15 @@ def procesar_pago_payphone(request):
         if pedido_temporal:
             print(f"Pedido temporal encontrado: {pedido_temporal['_id']}")
             
+            # Verificar si hay una reserva asociada al pedido
+            reserva_id = pedido_temporal.get('reserva_id')
+            if reserva_id:
+                # Si hay una reserva, marcarla como utilizada
+                db.reservas_stock.update_one(
+                    {"_id": ObjectId(reserva_id)},
+                    {"$set": {"estado": "utilizada", "fecha_utilizacion": ecuador_time}}
+                )
+            
             # Update the temporary order with payment details
             db.pedidos_temporales.update_one(
                 {"_id": pedido_temporal["_id"]},
@@ -479,6 +545,10 @@ def procesar_pago_payphone(request):
                     "notificado": False
                 }
                 
+                # Si había una reserva, incluir su ID en el pedido confirmado
+                if reserva_id:
+                    pedido_confirmado['reserva_id'] = reserva_id
+                
                 # Insert the confirmed order
                 result = db.pedidos.insert_one(pedido_confirmado)
                 
@@ -494,6 +564,27 @@ def procesar_pago_payphone(request):
                     return jsonify({"success": False, "message": "Error al confirmar el pedido"}), 500
             else:
                 print(f"Pago rechazado: {transaction_status}")
+                
+                # Si el pago fue rechazado y hay una reserva, cancelarla y devolver el stock
+                if reserva_id:
+                    # Marcar la reserva como cancelada
+                    db.reservas_stock.update_one(
+                        {"_id": ObjectId(reserva_id)},
+                        {"$set": {"estado": "cancelada", "fecha_cancelacion": ecuador_time}}
+                    )
+                    
+                    # Devolver el stock de los productos
+                    reserva = db.reservas_stock.find_one({"_id": ObjectId(reserva_id)})
+                    if reserva:
+                        with db.client.start_session() as db_session:
+                            with db_session.start_transaction():
+                                for producto in reserva['productos']:
+                                    db.productos.update_one(
+                                        {"_id": ObjectId(producto['id'])},
+                                        {"$inc": {"cantidad": producto['cantidad']}},
+                                        session=db_session
+                                    )
+                
                 return jsonify({"success": False, "message": "Pago rechazado"}), 200
         else:
             # Check if the order is already in the confirmed orders
@@ -538,7 +629,182 @@ def procesar_pago_payphone(request):
 
 
 
+
+def reservar_stock_pedido(request):
+    """
+    Reserva el stock de los productos en un pedido temporal
+    para evitar que otros clientes puedan comprar los mismos productos
+    """
+    try:
+        data = request.json
+        productos = data.get('productos', [])
+        
+        if not productos:
+            return jsonify({"success": False, "message": "No hay productos para reservar"}), 400
+        
+        # Crear un ID único para la reserva
+        reserva_id = str(ObjectId())
+        
+        # Verificar y reservar el stock de cada producto
+        with db.client.start_session() as db_session:
+            with db_session.start_transaction():
+                productos_sin_stock = []
+                productos_reservados = []
+                
+                for producto_carrito in productos:
+                    producto_id = producto_carrito.get('id')
+                    cantidad_solicitada = producto_carrito.get('quantity', 0)
+                    
+                    # Buscar el producto en la base de datos
+                    producto_db = db.productos.find_one(
+                        {"_id": ObjectId(producto_id)}, 
+                        session=db_session
+                    )
+                    
+                    if not producto_db:
+                        productos_sin_stock.append({
+                            "id": producto_id,
+                            "name": "Producto no encontrado",
+                            "stockActual": 0,
+                            "stockSolicitado": cantidad_solicitada
+                        })
+                        continue
+                    
+                    # Verificar si hay suficiente stock
+                    if producto_db.get('cantidad', 0) < cantidad_solicitada:
+                        productos_sin_stock.append({
+                            "id": producto_id,
+                            "name": producto_db.get('nombreProducto', 'Producto'),
+                            "stockActual": producto_db.get('cantidad', 0),
+                            "stockSolicitado": cantidad_solicitada
+                        })
+                        continue
+                    
+                    # Reservar el stock (reducir la cantidad disponible)
+                    db.productos.update_one(
+                        {"_id": ObjectId(producto_id)},
+                        {"$inc": {"cantidad": -cantidad_solicitada}},
+                        session=db_session
+                    )
+                    
+                    # Guardar información del producto reservado
+                    productos_reservados.append({
+                        "id": producto_id,
+                        "cantidad": cantidad_solicitada,
+                        "nombre": producto_db.get('nombreProducto', 'Producto')
+                    })
+                
+                # Si hay productos sin suficiente stock, abortar la transacción
+                if productos_sin_stock:
+                    db_session.abort_transaction()
+                    return jsonify({
+                        "success": False,
+                        "message": "Algunos productos no tienen suficiente stock",
+                        "productosNoDisponibles": productos_sin_stock
+                    }), 200
+                
+                # Guardar la reserva en la base de datos
+                reserva = {
+                    "_id": ObjectId(reserva_id),
+                    "productos": productos_reservados,
+                    "fecha_creacion": datetime.now(),
+                    "fecha_expiracion": datetime.now() + timedelta(minutes=15),
+                    "estado": "activa"
+                }
+                
+                db.reservas_stock.insert_one(reserva, session=db_session)
+        
+        # Si todos los productos tienen suficiente stock, devolver éxito
+        return jsonify({
+            "success": True, 
+            "message": "Stock reservado correctamente",
+            "reserva_id": reserva_id
+        }), 200
     
+    except Exception as e:
+        print(f"Error al reservar stock: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "message": f"Error al reservar stock: {str(e)}"}), 500
+    
+
+# Añadir esta función para cancelar reservas
+def cancelar_reserva_stock(reserva_id):
+    """
+    Cancela una reserva de stock y devuelve los productos al inventario
+    """
+    try:
+        # Buscar la reserva
+        reserva = db.reservas_stock.find_one({"_id": ObjectId(reserva_id), "estado": "activa"})
+        
+        if not reserva:
+            return jsonify({"success": False, "message": "Reserva no encontrada o ya cancelada"}), 404
+        
+        # Devolver el stock de cada producto
+        with db.client.start_session() as db_session:
+            with db_session.start_transaction():
+                for producto in reserva['productos']:
+                    db.productos.update_one(
+                        {"_id": ObjectId(producto['id'])},
+                        {"$inc": {"cantidad": producto['cantidad']}},
+                        session=db_session
+                    )
+                
+                # Marcar la reserva como cancelada
+                db.reservas_stock.update_one(
+                    {"_id": ObjectId(reserva_id)},
+                    {"$set": {"estado": "cancelada", "fecha_cancelacion": datetime.now()}},
+                    session=db_session
+                )
+        
+        return jsonify({"success": True, "message": "Reserva cancelada correctamente"}), 200
+    
+    except Exception as e:
+        print(f"Error al cancelar reserva: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "message": f"Error al cancelar reserva: {str(e)}"}), 500
+    
+
+def limpiar_reservas_expiradas():
+    """
+    Limpia las reservas expiradas y devuelve el stock al inventario
+    """
+    try:
+        # Buscar reservas expiradas
+        reservas_expiradas = db.reservas_stock.find({
+            "estado": "activa",
+            "fecha_expiracion": {"$lt": datetime.now()}
+        })
+        
+        count = 0
+        for reserva in reservas_expiradas:
+            # Devolver el stock de cada producto
+            with db.client.start_session() as db_session:
+                with db_session.start_transaction():
+                    for producto in reserva['productos']:
+                        db.productos.update_one(
+                            {"_id": ObjectId(producto['id'])},
+                            {"$inc": {"cantidad": producto['cantidad']}},
+                            session=db_session
+                        )
+                    
+                    # Marcar la reserva como expirada
+                    db.reservas_stock.update_one(
+                        {"_id": reserva['_id']},
+                        {"$set": {"estado": "expirada", "fecha_expiracion_real": datetime.now()}},
+                        session=db_session
+                    )
+                    
+                    count += 1
+        
+        print(f"Se limpiaron {count} reservas expiradas")
+        return True
+    except Exception as e:
+        print(f"Error al limpiar reservas expiradas: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return False
 
 def limpiar_pedidos_expirados():
     try:

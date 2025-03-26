@@ -276,7 +276,6 @@
             color: white;
             /* Texto blanco */
         }
-
     }
 
     /* Estilos para las opciones de método de pago */
@@ -313,57 +312,166 @@
     .text-muted {
         font-size: 0.875rem;
     }
+
+    /* Estilos para el botón de volver */
+    .back-button {
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    /* Estilos para el header de checkout */
+    .checkout-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #e9ecef;
+        padding-bottom: 15px;
+    }
+
+    /* Estilos para el logo en el header */
+    .checkout-logo {
+        font-weight: bold;
+        font-size: 1.5rem;
+    }
+
+    .checkout-logo span {
+        color: red;
+    }
 </style>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top shadow-sm">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="#"><span class="text-primary">D</span>carbys</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
+<div class="container mt-5">
+    <div class="checkout-header">
+        <div class="checkout-logo"><span>D</span>carbys</div>
+        <button id="back-button" class="btn btn-outline-secondary back-button">
+            <i class="bi bi-arrow-left"></i> Volver al menú
         </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link active" href="/">Menú</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/contacto">Contactos</a>
-                </li>
-                {% if session.get('usuario_id') %}
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown"
-                        role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-person-circle user-icon"></i>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                        <li><span class="dropdown-item">Bienvenido, {{ session.get('nombreUsuario') }}</span></li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li><a class="dropdown-item" href="/logout">Cerrar Sesión</a></li>
-                    </ul>
-                </li>
-                {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="/registro_usuarios">Registro De Usuario</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/login_usuarios">Iniciar Sesión</a>
-                </li>
-                {% endif %}
-                <li class="nav-item">
-                    <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#cartModal">
-                        <span class="cart-icon">
-                            <i class="bi bi-cart"></i>
-                            <span id="cart-count" class="cart-count">0</span>
-                        </span>
-                    </a>
-                </li>
-            </ul>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <h3>Resumen del Pedido</h3>
+            <p>Número de Pedido: <strong id="purchase-number"></strong></p>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody id="cart-summary">
+                    <!-- El resumen del carrito se llenará con JavaScript -->
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                        <td><strong id="cart-total"></strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <form id="checkout-form">
+                <h3>Información de Envío</h3>
+                <div class="mb-3">
+                    <label for="nombre" class="form-label">Nombre Completo</label>
+                    <input type="text" class="form-control" id="nombre" name="nombre" required>
+                </div>
+                <div class="mb-3">
+                    <label for="celular" class="form-label">Celular</label>
+                    <input type="tel" class="form-control" id="celular" name="celular" pattern="09\d{8}" required>
+                    <small class="form-text text-muted">Ingrese un número de celular válido en Ecuador (ej.
+                        0987654321).</small>
+                </div>
+                <div class="mb-3">
+                    <label for="ciudad" class="form-label">Ciudad</label>
+                    <input type="text" class="form-control" id="ciudad" name="ciudad" required>
+                </div>
+                <div class="mb-3">
+                    <label for="direccion" class="form-label">Dirección</label>
+                    <input type="text" class="form-control" id="direccion" name="direccion" required>
+                </div>
+                <div class="mb-3">
+                    <label for="Referencia" class="form-label">Referencia (opcional)</label>
+                    <input type="text" class="form-control" id="Referencia" name="Referencia">
+                </div>
+
+                <!-- Método de pago -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold mb-3">Método de Pago <span class="text-danger">*</span></label>
+                    <div class="row g-3">
+                        <!-- Opción: Pago en efectivo -->
+                        <div class="col-md-6">
+                            <div class="card metodo-pago-option" id="pago-efectivo-card" data-value="efectivo">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="me-3">
+                                        <i class="bi bi-cash-coin fs-2 text-primary"></i> <!-- Ícono de efectivo -->
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-1">Pago en efectivo</h6>
+                                        <p class="card-text text-muted small">Paga en efectivo al recibir tu pedido.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Opción: Botón de pago -->
+                        <div class="col-md-6">
+                            <div class="card metodo-pago-option" id="pago-boton-card" data-value="payphone">
+                                <div class="card-body d-flex align-items-center">
+                                    <div class="me-3">
+                                        <i class="bi bi-credit-card fs-2 text-secondary"></i> <!-- Ícono de tarjeta -->
+                                    </div>
+                                    <div>
+                                        <h6 class="card-title mb-1">Botón de pago</h6>
+                                        <p class="card-text text-muted small">Paga con tarjeta de crédito/débito.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Campo oculto para almacenar el método de pago seleccionado -->
+                <input type="hidden" id="metodo_pago" name="metodo_pago" required>
+
+                <!-- Botón de PayPhone (inicialmente oculto) -->
+                <div id="pp-button" style="display: none;"></div>
+
+                <!-- Botón para procesar pedido en efectivo -->
+                <button type="submit" class="btn btn-primary" id="procesar-pedido" disabled>Procesar Pedido</button>
+
+                <script src="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js"
+                    type="module"></script>
+                <link href="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.css" rel="stylesheet">
+
+            </form>
+
+            <!-- Mensaje de espera -->
+            <div id="waiting-message" class="waiting-message" style="display: none;">
+                <h3>Esperando confirmación</h3>
+                <p>Tu pedido ha sido procesado. Por favor, espera a que el administrador confirme tu pedido.</p>
+            </div>
+
+            <!-- Mensaje de confirmación -->
+            <div id="confirmation-message" class="confirmation-message" style="display: none;">
+                <h3>Pedido Confirmado</h3>
+                <p>¡Tu pedido ha sido confirmado! Pronto recibirás más detalles.</p>
+                <a href="/" class="btn btn-primary">Volver al inicio</a>
+            </div>
+
+            <!-- Mensaje de cancelación -->
+            <div id="cancellation-message" class="cancellation-message" style="display: none;">
+                <h3>Pedido Cancelado</h3>
+                <p>Tu pedido ha sido cancelado. Si tienes alguna duda, contáctanos.</p>
+                <a href="/" class="btn btn-primary">Volver al inicio</a>
+            </div>
         </div>
     </div>
-</nav>
+</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -386,7 +494,72 @@
         const confirmationMessage = document.getElementById('confirmation-message');
         const cancellationMessage = document.getElementById('cancellation-message');
         const procesarPedidoBtn = document.getElementById('procesar-pedido');
+        const backButton = document.getElementById('back-button');
         let total = 0;
+
+        // Manejar el botón de volver
+        backButton.addEventListener('click', function () {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: 'Si vuelves atrás, tu pedido será cancelado y los productos reservados volverán a estar disponibles.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, volver atrás',
+                cancelButtonText: 'No, continuar con mi pedido'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Obtener el ID de reserva del localStorage
+                    const reservaId = localStorage.getItem('reserva_id');
+
+                    if (reservaId) {
+                        // Cancelar la reserva
+                        fetch(`/cancelar_reserva/${reservaId}`, {
+                            method: 'POST'
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log('Reserva cancelada:', data);
+                                // Eliminar el ID de reserva del localStorage
+                                localStorage.removeItem('reserva_id');
+                                // Redirigir al menú
+                                window.location.href = '/';
+                            })
+                            .catch(error => {
+                                console.error('Error al cancelar la reserva:', error);
+                                // Redirigir al menú de todas formas
+                                window.location.href = '/';
+                            });
+                    } else {
+                        // Si no hay ID de reserva, simplemente redirigir
+                        window.location.href = '/';
+                    }
+                }
+            });
+        });
+
+        // Manejar la salida de la página
+        window.addEventListener('beforeunload', function (e) {
+            const reservaId = localStorage.getItem('reserva_id');
+            if (reservaId) {
+                // No podemos hacer una petición fetch aquí porque beforeunload no lo permite
+                // Solo mostramos un mensaje de confirmación
+                const message = '¿Estás seguro de que quieres salir? Tu pedido será cancelado.';
+                e.returnValue = message;
+                return message;
+            }
+        });
+
+        // Cuando la página se cierra o se navega a otra página
+        window.addEventListener('unload', function () {
+            const reservaId = localStorage.getItem('reserva_id');
+            if (reservaId) {
+                // Usar sendBeacon para enviar la solicitud de cancelación
+                navigator.sendBeacon(`/cancelar_reserva/${reservaId}`);
+                localStorage.removeItem('reserva_id');
+            }
+        });
 
         // Mostrar el resumen del carrito
         cart.forEach(item => {
@@ -510,6 +683,9 @@
                         localStorage.setItem('payphone_response', JSON.stringify(response));
 
                         if (response.transactionStatus === 'Approved') {
+                            // Eliminar el ID de reserva ya que el pago fue exitoso
+                            localStorage.removeItem('reserva_id');
+
                             // Mostrar mensaje de éxito
                             alert('¡Pago exitoso! Serás redirigido para completar tu pedido.');
 
@@ -566,6 +742,9 @@
             console.log("PayPhone ID:", payphone_id);
             console.log("PayPhone Client ID:", payphone_client_id);
 
+            // Obtener el ID de reserva
+            const reservaId = localStorage.getItem('reserva_id');
+
             // Crear el objeto de datos para enviar
             const requestData = {
                 purchaseNumber: purchaseNumber,
@@ -576,7 +755,8 @@
                 direccion: document.getElementById('direccion').value,
                 referencia: document.getElementById('Referencia').value,
                 metodo_pago: metodoPagoInput.value,
-                total: total
+                total: total,
+                reserva_id: reservaId // Incluir el ID de reserva
             };
 
             // Agregar campos de PayPhone si existen
@@ -605,6 +785,9 @@
                     console.log("Datos de respuesta:", data);
 
                     if (data.success) {
+                        // Eliminar el ID de reserva ya que el pedido fue procesado
+                        localStorage.removeItem('reserva_id');
+
                         // Ocultar el formulario y mostrar el mensaje de espera
                         checkoutForm.style.display = 'none';
 
@@ -724,130 +907,5 @@
         validarCampos();
     });
 </script>
-
-<div class="container mt-5">
-    <h2>Finalizar Compra</h2>
-    <div class="row">
-        <div class="col-md-8">
-            <h3>Resumen del Pedido</h3>
-            <p>Número de Pedido: <strong id="purchase-number"></strong></p>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Producto</th>
-                        <th>Cantidad</th>
-                        <th>Precio Unitario</th>
-                        <th>Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody id="cart-summary">
-                    <!-- El resumen del carrito se llenará con JavaScript -->
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                        <td><strong id="cart-total"></strong></td>
-                    </tr>
-                </tfoot>
-            </table>
-
-            <form id="checkout-form">
-                <h3>Información de Envío</h3>
-                <div class="mb-3">
-                    <label for="nombre" class="form-label">Nombre Completo</label>
-                    <input type="text" class="form-control" id="nombre" name="nombre" required>
-                </div>
-                <div class="mb-3">
-                    <label for="celular" class="form-label">Celular</label>
-                    <input type="tel" class="form-control" id="celular" name="celular" pattern="09\d{8}" required>
-                    <small class="form-text text-muted">Ingrese un número de celular válido en Ecuador (ej.
-                        0987654321).</small>
-                </div>
-                <div class="mb-3">
-                    <label for="ciudad" class="form-label">Ciudad</label>
-                    <input type="text" class="form-control" id="ciudad" name="ciudad" required>
-                </div>
-                <div class="mb-3">
-                    <label for="direccion" class="form-label">Dirección</label>
-                    <input type="text" class="form-control" id="direccion" name="direccion" required>
-                </div>
-                <div class="mb-3">
-                    <label for="Referencia" class="form-label">Referencia (opcional)</label>
-                    <input type="text" class="form-control" id="Referencia" name="Referencia">
-                </div>
-
-                <!-- Método de pago -->
-                <div class="mb-4">
-                    <label class="form-label fw-bold mb-3">Método de Pago <span class="text-danger">*</span></label>
-                    <div class="row g-3">
-                        <!-- Opción: Pago en efectivo -->
-                        <div class="col-md-6">
-                            <div class="card metodo-pago-option" id="pago-efectivo-card" data-value="efectivo">
-                                <div class="card-body d-flex align-items-center">
-                                    <div class="me-3">
-                                        <i class="bi bi-cash-coin fs-2 text-primary"></i> <!-- Ícono de efectivo -->
-                                    </div>
-                                    <div>
-                                        <h6 class="card-title mb-1">Pago en efectivo</h6>
-                                        <p class="card-text text-muted small">Paga en efectivo al recibir tu pedido.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Opción: Botón de pago -->
-                        <div class="col-md-6">
-                            <div class="card metodo-pago-option" id="pago-boton-card" data-value="payphone">
-                                <div class="card-body d-flex align-items-center">
-                                    <div class="me-3">
-                                        <i class="bi bi-credit-card fs-2 text-secondary"></i> <!-- Ícono de tarjeta -->
-                                    </div>
-                                    <div>
-                                        <h6 class="card-title mb-1">Botón de pago</h6>
-                                        <p class="card-text text-muted small">Paga con tarjeta de crédito/débito.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Campo oculto para almacenar el método de pago seleccionado -->
-                <input type="hidden" id="metodo_pago" name="metodo_pago" required>
-
-                <!-- Botón de PayPhone (inicialmente oculto) -->
-                <div id="pp-button" style="display: none;"></div>
-
-                <!-- Botón para procesar pedido en efectivo -->
-                <button type="submit" class="btn btn-primary" id="procesar-pedido" disabled>Procesar Pedido</button>
-
-                <script src="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js"
-                    type="module"></script>
-                <link href="https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.css" rel="stylesheet">
-
-            </form>
-
-            <!-- Mensaje de espera -->
-            <div id="waiting-message" class="waiting-message" style="display: none;">
-                <h3>Esperando confirmación</h3>
-                <p>Tu pedido ha sido procesado. Por favor, espera a que el administrador confirme tu pedido.</p>
-            </div>
-
-            <!-- Mensaje de confirmación -->
-            <div id="confirmation-message" class="confirmation-message" style="display: none;">
-                <h3>Pedido Confirmado</h3>
-                <p>¡Tu pedido ha sido confirmado! Pronto recibirás más detalles.</p>
-                <a href="/" class="btn btn-primary">Volver al inicio</a>
-            </div>
-
-            <!-- Mensaje de cancelación -->
-            <div id="cancellation-message" class="cancellation-message" style="display: none;">
-                <h3>Pedido Cancelado</h3>
-                <p>Tu pedido ha sido cancelado. Si tienes alguna duda, contáctanos.</p>
-                <a href="/" class="btn btn-primary">Volver al inicio</a>
-            </div>
-        </div>
-    </div>
-</div>
 
 {% endblock %}
