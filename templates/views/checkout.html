@@ -619,13 +619,14 @@
             });
         });
 
-        // Manejar la salida de la página
+        // Modificar solo el evento beforeunload para evitar el mensaje de confirmación con PayPhone
         window.addEventListener('beforeunload', function (e) {
-            // Solo mostrar el mensaje de confirmación si hay una reserva y NO estamos procesando un pago con PayPhone
-            const reservaId = localStorage.getItem('reserva_id');
-            const isPayPhonePayment = metodoPagoInput.value === 'payphone';
+            // Obtener el método de pago seleccionado
+            const metodoPago = document.getElementById('metodo_pago').value;
 
-            if (reservaId && !isPayPhonePayment) {
+            // Solo mostrar el mensaje de confirmación si hay una reserva y NO estamos usando PayPhone
+            const reservaId = localStorage.getItem('reserva_id');
+            if (reservaId && metodoPago !== 'payphone') {
                 // No podemos hacer una petición fetch aquí porque beforeunload no lo permite
                 // Solo mostramos un mensaje de confirmación
                 const message = '¿Estás seguro de que quieres salir? Tu pedido será cancelado.';
@@ -802,15 +803,6 @@
                         alert('Hubo un error al procesar el pago. Intenta nuevamente.');
                     }
                 }).render('pp-button');
-
-                // Mostrar mensaje informativo sobre el diálogo de salida
-                Swal.fire({
-                    title: 'Información importante',
-                    html: 'Cuando hagas clic en el botón de pago, aparecerá un diálogo preguntando si deseas salir del sitio.<br><br><strong>Debes hacer clic en "Salir" para continuar con el pago.</strong>',
-                    icon: 'info',
-                    confirmButtonText: 'Entendido'
-                });
-
                 console.log("Botón de PayPhone inicializado correctamente");
             } catch (error) {
                 console.error("Error al inicializar el botón de PayPhone:", error);
