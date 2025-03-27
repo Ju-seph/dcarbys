@@ -93,8 +93,24 @@ def procesar_pedido(request):
     
 def aceptar_pedido(pedido_id):
     try:
+        # Verificar si se recibieron datos JSON
+        if not request.is_json:
+            print("Error: La solicitud no contiene datos JSON")
+            return jsonify({"success": False, "message": "La solicitud debe contener datos JSON"}), 400
+            
         data = request.get_json()
+        
+        # Verificar si se recibió el tiempo estimado
+        if 'tiempo_estimado' not in data:
+            print("Error: Falta el tiempo estimado en la solicitud")
+            return jsonify({"success": False, "message": "Falta el tiempo estimado"}), 400
+            
         tiempo_estimado = data.get("tiempo_estimado")  # Tiempo estimado en minutos
+        
+        # Validar que el tiempo estimado sea un número
+        if not isinstance(tiempo_estimado, (int, float)) or tiempo_estimado <= 0:
+            print(f"Error: Tiempo estimado inválido: {tiempo_estimado}")
+            return jsonify({"success": False, "message": "El tiempo estimado debe ser un número positivo"}), 400
 
         # Buscar el pedido temporal
         pedido_temporal = db.pedidos_temporales.find_one({"_id": ObjectId(pedido_id)})
@@ -186,7 +202,12 @@ def aceptar_pedido(pedido_id):
         return jsonify({"success": True, "message": "Pedido confirmado con éxito"}), 200
 
     except Exception as e:
+        print(f"Error en aceptar_pedido: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"success": False, "message": str(e)}), 500
+
+
 
 
 

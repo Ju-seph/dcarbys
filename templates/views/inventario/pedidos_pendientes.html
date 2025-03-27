@@ -103,7 +103,7 @@
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ tiempo_estimado: tiempoEstimado })
+            body: JSON.stringify({ tiempo_estimado: parseInt(tiempoEstimado) })
         })
             .then(response => {
                 if (!response.ok) {
