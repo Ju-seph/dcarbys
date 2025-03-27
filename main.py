@@ -36,7 +36,7 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 # Configurar el planificador para limpiar pedidos y reservas expiradas
 scheduler = BackgroundScheduler()
 scheduler.add_job(func=ped.limpiar_pedidos_expirados, trigger="interval", minutes=5)
-scheduler.add_job(func=ped.limpiar_reservas_expiradas, trigger="interval", minutes=1)  # Ejecutar cada minuto
+scheduler.add_job(func=ped.limpiar_reservas_expiradas, trigger="interval", minutes=15)  # Ejecutar cada 15 minutos
 scheduler.start()
 
 # Asegurarse de que el planificador se detenga cuando la aplicación se cierre

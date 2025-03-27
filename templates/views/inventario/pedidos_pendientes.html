@@ -93,7 +93,7 @@
     // Modifica la función aceptarPedido para evitar el error después del éxito
     function aceptarPedido(pedidoId) {
         const tiempoEstimado = prompt("Ingrese el tiempo estimado de entrega (en minutos):");
-        if (!tiempoEstimado || isNaN(tiempoEstimado)) {
+        if (!tiempoEstimado || isNaN(parseInt(tiempoEstimado))) {
             alert("Por favor, ingrese un tiempo válido.");
             return;
         }
