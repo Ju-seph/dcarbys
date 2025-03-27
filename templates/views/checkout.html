@@ -527,10 +527,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Variables para el modal de PayPhone
-        const payphoneModal = document.getElementById('payphone-processing-modal');
-        let isPayPhoneProcessing = false;
-
         // Verificar si hay parámetros de PayPhone en la URL
         const urlParams = new URLSearchParams(window.location.search);
         const paymentId = urlParams.get('id');
@@ -619,14 +615,10 @@
             });
         });
 
-        // Modificar solo el evento beforeunload para evitar el mensaje de confirmación con PayPhone
+        // Manejar la salida de la página
         window.addEventListener('beforeunload', function (e) {
-            // Obtener el método de pago seleccionado
-            const metodoPago = document.getElementById('metodo_pago').value;
-
-            // Solo mostrar el mensaje de confirmación si hay una reserva y NO estamos usando PayPhone
             const reservaId = localStorage.getItem('reserva_id');
-            if (reservaId && metodoPago !== 'payphone') {
+            if (reservaId) {
                 // No podemos hacer una petición fetch aquí porque beforeunload no lo permite
                 // Solo mostramos un mensaje de confirmación
                 const message = '¿Estás seguro de que quieres salir? Tu pedido será cancelado.';
@@ -637,23 +629,11 @@
 
         // Cuando la página se cierra o se navega a otra página
         window.addEventListener('unload', function () {
-            // Si estamos procesando un pago con PayPhone, no cancelar la reserva
-            if (isPayPhoneProcessing) {
-                return;
-            }
-
             const reservaId = localStorage.getItem('reserva_id');
             if (reservaId) {
                 // Usar sendBeacon para enviar la solicitud de cancelación
                 navigator.sendBeacon(`/cancelar_reserva/${reservaId}`);
                 localStorage.removeItem('reserva_id');
-                localStorage.removeItem('cart');
-                // Limpiar datos del formulario guardados
-                localStorage.removeItem('checkout_nombre');
-                localStorage.removeItem('checkout_celular');
-                localStorage.removeItem('checkout_ciudad');
-                localStorage.removeItem('checkout_direccion');
-                localStorage.removeItem('checkout_referencia');
             }
         });
 
@@ -782,15 +762,8 @@
                             // Eliminar el ID de reserva ya que el pago fue exitoso
                             localStorage.removeItem('reserva_id');
 
-                            // Limpiar el carrito
-                            localStorage.removeItem('cart');
-
-                            // Limpiar datos del formulario guardados
-                            localStorage.removeItem('checkout_nombre');
-                            localStorage.removeItem('checkout_celular');
-                            localStorage.removeItem('checkout_ciudad');
-                            localStorage.removeItem('checkout_direccion');
-                            localStorage.removeItem('checkout_referencia');
+                            // Mostrar mensaje de éxito
+                            alert('¡Pago exitoso! Serás redirigido para completar tu pedido.');
 
                             // Redirigir a la página de payphone_return con los parámetros de la transacción
                             window.location.href = '/payphone_return?id=' + response.id + '&clientTransactionId=' + response.clientTransactionId;
