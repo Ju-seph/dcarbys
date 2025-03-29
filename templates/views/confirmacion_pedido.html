@@ -111,11 +111,28 @@
         border-color: #dc3545;
         padding: 10px 30px;
         font-size: 1.1rem;
+        color: white;
     }
 
     .btn-home:hover {
         background-color: #c82333;
         border-color: #bd2130;
+        color: white;
+    }
+
+    .btn-print {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        padding: 10px 30px;
+        font-size: 1.1rem;
+        margin-left: 15px;
+        color: white;
+    }
+
+    .btn-print:hover {
+        background-color: #5a6268;
+        border-color: #545b62;
+        color: white;
     }
 
     @media (max-width: 768px) {
@@ -143,6 +160,48 @@
         .product-subtotal {
             flex: 1;
         }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn-print {
+            margin-left: 0;
+            margin-top: 10px;
+        }
+    }
+
+    /* Estilos para impresión */
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        .confirmation-container, .confirmation-container * {
+            visibility: visible;
+        }
+        .confirmation-container {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0;
+            padding: 20px;
+            box-shadow: none;
+        }
+        .action-buttons, .print-only {
+            display: none;
+        }
+        .confirmation-header h1 {
+            color: #000 !important;
+        }
+        .badge {
+            background-color: transparent !important;
+            color: #000 !important;
+            border: 1px solid #000;
+            padding: 3px 6px;
+        }
     }
 </style>
 
@@ -164,8 +223,7 @@
                 {% if format_time %}
                 {{ format_time(pedido.fecha_confirmacion) }}
                 {% else %}
-                {{ pedido.fecha_confirmacion.strftime('%d/%m/%Y %H:%M') if pedido.fecha_confirmacion else 'No
-                disponible' }}
+                {{ pedido.fecha_confirmacion.strftime('%d/%m/%Y %H:%M') if pedido.fecha_confirmacion else 'No disponible' }}
                 {% endif %}
             </span>
         </div>
@@ -245,7 +303,16 @@
 
     <div class="action-buttons">
         <a href="/" class="btn btn-primary btn-home">Volver al Inicio</a>
+        <button onclick="window.print()" class="btn btn-secondary btn-print">
+            <i class="bi bi-printer-fill"></i> Imprimir Pedido
+        </button>
     </div>
+</div>
+
+<!-- Mensaje solo para impresión -->
+<div class="print-only" style="display: none;">
+    <h2>Comprobante de Pedido</h2>
+    <p>Guarde este documento como comprobante de su compra</p>
 </div>
 
 <script>
@@ -266,6 +333,30 @@
             cartCountElement.textContent = '0';
         }
     });
+
+    // Opcional: Mejorar la experiencia de impresión
+    function beforePrint() {
+        document.querySelector('.confirmation-header h1').textContent = 'Comprobante de Pedido';
+    }
+
+    function afterPrint() {
+        document.querySelector('.confirmation-header h1').textContent = '¡Pedido Confirmado!';
+    }
+
+    // Soporte para diferentes navegadores
+    if (window.matchMedia) {
+        const mediaQueryList = window.matchMedia('print');
+        mediaQueryList.addListener(mql => {
+            if (mql.matches) {
+                beforePrint();
+            } else {
+                afterPrint();
+            }
+        });
+    }
+
+    window.onbeforeprint = beforePrint;
+    window.onafterprint = afterPrint;
 </script>
 
 {% endblock %}
