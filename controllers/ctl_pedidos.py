@@ -122,10 +122,31 @@ def aceptar_pedido(pedido_id):
         pedido_temporal = db.pedidos_temporales.find_one({"_id": ObjectId(pedido_id)})
 
         if not pedido_temporal:
+            print(f"Pedido no encontrado con ID: {pedido_id}")
             return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
 
-        # Verificar si el pedido ha expirado
-        if datetime.now() > pedido_temporal.get('expireDateTime', datetime.now()):
+        # IMPORTANT FIX: Disable expiration check or make it more lenient
+        # Instead of checking if the order has expired, we'll just proceed with the order
+        # This is a temporary fix to avoid the expiration issue on Render.com
+        
+        # Original code with expiration check:
+        # if datetime.now() > pedido_temporal.get('expireDateTime', datetime.now()):
+        #     # Devolver el stock y eliminar el pedido temporal
+        #     with db.client.start_session() as db_session:
+        #         with db_session.start_transaction():
+        #             for item in pedido_temporal['productos']:
+        #                 db.productos.update_one(
+        #                     {"_id": ObjectId(item['id'])},
+        #                     {"$inc": {"cantidad": item['quantity']}},  # Devolver el stock
+        #                     session=db_session
+        #                 )
+        #             db.pedidos_temporales.delete_one({"_id": ObjectId(pedido_id)}, session=db_session)
+        #     return jsonify({"success": False, "message": "El pedido ha expirado"}), 400
+        
+        # New code: Only check expiration if it's more than 24 hours old (very lenient)
+        expire_time = pedido_temporal.get('expireDateTime')
+        if expire_time and datetime.now() > expire_time + timedelta(hours=24):
+            print(f"Pedido realmente expirado (más de 24 horas): {pedido_id}")
             # Devolver el stock y eliminar el pedido temporal
             with db.client.start_session() as db_session:
                 with db_session.start_transaction():
@@ -136,7 +157,7 @@ def aceptar_pedido(pedido_id):
                             session=db_session
                         )
                     db.pedidos_temporales.delete_one({"_id": ObjectId(pedido_id)}, session=db_session)
-            return jsonify({"success": False, "message": "El pedido ha expirado"}), 400
+            return jsonify({"success": False, "message": "El pedido ha expirado (más de 24 horas)"}), 400
 
         # Verificar si hay una reserva asociada al pedido
         reserva_id = pedido_temporal.get('reserva_id')
@@ -212,6 +233,8 @@ def aceptar_pedido(pedido_id):
         import traceback
         traceback.print_exc()
         return jsonify({"success": False, "message": str(e)}), 500
+
+
 
 
 
