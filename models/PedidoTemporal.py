@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from bson import ObjectId
+import pytz
 
 class PedidoTemporal:
     def __init__(self, numero_pedido, usuario_id, productos, nombre, celular, direccion, ciudad, referencia, total, metodo_pago, estado="pendiente"):
@@ -26,17 +27,26 @@ class PedidoTemporal:
 
     def createPedidoTemporal(self, custom_datetime=None):
         """
-        Crea un pedido temporal con la fecha proporcionada o la fecha actual
+        Crea un pedido temporal con la fecha proporcionada o la fecha actual en UTC
         
         Args:
             custom_datetime (datetime, optional): Fecha personalizada para el pedido
         """
-        # Usar la fecha personalizada si se proporciona, de lo contrario usar datetime.now()
-        self.createDateTime = custom_datetime or datetime.now()
+        # Si se proporciona una fecha personalizada, asegurarse de que tenga información de zona horaria
+        if custom_datetime:
+            # Si la fecha no tiene información de zona horaria, asumir que es UTC
+            if custom_datetime.tzinfo is None:
+                custom_datetime = pytz.UTC.localize(custom_datetime)
+        else:
+            # Si no se proporciona fecha, usar la hora actual en UTC
+            custom_datetime = datetime.now(pytz.UTC)
+        
+        self.createDateTime = custom_datetime
         self.expireDateTime = self.createDateTime + timedelta(hours=2)
 
     def updatePedidoTemporal(self):
-        self.updateDateTime = datetime.now()
+        # Usar UTC para la fecha de actualización
+        self.updateDateTime = datetime.now(pytz.UTC)
 
     @classmethod
     def from_dict(cls, data):
@@ -56,10 +66,21 @@ class PedidoTemporal:
         if '_id' in data:
             pedido._id = data['_id']
         if 'createDateTime' in data:
-            pedido.createDateTime = data['createDateTime']
+            # Asegurarse de que createDateTime tenga información de zona horaria
+            create_time = data['createDateTime']
+            if create_time and not hasattr(create_time, 'tzinfo'):
+                create_time = pytz.UTC.localize(create_time)
+            pedido.createDateTime = create_time
         if 'updateDateTime' in data:
-            pedido.updateDateTime = data['updateDateTime']
+            # Asegurarse de que updateDateTime tenga información de zona horaria
+            update_time = data['updateDateTime']
+            if update_time and not hasattr(update_time, 'tzinfo'):
+                update_time = pytz.UTC.localize(update_time)
+            pedido.updateDateTime = update_time
         if 'expireDateTime' in data:
-            pedido.expireDateTime = data['expireDateTime']
+            # Asegurarse de que expireDateTime tenga información de zona horaria
+            expire_time = data['expireDateTime']
+            if expire_time and not hasattr(expire_time, 'tzinfo'):
+                expire_time = pytz.UTC.localize(expire_time)
+            pedido.expireDateTime = expire_time
         return pedido
-

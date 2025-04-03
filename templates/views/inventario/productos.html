@@ -1,10 +1,11 @@
-<div class="tab-pane fade show active" id="v-pills-producto" role="tabpanel" aria-labelledby="v-pills-producto-tab" tabindex="0">
+<div class="tab-pane fade show active" id="v-pills-producto" role="tabpanel" aria-labelledby="v-pills-producto-tab"
+    tabindex="0">
 
     <!-- Botón para abrir el modal de agregar producto -->
     <div class="row">
         <div class="col">
-            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#productoModal">
-                Agregar Producto
+            <button type="button" class="btn btn-success" id="btn-add-producto">
+                <i class="bi bi-plus-circle"></i> Agregar Producto
             </button>
         </div>
     </div>
@@ -17,46 +18,46 @@
     </div>
 
     <!-- Modal de agregar/editar producto -->
-    <div class="modal fade" id="productoModal" tabindex="-1" aria-labelledby="productoModalLabel" aria-hidden="true">
+    <div class="modal" id="productoModal" tabindex="-1" aria-labelledby="productoModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="productoModalLabel">Agregar Producto</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="form_producto" enctype="multipart/form-data" method="POST">
+                <form id="form_producto" enctype="multipart/form-data">
                     <div class="modal-body">
                         <div class="row">
-                            <!-- Campo oculto para el ID del producto -->
-                            <input type="hidden" id="u_id" name="u_id">
-                
                             <!-- Nombre del Producto -->
                             <div class="mb-4">
                                 <label for="u_nombreProducto" class="form-label text-muted">Nombre del Producto</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-box-seam"></i></span>
-                                    <input type="text" class="form-control" id="u_nombreProducto" name="u_nombreProducto" required placeholder="Nombre del producto">
+                                    <input type="text" class="form-control" id="u_nombreProducto"
+                                        name="u_nombreProducto" required placeholder="Nombre del producto">
                                 </div>
                             </div>
-                
+
                             <!-- Precio -->
                             <div class="mb-4">
                                 <label for="u_precio" class="form-label text-muted">Precio</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
-                                    <input type="number" class="form-control" id="u_precio" name="u_precio" required placeholder="Precio del producto (ej: 19.99)" step="0.01" min="0">
+                                    <input type="number" class="form-control" id="u_precio" name="u_precio" required
+                                        placeholder="Precio del producto (ej: 19.99)" step="0.01" min="0">
                                 </div>
                             </div>
-                
+
                             <!-- Cantidad -->
                             <div class="mb-4">
                                 <label for="u_cantidad" class="form-label text-muted">Cantidad</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-cart-fill"></i></span>
-                                    <input type="number" class="form-control" id="u_cantidad" name="u_cantidad" required placeholder="Cantidad en inventario" min="0">
+                                    <input type="number" class="form-control" id="u_cantidad" name="u_cantidad" required
+                                        placeholder="Cantidad en inventario" min="0">
                                 </div>
                             </div>
-                
+
                             <!-- Categoría -->
                             <div class="mb-4">
                                 <label for="u_categoria" class="form-label text-muted">Categoría</label>
@@ -71,40 +72,50 @@
                                     </select>
                                 </div>
                             </div>
-                
+
                             <!-- Descripción -->
                             <div class="mb-4">
                                 <label for="u_descripcion" class="form-label text-muted">Descripción</label>
-                                <textarea class="form-control" id="u_descripcion" name="u_descripcion" rows="3" placeholder="Descripción del producto"></textarea>
+                                <textarea class="form-control" id="u_descripcion" name="u_descripcion" rows="3"
+                                    placeholder="Descripción del producto"></textarea>
                             </div>
-                
+
                             <!-- Imagen -->
                             <div class="mb-4">
                                 <label for="u_imagen_producto" class="form-label text-muted">Imagen del Producto</label>
-                                <input type="file" class="form-control" id="u_imagen_producto" name="u_imagen_producto" accept="image/*">
+                                <input type="file" class="form-control" id="u_imagen_producto" name="u_imagen_producto"
+                                    accept="image/*">
+                                <div id="imagen-preview" class="mt-2" style="display: none;">
+                                    <p>Imagen actual:</p>
+                                    <img id="current-image" src="/placeholder.svg" alt="Vista previa"
+                                        style="max-width: 100px; max-height: 100px;">
+                                </div>
                             </div>
-                
+
                             <!-- Tiempo de preparación -->
                             <div class="mb-4">
-                                <label for="u_tiempo_preparacion" class="form-label text-muted">Tiempo de Preparación (min)</label>
+                                <label for="u_tiempo_preparacion" class="form-label text-muted">Tiempo de Preparación
+                                    (min)</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-clock-fill"></i></span>
-                                    <input type="number" class="form-control" id="u_tiempo_preparacion" name="u_tiempo_preparacion" placeholder="Tiempo en minutos (ej: 5)" min="0" required>
+                                    <input type="number" class="form-control" id="u_tiempo_preparacion"
+                                        name="u_tiempo_preparacion" placeholder="Tiempo en minutos (ej: 5)" min="0"
+                                        required>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" id="btn-guardar-producto" name="action" value="guardar" class="btn btn-primary">Guardar Cambios</button>
-                        <button type="submit" id="btn-editar-producto" name="action" value="editar" class="btn btn-success">Editar Producto</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" id="btn-submit-producto" class="btn btn-primary">Guardar Cambios</button>
                     </div>
                 </form>
-                
             </div>
         </div>
     </div>
 
-    <script src="/js/productos.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
 </div>

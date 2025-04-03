@@ -7,6 +7,9 @@ from models.Pedido import Pedido
 from timezone_utils import get_ecuador_time
 import pymongo
 import re
+from pymongo import MongoClient
+import pytz
+
 
 
 db = Mongodb().db()
@@ -125,27 +128,18 @@ def aceptar_pedido(pedido_id):
             print(f"Pedido no encontrado con ID: {pedido_id}")
             return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
 
-        # IMPORTANT FIX: Disable expiration check or make it more lenient
-        # Instead of checking if the order has expired, we'll just proceed with the order
-        # This is a temporary fix to avoid the expiration issue on Render.com
-        
-        # Original code with expiration check:
-        # if datetime.now() > pedido_temporal.get('expireDateTime', datetime.now()):
-        #     # Devolver el stock y eliminar el pedido temporal
-        #     with db.client.start_session() as db_session:
-        #         with db_session.start_transaction():
-        #             for item in pedido_temporal['productos']:
-        #                 db.productos.update_one(
-        #                     {"_id": ObjectId(item['id'])},
-        #                     {"$inc": {"cantidad": item['quantity']}},  # Devolver el stock
-        #                     session=db_session
-        #                 )
-        #             db.pedidos_temporales.delete_one({"_id": ObjectId(pedido_id)}, session=db_session)
-        #     return jsonify({"success": False, "message": "El pedido ha expirado"}), 400
-        
-        # New code: Only check expiration if it's more than 24 hours old (very lenient)
+        # Usar UTC para comparar fechas
+        now_utc = datetime.now(pytz.UTC)
+      
+        # Convertir expireDateTime a UTC si no tiene zona horaria
         expire_time = pedido_temporal.get('expireDateTime')
-        if expire_time and datetime.now() > expire_time + timedelta(hours=24):
+        if expire_time:
+            # Si la fecha no tiene información de zona horaria, asumir que es UTC
+            if expire_time.tzinfo is None:
+                expire_time = pytz.UTC.localize(expire_time)
+      
+        # Solo verificar expiración si la fecha es más de 24 horas en el pasado
+        if expire_time and now_utc > expire_time + timedelta(hours=24):
             print(f"Pedido realmente expirado (más de 24 horas): {pedido_id}")
             # Devolver el stock y eliminar el pedido temporal
             with db.client.start_session() as db_session:
@@ -165,7 +159,7 @@ def aceptar_pedido(pedido_id):
             # Si hay una reserva, marcarla como utilizada
             db.reservas_stock.update_one(
                 {"_id": ObjectId(reserva_id)},
-                {"$set": {"estado": "utilizada", "fecha_utilizacion": datetime.now()}}
+                {"$set": {"estado": "utilizada", "fecha_utilizacion": now_utc}}
             )
         else:
             # Si no hay reserva, verificar el stock de los productos antes de aceptar el pedido
@@ -233,6 +227,10 @@ def aceptar_pedido(pedido_id):
         import traceback
         traceback.print_exc()
         return jsonify({"success": False, "message": str(e)}), 500
+
+
+
+
 
 
 

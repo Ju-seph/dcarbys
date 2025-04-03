@@ -6,7 +6,8 @@
                 <th>Cliente</th>
                 <th>Productos</th>
                 <th>Total</th>
-                <th>Fecha de Confirmación</th> <!-- Nueva columna -->
+                <th>Fecha de Confirmación</th>
+                <th>Tiempo Estimado</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -115,20 +116,37 @@
                     data: 'fecha_confirmacion',
                     render: function (data) {
                         if (data) {
-                            const fecha = new Date(data); // Convertir la cadena ISO a un objeto Date
-                            // Formatear la fecha y hora en UTC (sin ajustes de zona horaria)
-                            const opciones = {
+                            const fecha = new Date(data);
+                            return fecha.toLocaleString('es-EC', {
                                 year: 'numeric',
                                 month: '2-digit',
                                 day: '2-digit',
                                 hour: '2-digit',
                                 minute: '2-digit',
-                                second: '2-digit',
-                                timeZone: 'UTC' // Forzar el uso de UTC
-                            };
-                            return fecha.toLocaleString('es-EC', opciones); // Formato personalizado en UTC
+                                second: '2-digit'
+                            });
                         }
                         return 'No disponible';
+                    }
+                },
+                {
+                    data: 'tiempo_estimado',
+                    render: function (data) {
+                        if (data) {
+                            // Convertir minutos a formato más legible
+                            if (data >= 60) {
+                                const horas = Math.floor(data / 60);
+                                const minutos = data % 60;
+                                if (minutos === 0) {
+                                    return `${horas} hora${horas > 1 ? 's' : ''}`;
+                                } else {
+                                    return `${horas} hora${horas > 1 ? 's' : ''} y ${minutos} minuto${minutos > 1 ? 's' : ''}`;
+                                }
+                            } else {
+                                return `${data} minuto${data > 1 ? 's' : ''}`;
+                            }
+                        }
+                        return 'No especificado';
                     }
                 },
                 {
@@ -163,34 +181,82 @@
             dom: '<"top"lf>rt<"bottom"ip><"clear">',  // Personalizar la disposición de los controles
             responsive: true  // Hacer la tabla responsive
         });
+
+        // Actualizar la tabla cada 30 segundos
+        setInterval(function () {
+            $('#tablaPedidosTranscurso').DataTable().ajax.reload(null, false);
+        }, 30000);
     });
 
     // Función para finalizar un pedido
     function finalizarPedido(pedidoId) {
-        fetch(`/finalizar_pedido/${pedidoId}`, {
-            method: 'POST',  // Asegúrate de que sea POST
-            headers: {
-                'Content-Type': 'application/json'
+        Swal.fire({
+            title: '¿Finalizar pedido?',
+            text: "¿Confirmas que este pedido ha sido entregado al cliente?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, finalizar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Mostrar indicador de carga
+                Swal.fire({
+                    title: 'Procesando...',
+                    text: 'Finalizando el pedido',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                fetch(`/finalizar_pedido/${pedidoId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error en la solicitud');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        Swal.close();
+
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Pedido Finalizado!',
+                                text: 'El pedido ha sido marcado como entregado exitosamente.',
+                                confirmButtonColor: '#28a745',
+                                timer: 3000,
+                                timerProgressBar: true
+                            });
+                            $('#tablaPedidosTranscurso').DataTable().ajax.reload(null, false); // Recargar la tabla
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'Error al finalizar el pedido',
+                                confirmButtonColor: '#dc3545'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.close();
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error de Conexión',
+                            text: 'Hubo un error al comunicarse con el servidor. Por favor, intente nuevamente.',
+                            confirmButtonColor: '#dc3545'
+                        });
+                    });
             }
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Error en la solicitud');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    alert('Pedido finalizado con éxito');
-                    $('#tablaPedidosTranscurso').DataTable().ajax.reload(null, false); // Recargar la tabla
-                } else {
-                    alert('Error al finalizar el pedido: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Hubo un error al finalizar el pedido');
-            });
+        });
     }
 
     // Función para mostrar el ticket en PDF
@@ -210,20 +276,27 @@
                             `Celular: ${pedido.celular}`,
                             `Ciudad: ${pedido.ciudad}`,
                             `Dirección: ${pedido.direccion}`,
-                            `Referencia: ${pedido.referencia}`,
+                            `Referencia: ${pedido.referencia || 'No especificada'}`,
                             `Método de Pago: ${pedido.metodo_pago}`,  // Mostrar el método de pago
                             `Total: $${pedido.total.toFixed(2)}`,
                             { text: 'Productos:', style: 'subheader' },
                             {
                                 table: {
                                     headerRows: 1,
-                                    widths: ['*', 'auto', 'auto'],
+                                    widths: ['*', 'auto', 'auto', 'auto'],
                                     body: [
-                                        ['Producto', 'Cantidad', 'Precio'],
-                                        ...pedido.productos.map(p => [p.name, p.quantity, `$${p.price * p.quantity}`])
+                                        ['Producto', 'Cantidad', 'Precio Unit.', 'Subtotal'],
+                                        ...pedido.productos.map(p => [
+                                            p.name,
+                                            p.quantity,
+                                            `$${p.price.toFixed(2)}`,
+                                            `$${(p.price * p.quantity).toFixed(2)}`
+                                        ])
                                     ]
                                 }
-                            }
+                            },
+                            { text: `Fecha y hora: ${new Date().toLocaleString('es-EC')}`, margin: [0, 20, 0, 0] },
+                            { text: 'Gracias por su compra', style: 'thanks', alignment: 'center', margin: [0, 20, 0, 0] }
                         ],
                         styles: {
                             header: {
@@ -235,19 +308,40 @@
                                 fontSize: 14,
                                 bold: true,
                                 margin: [0, 10, 0, 5]
+                            },
+                            thanks: {
+                                fontSize: 12,
+                                italics: true
                             }
+                        },
+                        footer: function (currentPage, pageCount) {
+                            return {
+                                text: `Página ${currentPage} de ${pageCount}`,
+                                alignment: 'center',
+                                fontSize: 8
+                            };
                         }
                     };
 
                     // Generar y abrir el PDF
                     pdfMake.createPdf(docDefinition).open();
                 } else {
-                    alert('Error al obtener los detalles del pedido: ' + data.message);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Error al obtener los detalles del pedido',
+                        confirmButtonColor: '#dc3545'
+                    });
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Hubo un error al obtener los detalles del pedido');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de Conexión',
+                    text: 'Hubo un error al obtener los detalles del pedido. Por favor, intente nuevamente.',
+                    confirmButtonColor: '#dc3545'
+                });
             });
     }
 </script>
