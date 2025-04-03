@@ -32,11 +32,8 @@ class PedidoTemporal:
             custom_datetime (datetime, optional): Fecha personalizada para el pedido
         """
         # Usar la fecha personalizada si se proporciona, de lo contrario usar datetime.now()
-        if current_time is None:
-            current_time = datetime.now()
-            
-        # Aumentar el tiempo de expiración a 2 horas para evitar problemas con zonas horarias
-        expire_time = current_time + timedelta(hours=2)
+        self.createDateTime = custom_datetime or datetime.now()
+        self.expireDateTime = self.createDateTime + timedelta(hours=2)
 
     def updatePedidoTemporal(self):
         self.updateDateTime = datetime.now()
