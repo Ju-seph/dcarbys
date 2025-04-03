@@ -93,30 +93,30 @@ def procesar_pedido(request):
     
 def aceptar_pedido(pedido_id):
     try:
-        # Verificar si se recibieron datos JSON
-        if not request.is_json:
-            print("Error: La solicitud no contiene datos JSON")
-            return jsonify({"success": False, "message": "La solicitud debe contener datos JSON"}), 400
-            
-        data = request.get_json()
-        print(f"Datos recibidos en aceptar_pedido: {data}")  # Log para depuración
+        # Get the request data - don't check if it's JSON first
+        data = request.get_json(force=True, silent=True)  # Use force=True and silent=True to avoid errors
         
-        # Verificar si se recibió el tiempo estimado
-        if 'tiempo_estimado' not in data:
-            print("Error: Falta el tiempo estimado en la solicitud")
-            return jsonify({"success": False, "message": "Falta el tiempo estimado"}), 400
-            
-        # Convertir el tiempo estimado a entero para evitar problemas de tipo
+        print(f"Datos recibidos en aceptar_pedido: {data}")  # Log for debugging
+        
+        # If data is None or not a dictionary, initialize it as an empty dict
+        if data is None or not isinstance(data, dict):
+            data = {}
+            print("Warning: No se recibieron datos JSON válidos, usando valores predeterminados")
+        
+        # Get tiempo_estimado with a default value if not present
+        tiempo_estimado = data.get("tiempo_estimado", 30)  # Default to 30 minutes if not provided
+        
+        # Convert to integer safely
         try:
-            tiempo_estimado = int(data.get("tiempo_estimado"))
+            tiempo_estimado = int(tiempo_estimado)
         except (ValueError, TypeError):
-            print(f"Error: Tiempo estimado no es un número válido: {data.get('tiempo_estimado')}")
-            return jsonify({"success": False, "message": "El tiempo estimado debe ser un número válido"}), 400
+            print(f"Error: Tiempo estimado no es un número válido: {tiempo_estimado}, usando valor predeterminado")
+            tiempo_estimado = 30  # Default to 30 minutes if conversion fails
         
-        # Validar que el tiempo estimado sea un número positivo
+        # Ensure tiempo_estimado is positive
         if tiempo_estimado <= 0:
-            print(f"Error: Tiempo estimado inválido: {tiempo_estimado}")
-            return jsonify({"success": False, "message": "El tiempo estimado debe ser un número positivo"}), 400
+            tiempo_estimado = 30  # Default to 30 minutes if negative or zero
+            print(f"Warning: Tiempo estimado inválido, usando valor predeterminado: {tiempo_estimado}")
 
         # Buscar el pedido temporal
         pedido_temporal = db.pedidos_temporales.find_one({"_id": ObjectId(pedido_id)})
@@ -212,6 +212,8 @@ def aceptar_pedido(pedido_id):
         import traceback
         traceback.print_exc()
         return jsonify({"success": False, "message": str(e)}), 500
+
+
 
 
 

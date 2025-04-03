@@ -93,69 +93,159 @@
     // Modifica la función aceptarPedido para evitar el error después del éxito
     function aceptarPedido(pedidoId) {
         const tiempoEstimado = prompt("Ingrese el tiempo estimado de entrega (en minutos):");
-        if (!tiempoEstimado || isNaN(parseInt(tiempoEstimado))) {
-            alert("Por favor, ingrese un tiempo válido.");
+
+        // Si el usuario cancela el prompt o no ingresa un valor, no continuar
+        if (tiempoEstimado === null) {
             return;
         }
+
+        // Convertir a número y validar
+        const tiempo = parseInt(tiempoEstimado);
+        if (isNaN(tiempo)) {
+            alert("Por favor, ingrese un tiempo válido (número).");
+            return;
+        }
+
+        // Mostrar indicador de carga
+        Swal.fire({
+            title: 'Procesando...',
+            text: 'Aceptando el pedido',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
 
         fetch(`/aceptar_pedido/${pedidoId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ tiempo_estimado: parseInt(tiempoEstimado) })
+            body: JSON.stringify({ tiempo_estimado: tiempo })
         })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Error HTTP: ${response.status}`);
-                }
-                return response.json();
+                console.log("Respuesta del servidor:", response.status);
+                return response.json().catch(error => {
+                    // Si hay un error al parsear el JSON, devolver un objeto con error
+                    console.error("Error al parsear JSON:", error);
+                    throw new Error("Error en la respuesta del servidor");
+                });
             })
             .then(data => {
+                // Cerrar el indicador de carga
+                Swal.close();
+
                 if (data.success) {
-                    alert('Pedido aceptado con éxito');
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: 'Pedido aceptado con éxito',
+                    });
+
                     // Recargar la tabla después de un breve retraso
                     setTimeout(() => {
-                        $('#tablaPedidosPendientes').DataTable().ajax.reload(null, false);
+                        try {
+                            $('#tablaPedidosPendientes').DataTable().ajax.reload(null, false);
+                        } catch (error) {
+                            console.error("Error al recargar la tabla:", error);
+                            location.reload(); // Si falla la recarga de la tabla, recargar la página
+                        }
                     }, 500);
                 } else {
-                    alert('Error al aceptar el pedido: ' + data.message);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'Error al aceptar el pedido',
+                    });
                 }
             })
             .catch(error => {
+                // Cerrar el indicador de carga
+                Swal.close();
+
                 console.error('Error:', error);
-                alert('Hubo un error al aceptar el pedido');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Hubo un error al aceptar el pedido. Por favor, intente nuevamente.',
+                });
             });
     }
 
     // Modifica la función cancelarPedidoAdmin para evitar el error después del éxito
     function cancelarPedidoAdmin(pedidoId) {
-        if (confirm("¿Estás seguro de cancelar este pedido?")) {
-            fetch(`/cancelar_pedido_admin/${pedidoId}`, {
-                method: 'POST'
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Error HTTP: ${response.status}`);
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "¿Deseas cancelar este pedido?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, cancelar',
+            cancelButtonText: 'No, mantener'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Mostrar indicador de carga
+                Swal.fire({
+                    title: 'Procesando...',
+                    text: 'Cancelando el pedido',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        alert(data.message);  // Mostrar el mensaje personalizado
-                        // Recargar la tabla después de un breve retraso
-                        setTimeout(() => {
-                            $('#tablaPedidosPendientes').DataTable().ajax.reload(null, false);
-                        }, 500);
-                    } else {
-                        alert('Error al cancelar el pedido: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Hubo un error al cancelar el pedido');
                 });
-        }
+
+                fetch(`/cancelar_pedido_admin/${pedidoId}`, {
+                    method: 'POST'
+                })
+                    .then(response => {
+                        console.log("Respuesta del servidor:", response.status);
+                        return response.json().catch(error => {
+                            console.error("Error al parsear JSON:", error);
+                            throw new Error("Error en la respuesta del servidor");
+                        });
+                    })
+                    .then(data => {
+                        // Cerrar el indicador de carga
+                        Swal.close();
+
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Cancelado!',
+                                text: data.message || 'Pedido cancelado con éxito',
+                            });
+
+                            // Recargar la tabla después de un breve retraso
+                            setTimeout(() => {
+                                try {
+                                    $('#tablaPedidosPendientes').DataTable().ajax.reload(null, false);
+                                } catch (error) {
+                                    console.error("Error al recargar la tabla:", error);
+                                    location.reload(); // Si falla la recarga de la tabla, recargar la página
+                                }
+                            }, 500);
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: data.message || 'Error al cancelar el pedido',
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        // Cerrar el indicador de carga
+                        Swal.close();
+
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Hubo un error al cancelar el pedido. Por favor, intente nuevamente.',
+                        });
+                    });
+            }
+        });
     }
 
     let lastCount = 0;
