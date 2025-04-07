@@ -5,6 +5,7 @@ import controllers.index as indx
 import controllers.ctl_usuarios as usu
 import controllers.ctl_productos as prod
 import controllers.ctl_pedidos as ped
+import controllers.ctl_reportes as rep
 from database.mongodb import Mongodb
 from dotenv import load_dotenv
 import os
@@ -283,9 +284,7 @@ def obtener_numero_pedidos_pendientes():
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 
-@app.route('/generar_reporte_ventas', methods=['GET'])
-def generar_reporte_ventas_route():
-    return ped.generar_reporte_ventas()
+
 
 #payphone funcion//
 
@@ -704,6 +703,16 @@ def test_payphone_redirect():
 def serve_notification_sound():
     """Sirve el archivo de sonido desde static/sound/"""
     return send_from_directory('static/sound', 'notification.mp3')
+
+
+@app.route('/generar_reporte_ventas', methods=['GET'])
+def get_reporte_ventas():
+    return rep.generar_reporte_ventas()
+
+@app.route('/generar_pdf_reporte', methods=['GET'])
+def get_pdf_reporte():
+    return rep.generar_pdf_reporte()
+
 
 
 if __name__ == "__main__":

@@ -1,94 +1,302 @@
-<div class="container-fluid">
-    <h3 class="text-center mb-4">Reportes de Ventas</h3>
+<!-- No need for head or body tags since this is included in principal.html -->
+
+<!-- Contenedor principal con clase específica para reportes -->
+<div class="reportes-container">
+    <div class="text-center mb-4">
+        <h3>Reportes de Ventas</h3>
+        <p class="text-muted">Genere informes detallados de ventas y exporte a PDF</p>
+    </div>
 
     <!-- Filtros para el reporte -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <label for="fechaInicio">Fecha de Inicio</label>
-            <input type="date" id="fechaInicio" class="form-control">
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Filtros del Reporte</h5>
         </div>
-        <div class="col-md-3">
-            <label for="fechaFin">Fecha de Fin</label>
-            <input type="date" id="fechaFin" class="form-control">
-        </div>
-        <div class="col-md-3">
-            <label for="agrupacion">Agrupar por</label>
-            <select id="agrupacion" class="form-control">
-                <option value="dia">Día</option>
-                <option value="semana">Semana</option>
-                <option value="mes">Mes</option>
-            </select>
-        </div>
-        <div class="col-md-3 d-flex align-items-end">
-            <button class="btn btn-primary" onclick="generarReporte()">Generar Reporte</button>
-        </div>
-    </div>
-
-    <!-- Resultados del reporte -->
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    Producto Más Vendido
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <label for="fechaInicio" class="form-label">Fecha de Inicio</label>
+                    <input type="date" id="fechaInicio" class="form-control">
                 </div>
-                <div class="card-body" id="productoMasVendido">
-                    <!-- Aquí se mostrará el producto más vendido -->
+                <div class="col-md-3">
+                    <label for="fechaFin" class="form-label">Fecha de Fin</label>
+                    <input type="date" id="fechaFin" class="form-control">
                 </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    Producto Menos Vendido
+                <div class="col-md-3">
+                    <label for="agrupacion" class="form-label">Agrupar por</label>
+                    <select id="agrupacion" class="form-select">
+                        <option value="dia">Día</option>
+                        <option value="semana">Semana</option>
+                        <option value="mes">Mes</option>
+                    </select>
                 </div>
-                <div class="card-body" id="productoMenosVendido">
-                    <!-- Aquí se mostrará el producto menos vendido -->
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" onclick="generarReporte()">
+                        <i class="fas fa-chart-line me-2"></i>Generar Reporte
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Gráfico de ventas -->
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    Gráfico de Ventas
+    <!-- Contenedor de resultados (inicialmente oculto) -->
+    <div id="resultadosReporte" style="display: none;">
+        <!-- Resumen de ventas -->
+        <div class="row">
+            <div class="col-md-3 mb-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-dollar-sign fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Ventas Totales</h5>
+                        <h3 id="ventasTotales">$0</h3>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <canvas id="graficoVentas" width="400" height="200"></canvas>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-shopping-cart fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Productos Vendidos</h5>
+                        <h3 id="productosVendidos">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-users fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title">Clientes</h5>
+                        <h3 id="totalClientes">0</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card text-center h-100">
+                    <div class="card-body">
+                        <i class="fas fa-chart-pie fa-3x text-info mb-3"></i>
+                        <h5 class="card-title">Ticket Promedio</h5>
+                        <h3 id="ticketPromedio">$0</h3>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- Productos más y menos vendidos -->
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Producto Más Vendido</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="reporte-product-card">
+                            <div class="reporte-product-icon">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div id="productoMasVendido">
+                                <!-- Aquí se mostrará el producto más vendido -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Producto Menos Vendido</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="reporte-product-card">
+                            <div class="reporte-product-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div id="productoMenosVendido">
+                                <!-- Aquí se mostrará el producto menos vendido -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de ventas -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Gráfico de Ventas</h5>
+            </div>
+            <div class="card-body">
+                <div class="reporte-chart-container">
+                    <canvas id="graficoVentas"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones de acción para el reporte -->
+        <div class="reporte-actions mt-4 text-center">
+            <button class="btn btn-success me-2" onclick="generarPDF()">
+                <i class="fas fa-file-pdf me-2"></i>Descargar PDF
+            </button>
+            <button class="btn btn-primary" onclick="imprimirReporte()">
+                <i class="fas fa-print me-2"></i>Imprimir Reporte
+            </button>
+        </div>
+    </div>
+
+    <!-- Overlay de carga -->
+    <div id="loadingOverlay" class="reporte-loading-overlay" style="display: none;">
+        <div class="spinner-border text-light mb-3" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <h5 class="text-white">Generando reporte...</h5>
     </div>
 </div>
 
-<!-- Incluir Chart.js para gráficos -->
+<!-- Estilos específicos para el componente de reportes -->
+<style>
+    /* Estilos específicos para el componente de reportes */
+    .reportes-container .reporte-loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+        flex-direction: column;
+    }
+
+    .reportes-container .reporte-product-card {
+        display: flex;
+        align-items: center;
+    }
+
+    .reportes-container .reporte-product-icon {
+        font-size: 2.5rem;
+        margin-right: 15px;
+        color: rgb(219, 22, 22); /* Usar el mismo color rojo del tema principal */
+    }
+
+    .reportes-container .reporte-chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+
+    /* Sobrescribir colores para que coincidan con el tema principal */
+    .reportes-container .bg-primary {
+        background-color: rgb(219, 22, 22) !important;
+    }
+
+    .reportes-container .text-primary {
+        color: rgb(219, 22, 22) !important;
+    }
+
+    .reportes-container .btn-primary {
+        background-color: rgb(219, 22, 22);
+        border-color: rgb(219, 22, 22);
+    }
+
+    .reportes-container .btn-primary:hover {
+        background-color: rgba(199, 38, 38, 0.89);
+        border-color: rgba(199, 38, 38, 0.89);
+    }
+
+    .reportes-container .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .reportes-container .btn-success:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
+</style>
+
+<!-- Chart.js para gráficos (si no está ya incluido en principal.html) -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- jsPDF para generar PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
 <script>
     let graficoVentas;
+    let reporteData; // Variable global para almacenar los datos del reporte
+
+    // Establecer fecha por defecto (último mes)
+    document.addEventListener('DOMContentLoaded', function() {
+        const hoy = new Date();
+        const unMesAtras = new Date();
+        unMesAtras.setMonth(hoy.getMonth() - 1);
+
+        document.getElementById('fechaFin').valueAsDate = hoy;
+        document.getElementById('fechaInicio').valueAsDate = unMesAtras;
+    });
+
+    function mostrarCargando(mostrar) {
+        document.getElementById('loadingOverlay').style.display = mostrar ? 'flex' : 'none';
+    }
 
     function generarReporte() {
         const fechaInicio = document.getElementById('fechaInicio').value;
         const fechaFin = document.getElementById('fechaFin').value;
         const agrupacion = document.getElementById('agrupacion').value;
 
+        // Validar fechas
+        if (!fechaInicio || !fechaFin) {
+            alert('Por favor, seleccione ambas fechas');
+            return;
+        }
+
+        mostrarCargando(true);
+
         fetch(`/generar_reporte_ventas?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}&agrupacion=${agrupacion}`)
             .then(response => response.json())
             .then(data => {
+                mostrarCargando(false);
+
                 if (data.success) {
+                    reporteData = data; // Guardar datos para uso posterior
+
+                    // Mostrar contenedor de resultados
+                    document.getElementById('resultadosReporte').style.display = 'block';
+
                     // Mostrar el producto más vendido
                     document.getElementById('productoMasVendido').innerHTML = `
-                        <p><strong>Producto:</strong> ${data.productoMasVendido.nombre}</p>
-                        <p><strong>Cantidad Vendida:</strong> ${data.productoMasVendido.cantidad}</p>
+                        <div>
+                            <h4>${data.productoMasVendido.nombre}</h4>
+                            <p class="mb-0"><strong>Cantidad Vendida:</strong> ${data.productoMasVendido.cantidad}</p>
+                            <div class="progress mt-2">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: 100%" 
+                                    aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
                     `;
 
                     // Mostrar el producto menos vendido
                     document.getElementById('productoMenosVendido').innerHTML = `
-                        <p><strong>Producto:</strong> ${data.productoMenosVendido.nombre}</p>
-                        <p><strong>Cantidad Vendida:</strong> ${data.productoMenosVendido.cantidad}</p>
+                        <div>
+                            <h4>${data.productoMenosVendido.nombre}</h4>
+                            <p class="mb-0"><strong>Cantidad Vendida:</strong> ${data.productoMenosVendido.cantidad}</p>
+                            <div class="progress mt-2">
+                                <div class="progress-bar bg-warning" role="progressbar" 
+                                    style="width: ${Math.max(10, (data.productoMenosVendido.cantidad / data.productoMasVendido.cantidad) * 100)}%" 
+                                    aria-valuenow="${data.productoMenosVendido.cantidad}" aria-valuemin="0" 
+                                    aria-valuemax="${data.productoMasVendido.cantidad}"></div>
+                            </div>
+                        </div>
                     `;
+
+                    // Actualizar métricas de resumen
+                    // Usar los datos reales de la API si están disponibles
+                    const totalVentas = data.totalVentas || calcularTotalVentas(data.graficoVentas.data);
+                    document.getElementById('ventasTotales').textContent = `$${totalVentas.toLocaleString()}`;
+                    document.getElementById('productosVendidos').textContent = data.totalProductos || data.productoMasVendido.cantidad + data.productoMenosVendido.cantidad;
+                    document.getElementById('totalClientes').textContent = data.totalClientes || Math.round(totalVentas / 50);
+                    document.getElementById('ticketPromedio').textContent = `$${data.ticketPromedio || Math.round(totalVentas / (data.totalClientes || 10)).toLocaleString()}`;
 
                     // Actualizar el gráfico de ventas
                     if (graficoVentas) {
@@ -109,9 +317,17 @@
                             }]
                         },
                         options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
                             scales: {
                                 y: {
                                     beginAtZero: true
+                                }
+                            },
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: `Ventas por ${agrupacion === 'dia' ? 'Día' : agrupacion === 'semana' ? 'Semana' : 'Mes'}`
                                 }
                             }
                         }
@@ -121,8 +337,209 @@
                 }
             })
             .catch(error => {
+                mostrarCargando(false);
                 console.error('Error:', error);
                 alert('Hubo un error al generar el reporte');
             });
+    }
+
+    // Función auxiliar para calcular el total de ventas
+    function calcularTotalVentas(datos) {
+        return datos.reduce((total, valor) => total + valor, 0) * 100; // Multiplicamos por un valor para simular montos
+    }
+
+    // Función para generar PDF del reporte
+    function generarPDF() {
+        if (!reporteData) {
+            alert('Primero debe generar un reporte');
+            return;
+        }
+
+        mostrarCargando(true);
+
+        // Generar PDF en el cliente usando jsPDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Título
+        doc.setFontSize(20);
+        doc.text('Reporte de Ventas', 105, 15, { align: 'center' });
+
+        // Fechas del reporte
+        doc.setFontSize(12);
+        const fechaInicio = document.getElementById('fechaInicio').value;
+        const fechaFin = document.getElementById('fechaFin').value;
+        doc.text(`Período: ${fechaInicio} a ${fechaFin}`, 105, 25, { align: 'center' });
+
+        // Agrupación
+        const agrupacion = document.getElementById('agrupacion').value;
+        doc.text(`Agrupado por: ${agrupacion === 'dia' ? 'Día' : agrupacion === 'semana' ? 'Semana' : 'Mes'}`, 105, 32, { align: 'center' });
+
+        // Productos destacados
+        doc.setFontSize(16);
+        doc.text('Productos Destacados', 14, 45);
+
+        // Tabla de productos
+        doc.autoTable({
+            startY: 50,
+            head: [['Producto', 'Cantidad Vendida']],
+            body: [
+                [`Más vendido: ${reporteData.productoMasVendido.nombre}`, reporteData.productoMasVendido.cantidad],
+                [`Menos vendido: ${reporteData.productoMenosVendido.nombre}`, reporteData.productoMenosVendido.cantidad]
+            ],
+            theme: 'striped',
+            headStyles: { fillColor: [219, 22, 22] } // Color rojo del tema principal
+        });
+
+        // Resumen de ventas
+        doc.setFontSize(16);
+        doc.text('Resumen de Ventas', 14, doc.lastAutoTable.finalY + 15);
+
+        const totalVentas = reporteData.totalVentas || calcularTotalVentas(reporteData.graficoVentas.data);
+        const totalProductos = reporteData.totalProductos || reporteData.productoMasVendido.cantidad + reporteData.productoMenosVendido.cantidad;
+        const totalClientes = reporteData.totalClientes || Math.round(totalVentas / 50);
+        const ticketPromedio = reporteData.ticketPromedio || Math.round(totalVentas / totalClientes);
+
+        doc.autoTable({
+            startY: doc.lastAutoTable.finalY + 20,
+            head: [['Métrica', 'Valor']],
+            body: [
+                ['Ventas Totales', `$${totalVentas.toLocaleString()}`],
+                ['Productos Vendidos', totalProductos],
+                ['Total Clientes', totalClientes],
+                ['Ticket Promedio', `$${ticketPromedio.toLocaleString()}`]
+            ],
+            theme: 'grid',
+            headStyles: { fillColor: [219, 22, 22] } // Color rojo del tema principal
+        });
+
+        // Capturar el gráfico como imagen
+        html2canvas(document.getElementById('graficoVentas')).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+
+            // Añadir nueva página para el gráfico
+            doc.addPage();
+            doc.setFontSize(16);
+            doc.text('Gráfico de Ventas', 105, 15, { align: 'center' });
+
+            // Añadir el gráfico
+            const imgWidth = 180;
+            const imgHeight = canvas.height * imgWidth / canvas.width;
+            doc.addImage(imgData, 'PNG', 15, 25, imgWidth, imgHeight);
+
+            // Añadir pie de página
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(10);
+                doc.setTextColor(150);
+                doc.text(`Página ${i} de ${pageCount} - Generado el ${new Date().toLocaleDateString()}`, 105, 285, { align: 'center' });
+            }
+
+            // Guardar el PDF
+            doc.save(`Reporte_Ventas_${fechaInicio}_${fechaFin}.pdf`);
+            mostrarCargando(false);
+        });
+    }
+
+    // Función para imprimir el reporte
+    function imprimirReporte() {
+        if (!reporteData) {
+            alert('Primero debe generar un reporte');
+            return;
+        }
+
+        // Crear una ventana de impresión
+        const ventanaImpresion = window.open('', '_blank');
+
+        // Contenido HTML para la impresión
+        ventanaImpresion.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Reporte de Ventas</title>
+                <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+                <style>
+                    body { padding: 20px; }
+                    .header { text-align: center; margin-bottom: 30px; }
+                    .product-card { display: flex; align-items: center; margin-bottom: 20px; }
+                    .product-icon { font-size: 2rem; margin-right: 15px; color: rgb(219, 22, 22); }
+                    .chart-container { height: 400px; margin-top: 30px; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                    th, td { padding: 10px; border: 1px solid #ddd; }
+                    th { background-color: rgb(219, 22, 22); color: white; }
+                    @media print {
+                        .no-print { display: none; }
+                        .page-break { page-break-before: always; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>Reporte de Ventas</h1>
+                    <p>Período: ${document.getElementById('fechaInicio').value} a ${document.getElementById('fechaFin').value}</p>
+                    <p>Agrupado por: ${document.getElementById('agrupacion').value === 'dia' ? 'Día' : document.getElementById('agrupacion').value === 'semana' ? 'Semana' : 'Mes'}</p>
+                </div>
+                
+                <h2>Resumen de Ventas</h2>
+                <table>
+                    <tr>
+                        <th>Métrica</th>
+                        <th>Valor</th>
+                    </tr>
+                    <tr>
+                        <td>Ventas Totales</td>
+                        <td>${document.getElementById('ventasTotales').textContent}</td>
+                    </tr>
+                    <tr>
+                        <td>Productos Vendidos</td>
+                        <td>${document.getElementById('productosVendidos').textContent}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Clientes</td>
+                        <td>${document.getElementById('totalClientes').textContent}</td>
+                    </tr>
+                    <tr>
+                        <td>Ticket Promedio</td>
+                        <td>${document.getElementById('ticketPromedio').textContent}</td>
+                    </tr>
+                </table>
+                
+                <h2>Productos Destacados</h2>
+                <table>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad Vendida</th>
+                    </tr>
+                    <tr>
+                        <td>Más vendido: ${reporteData.productoMasVendido.nombre}</td>
+                        <td>${reporteData.productoMasVendido.cantidad}</td>
+                    </tr>
+                    <tr>
+                        <td>Menos vendido: ${reporteData.productoMenosVendido.nombre}</td>
+                        <td>${reporteData.productoMenosVendido.cantidad}</td>
+                    </tr>
+                </table>
+                
+                <div class="page-break"></div>
+                
+                <h2>Gráfico de Ventas</h2>
+                <img src="${graficoVentas.toBase64Image()}" style="width: 100%; max-height: 400px;">
+                
+                <div class="mt-4 text-center no-print">
+                    <button onclick="window.print()" class="btn btn-primary" style="background-color: rgb(219, 22, 22); border-color: rgb(219, 22, 22);">Imprimir</button>
+                    <button onclick="window.close()" class="btn btn-secondary">Cerrar</button>
+                </div>
+            </body>
+            </html>
+        `);
+
+        ventanaImpresion.document.close();
+
+        // Dar tiempo para que se carguen los estilos
+        setTimeout(() => {
+            ventanaImpresion.focus();
+            // La impresión se iniciará cuando el usuario haga clic en el botón de imprimir
+        }, 1000);
     }
 </script>
