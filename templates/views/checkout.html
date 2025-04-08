@@ -968,7 +968,6 @@
                                 <p>Tu pedido ha sido confirmado y está en proceso de preparación.</p>
                                 <p><strong>Tiempo estimado de entrega:</strong> ${tiempoFormateado} ${tiempoUnidad}.</p>
                                 <p>Gracias por tu compra. ¡Esperamos que disfrutes tu pedido!</p>
-                                <button class="btn btn-danger" onclick="cancelarPedidoCliente('${orderId}')">Cancelar Pedido</button>
                                 <a href="/" class="btn btn-primary">Volver al inicio</a>
                             `;
 
@@ -985,17 +984,15 @@
                             cancellationMessage.style.display = 'block';
                             backButton.style.display = 'none'; // Mantener oculto el botón de volver
 
-                            const canceladoPor = data.cancelado_por || "el sistema";
-                            const mensajeCancelacion = canceladoPor === "admin" ?
-                                "Lamentamos informarte que tu pedido ha sido cancelado por nuestro equipo de administración debido a problemas de disponibilidad o stock." :
-                                "Has cancelado tu pedido exitosamente.";
+                            // Obtener información de quién canceló
+                            const rolCancelado = data.rol_cancelado || "administración";
 
                             cancellationMessage.innerHTML = `
-                                <h3>Pedido Cancelado</h3>
-                                <p>${mensajeCancelacion}</p>
-                                <p>Si tienes alguna duda o necesitas más información, no dudes en contactarnos.</p>
-                                <a href="/" class="btn btn-primary">Volver al inicio</a>
-                            `;
+        <h3>Pedido Cancelado</h3>
+        <p>Lamentamos informarte que tu pedido ha sido cancelado por nuestro equipo de ${rolCancelado} debido a problemas de disponibilidad o stock.</p>
+        <p>Si tienes alguna duda o necesitas más información, no dudes en contactarnos.</p>
+        <a href="/" class="btn btn-primary">Volver al inicio</a>
+    `;
 
                             localStorage.removeItem('cart');
                             // Limpiar datos del formulario guardados
@@ -1004,6 +1001,7 @@
                             localStorage.removeItem('checkout_ciudad');
                             localStorage.removeItem('checkout_direccion');
                             localStorage.removeItem('checkout_referencia');
+
                         } else if (data.estado === 'pendiente') {
                             console.log("El pedido sigue pendiente de confirmación.");
                         }

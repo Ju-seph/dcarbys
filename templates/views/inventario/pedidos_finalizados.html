@@ -107,18 +107,15 @@
                     data: 'fecha_finalizacion',
                     render: function (data) {
                         if (data) {
-                            const fecha = new Date(data); // Convertir la cadena ISO a un objeto Date
-                            // Formatear la fecha y hora en UTC (sin ajustes de zona horaria)
-                            const opciones = {
+                            const fecha = new Date(data);
+                            return fecha.toLocaleString('es-EC', {
                                 year: 'numeric',
                                 month: '2-digit',
                                 day: '2-digit',
                                 hour: '2-digit',
                                 minute: '2-digit',
-                                second: '2-digit',
-                                timeZone: 'UTC' // Forzar el uso de UTC
-                            };
-                            return fecha.toLocaleString('es-EC', opciones); // Formato personalizado en UTC
+                                second: '2-digit'
+                            });
                         }
                         return 'No disponible';
                     }
@@ -174,7 +171,7 @@
                             `Ciudad: ${pedido.ciudad}`,
                             `Dirección: ${pedido.direccion}`,
                             `Referencia: ${pedido.referencia}`,
-                            `Método de Pago: ${pedido.metodo_pago}`, 
+                            `Método de Pago: ${pedido.metodo_pago}`,
                             `Total: $${pedido.total.toFixed(2)}`,
                             `Fecha de Confirmación: ${pedido.fecha_confirmacion ? new Date(pedido.fecha_confirmacion).toLocaleString() : 'No disponible'}`,
                             `Fecha de Finalización: ${pedido.fecha_finalizacion ? new Date(pedido.fecha_finalizacion).toLocaleString() : 'No disponible'}`,

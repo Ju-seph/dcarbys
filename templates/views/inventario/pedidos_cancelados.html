@@ -122,17 +122,15 @@
                     data: 'fecha_cancelacion',
                     render: function (data) {
                         if (data) {
-                            const fecha = new Date(data); // Convertir la cadena ISO a un objeto Date
-                            // Formatear la fecha y hora en la zona horaria local
-                            const opciones = {
+                            const fecha = new Date(data);
+                            return fecha.toLocaleString('es-EC', {
                                 year: 'numeric',
                                 month: '2-digit',
                                 day: '2-digit',
                                 hour: '2-digit',
                                 minute: '2-digit',
                                 second: '2-digit'
-                            };
-                            return fecha.toLocaleString('es-EC', opciones); // Formato personalizado en la zona horaria local
+                            });
                         }
                         return 'No disponible';
                     }
@@ -166,6 +164,14 @@
             dom: '<"top"lf>rt<"bottom"ip><"clear">',  // Personalizar la disposición de los controles
             responsive: true  // Hacer la tabla responsive
         });
+
+        // Función para cargar los pedidos cancelados
+        function cargarPedidosCancelados() {
+            $('#tablaPedidosCancelados').DataTable().ajax.reload(null, false);
+        }
+
+        // Actualizar la tabla cada 5 segundos
+        setInterval(cargarPedidosCancelados, 5000);
     });
 
 
