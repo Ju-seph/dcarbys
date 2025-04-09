@@ -124,6 +124,7 @@
                         if (data) {
                             const fecha = new Date(data);
                             return fecha.toLocaleString('es-EC', {
+                                timeZone: 'America/Guayaquil',
                                 year: 'numeric',
                                 month: '2-digit',
                                 day: '2-digit',

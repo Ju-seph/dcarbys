@@ -545,18 +545,18 @@
         notification.className = 'alert alert-cancellation alert-dismissible fade show cancellation-flash';
         notification.style.marginBottom = '10px';
         notification.innerHTML = `
-            <div class="d-flex justify-content-between align-items-start">
-                <div>
-                    <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Pedido Cancelado</strong>
-                    <div class="mt-2">
-                        <p class="mb-1"><strong>#${pedido.numero_pedido}</strong> - ${pedido.nombre_cliente}</p>
-                        <p class="mb-1">Total: <strong>$${pedido.total.toFixed(2)}</strong></p>
-                        <small class="text-muted">${new Date(pedido.fecha_cancelacion).toLocaleString()}</small>
-                    </div>
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Pedido Cancelado</strong>
+                <div class="mt-2">
+                    <p class="mb-1"><strong>#${pedido.numero_pedido}</strong> - ${pedido.nombre}</p>
+                    <p class="mb-1">Total: <strong>$${pedido.total.toFixed(2)}</strong></p>
+                    <small class="text-muted">${formatEcuadorTime(pedido.fecha_cancelacion)}</small>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
-        `;
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
 
         const container = document.getElementById('notifications-container');
         container.insertBefore(notification, container.firstChild);
@@ -569,6 +569,22 @@
             notification.classList.remove('show');
             setTimeout(() => notification.remove(), 150);
         }, 10000);
+    }
+
+    // Función para formatear la hora en zona horaria de Ecuador
+    function formatEcuadorTime(dateString) {
+        if (!dateString) return 'Fecha no disponible';
+
+        const date = new Date(dateString);
+        return date.toLocaleString('es-EC', {
+            timeZone: 'America/Guayaquil',
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
     }
 
     // Función para verificar cancelaciones de pedidos
