@@ -176,6 +176,36 @@
     .sound-toggle i {
         font-size: 1.5rem;
     }
+
+    /* Estilos adicionales para notificaciones de cancelación */
+    .alert-cancellation {
+        background-color: #fff3cd;
+        border-color: #ffeeba;
+        color: #856404;
+        border-left: 5px solid #ffc107;
+    }
+
+    .alert-cancellation strong {
+        color: #d35400;
+    }
+
+    @keyframes pulseWarning {
+        0% {
+            box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.7);
+        }
+
+        70% {
+            box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+        }
+
+        100% {
+            box-shadow: 0 0 0 0 rgba(255, 193, 7, 0);
+        }
+    }
+
+    .cancellation-flash {
+        animation: pulseWarning 1.5s infinite;
+    }
 </style>
 
 <div class="container-fluid py-4">
@@ -509,6 +539,83 @@
         }, 10000);
     }
 
+    // Función para mostrar notificación de cancelación
+    function showCancellationNotification(pedido) {
+        const notification = document.createElement('div');
+        notification.className = 'alert alert-cancellation alert-dismissible fade show cancellation-flash';
+        notification.style.marginBottom = '10px';
+        notification.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <strong><i class="bi bi-exclamation-triangle-fill me-2"></i>Pedido Cancelado</strong>
+                    <div class="mt-2">
+                        <p class="mb-1"><strong>#${pedido.numero_pedido}</strong> - ${pedido.nombre_cliente}</p>
+                        <p class="mb-1">Total: <strong>$${pedido.total.toFixed(2)}</strong></p>
+                        <small class="text-muted">${new Date(pedido.fecha_cancelacion).toLocaleString()}</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+
+        const container = document.getElementById('notifications-container');
+        container.insertBefore(notification, container.firstChild);
+
+        // Reproducir sonido de notificación
+        playNotificationSound();
+
+        // Desaparecer después de 10 segundos
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 150);
+        }, 10000);
+    }
+
+    // Función para verificar cancelaciones de pedidos
+    function checkForCancelledOrders() {
+        setInterval(function () {
+            fetch('/obtener_pedidos_cancelados_recientes')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.data && data.data.length > 0) {
+                        data.data.forEach(pedido => {
+                            if (!pedido.notificado && pedido.rol_cancelado === 'cliente') {
+                                // Mostrar notificación
+                                showCancellationNotification(pedido);
+
+                                // Marcar como notificado
+                                fetch(`/marcar_notificado/${pedido._id}`, {
+                                    method: 'POST'
+                                });
+
+                                // Actualizar la tabla de pedidos cancelados
+                                if (typeof cargarPedidosCancelados === 'function') {
+                                    cargarPedidosCancelados();
+                                }
+                            }
+                        });
+                    }
+                })
+                .catch(error => console.error('Error al verificar cancelaciones:', error));
+        }, 8000); // Verificar cada 8 segundos
+    }
+
+    // Función para cargar pedidos cancelados
+    function cargarPedidosCancelados() {
+        fetch('/obtener_pedidos_cancelados')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.data) {
+                    // Implementa la lógica para actualizar tu tabla aquí
+                    console.log("Pedidos cancelados actualizados:", data.data);
+                    // Aquí iría tu código para actualizar la tabla DataTable
+                }
+            })
+            .catch(error => {
+                console.error('Error al cargar pedidos cancelados:', error);
+            });
+    }
+
     // Inicializar funciones al cargar la página
     $(document).ready(function () {
         // Actualizar cada 5 segundos
@@ -519,6 +626,14 @@
 
         // Iniciar la verificación de nuevos pagos
         checkForNewPayments();
+
+        // Iniciar la verificación de cancelaciones
+        checkForCancelledOrders();
+
+        // Cargar pedidos cancelados al abrir la pestaña
+        $('button[data-bs-target="#cancelados"]').on('click', function () {
+            cargarPedidosCancelados();
+        });
     });
 </script>
 

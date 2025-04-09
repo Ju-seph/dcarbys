@@ -10,7 +10,7 @@ from database.mongodb import Mongodb
 from dotenv import load_dotenv
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from timezone_utils import get_ecuador_time, format_ecuador_time
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
@@ -263,8 +263,9 @@ def estado_pedido(pedido_id):
         print(f"Error en la ruta /estado_pedido: {str(e)}")  # Log para capturar excepciones
         return jsonify({"success": False, "message": str(e)}), 500
 
+# Añadir la ruta para cancelar pedido por el cliente
 @app.route('/cancelar_pedido_cliente/<pedido_id>', methods=['POST'])
-def cancelar_pedido_cliente(pedido_id):
+def cancelar_pedido_cliente_route(pedido_id):
     return ped.cancelar_pedido_cliente(pedido_id)
 
 @app.route('/confirmar_pedido_cliente/<pedido_id>', methods=['POST'])
@@ -713,9 +714,35 @@ def get_reporte_ventas():
 def get_pdf_reporte():
     return rep.generar_pdf_reporte()
 
+@app.route('/obtener_pedidos_cancelados_recientes', methods=['GET'])
+def obtener_pedidos_cancelados_recientes():
+    try:
+        # Obtener pedidos cancelados en los últimos 5 minutos y no notificados
+        desde = datetime.now() - timedelta(minutes=5)
+        
+        pedidos = list(db.pedidos.find({
+            "estado": "cancelado",
+            "fecha_cancelacion": {"$gte": desde},
+            "notificado": False
+        }).sort("fecha_cancelacion", -1).limit(5))
+        
+        # Convertir ObjectId a string y formatear fechas
+        for pedido in pedidos:
+            pedido["_id"] = str(pedido["_id"])
+            if 'fecha_cancelacion' in pedido:
+                pedido["fecha_cancelacion"] = pedido["fecha_cancelacion"].isoformat()
+        
+        return jsonify({
+            "success": True,
+            "data": pedidos
+        }), 200
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
 
 
 if __name__ == "__main__":
     # Ejecutar la aplicación Flask
     app.run(host=os.getenv("HOST", "0.0.0.0"), port=int(os.getenv("PORT", 5000)))
-

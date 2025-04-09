@@ -3,6 +3,7 @@
 {% block body %}
 
 <style>
+    /* Todos tus estilos originales se mantienen exactamente igual */
     .text-primary {
         color: red !important;
     }
@@ -38,16 +39,12 @@
         display: flex;
         flex-direction: column;
         border: 1px solid #ddd;
-        /* Borde para las tarjetas */
         border-radius: 8px;
-        /* Bordes redondeados */
         overflow: hidden;
-        /* Evita que el contenido se desborde */
     }
 
     .product-image {
         height: 120px;
-        /* Reducir la altura de la imagen */
         object-fit: cover;
     }
 
@@ -56,26 +53,22 @@
         display: flex;
         flex-direction: column;
         padding: 10px;
-        /* Espaciado interno */
     }
 
     .product-title {
         font-size: 0.9rem;
-        /* Reducir el tamaño del título */
         font-weight: bold;
         margin-bottom: 0.3rem;
     }
 
     .product-description {
         font-size: 0.75rem;
-        /* Reducir el tamaño de la descripción */
         flex-grow: 1;
         margin-bottom: 0.3rem;
     }
 
     .product-price {
         font-size: 0.9rem;
-        /* Reducir el tamaño del precio */
         font-weight: bold;
         color: #28a745;
         margin-bottom: 0.3rem;
@@ -83,7 +76,6 @@
 
     .product-quantity {
         font-size: 0.75rem;
-        /* Reducir el tamaño del texto de disponibilidad */
     }
 
     .category-title {
@@ -93,13 +85,11 @@
         color: red;
     }
 
-    /* Ajustar el tamaño de los botones */
     .btn-sm {
         font-size: 0.75rem;
         padding: 0.25rem 0.5rem;
     }
 
-    /* Estilos para el mensaje de espera */
     .waiting-message {
         background-color: #f8f9fa;
         padding: 20px;
@@ -145,112 +135,75 @@
         margin-right: 10px;
     }
 
-    /* Estilos para el dropdown-menu */
     .dropdown-menu {
         background-color: rgba(255, 255, 255, 0.9);
-        /* Fondo blanco semi-transparente */
         border: none;
-        /* Sin borde */
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        /* Sombra suave */
         border-radius: 8px;
-        /* Bordes redondeados */
         padding: 10px;
-        /* Espaciado interno */
     }
 
     .dropdown-item {
         color: #333;
-        /* Color de texto oscuro */
         font-weight: 500;
-        /* Texto un poco más grueso */
         padding: 8px 16px;
-        /* Espaciado interno */
         border-radius: 4px;
-        /* Bordes redondeados */
         transition: background-color 0.3s ease, color 0.3s ease;
-        /* Transición suave */
     }
 
     .dropdown-item:hover {
         background-color: rgba(255, 0, 0, 0.1);
-        /* Fondo rojo claro al pasar el cursor */
         color: red;
-        /* Color de texto rojo */
     }
 
     .dropdown-divider {
         margin: 5px 0;
-        /* Espacio para el separador */
     }
 
-    /* Estilos para el ícono de usuario */
     .user-icon {
         font-size: 1.2rem;
-        /* Tamaño del ícono */
         color: #333;
-        /* Color del ícono */
         margin-left: 10px;
-        /* Espacio a la izquierda */
         transition: color 0.3s ease;
-        /* Transición suave */
     }
 
     .user-icon:hover {
         color: red;
-        /* Cambiar color al pasar el cursor */
     }
 
-    /* Estilos para el navbar en modo móvil */
     @media (max-width: 991.98px) {
         .navbar-nav .nav-item {
             background-color: rgba(255, 255, 255, 0.9);
-            /* Fondo blanco semi-transparente */
             margin: 5px 0;
-            /* Espacio entre elementos */
             border-radius: 8px;
-            /* Bordes redondeados */
             padding: 8px 15px;
-            /* Espaciado interno */
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            /* Sombra suave */
         }
 
         .navbar-nav .nav-link {
             color: #333 !important;
-            /* Color de texto oscuro */
             font-weight: 500;
-            /* Texto un poco más grueso */
         }
 
         .navbar-nav .nav-link:hover {
             color: red !important;
-            /* Color al pasar el cursor */
         }
 
         .navbar-nav .dropdown-menu {
             background-color: rgba(255, 255, 255, 0.9);
-            /* Fondo blanco semi-transparente */
             border: none;
-            /* Sin borde */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            /* Sombra suave */
             margin-top: 5px;
-            /* Espacio superior */
         }
 
         .navbar-nav .dropdown-item {
             color: #333;
-            /* Color de texto oscuro */
             padding: 8px 16px;
-            /* Espaciado interno */
         }
 
         .navbar-nav .dropdown-item:hover {
             background-color: rgba(255, 0, 0, 0.1);
-            /* Fondo rojo claro al pasar el cursor */
             color: red;
-            /* Color de texto rojo */
         }
 
         .navbar-nav .cart-icon {
@@ -258,27 +211,21 @@
             align-items: center;
             justify-content: center;
             background-color: rgba(255, 255, 255, 0.9);
-            /* Fondo blanco semi-transparente */
             border-radius: 8px;
-            /* Bordes redondeados */
             padding: 8px 15px;
-            /* Espaciado interno */
         }
 
         .navbar-nav .cart-icon .bi-cart {
             color: #333;
-            /* Color del ícono */
         }
 
         .navbar-nav .cart-count {
             background-color: red;
-            /* Fondo rojo */
             color: white;
-            /* Texto blanco */
         }
     }
 
-    /* Estilos para las opciones de método de pago */
+    /* Estilos originales para las opciones de método de pago */
     .metodo-pago-option {
         cursor: pointer;
         border: 2px solid #e9ecef;
@@ -296,24 +243,19 @@
         background-color: #f8f9fa;
     }
 
-    /* Estilos para el ícono de efectivo */
+    /* Estilos originales para los íconos de pago */
     .bi-cash-coin {
         color: #28a745;
-        /* Verde para el ícono de efectivo */
     }
 
-    /* Estilos para el ícono de tarjeta */
     .bi-credit-card {
         color: #6c757d;
-        /* Gris para el ícono de tarjeta */
     }
 
-    /* Estilos para el texto de "Próximamente" */
     .text-muted {
         font-size: 0.875rem;
     }
 
-    /* Estilos para el botón de volver */
     .back-button {
         margin-bottom: 20px;
         display: flex;
@@ -333,7 +275,6 @@
         box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
     }
 
-    /* Estilos para el header de checkout */
     .checkout-header {
         display: flex;
         justify-content: space-between;
@@ -343,7 +284,6 @@
         padding-bottom: 15px;
     }
 
-    /* Estilos para el logo en el header */
     .checkout-logo {
         font-weight: bold;
         font-size: 1.5rem;
@@ -353,7 +293,6 @@
         color: red;
     }
 
-    /* Estilos para el modal de procesamiento de PayPhone */
     .payphone-processing-modal {
         display: none;
         position: fixed;
@@ -395,6 +334,125 @@
             transform: rotate(360deg);
         }
     }
+
+    /* ESTILOS NUEVOS PARA LAS MEJORAS DE UX (se añaden sin modificar los originales) */
+    .cancel-container {
+        background-color: #fff8f8;
+        border: 1px solid #ffdddd;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 20px 0;
+        text-align: center;
+    }
+
+    .countdown-timer {
+        display: inline-block;
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #dc3545;
+        margin-left: 10px;
+        animation: pulse 1s infinite alternate;
+    }
+
+    @keyframes pulse {
+        from {
+            transform: scale(1);
+        }
+
+        to {
+            transform: scale(1.05);
+        }
+    }
+
+    .countdown-expired {
+        color: #6c757d;
+        animation: none;
+    }
+
+    .progress-container {
+        width: 100%;
+        height: 8px;
+        background-color: #f1f1f1;
+        border-radius: 4px;
+        margin: 10px 0;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background-color: #dc3545;
+        width: 100%;
+        border-radius: 4px;
+        transition: width 1s linear;
+    }
+
+    .cancel-btn {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .cancel-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .cancel-btn .btn-text {
+        position: relative;
+        z-index: 2;
+    }
+
+    .cancel-btn .btn-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.3);
+        z-index: 1;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+    }
+
+    .cancel-btn:hover:not(:disabled) .btn-bg {
+        transform: scaleX(1);
+    }
+
+    @keyframes shake {
+
+        0%,
+        100% {
+            transform: translateX(0);
+        }
+
+        10%,
+        30%,
+        50%,
+        70%,
+        90% {
+            transform: translateX(-5px);
+        }
+
+        20%,
+        40%,
+        60%,
+        80% {
+            transform: translateX(5px);
+        }
+    }
+
+    .time-expired {
+        animation: shake 0.5s ease-in-out;
+        color: #dc3545;
+        font-weight: bold;
+    }
+
+    .time-expired-message {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 10px;
+    }
 </style>
 
 <div class="container mt-5">
@@ -433,25 +491,29 @@
                 <h3>Información de Envío</h3>
                 <div class="mb-3">
                     <label for="nombre" class="form-label">Nombre Completo</label>
-                    <input type="text" class="form-control" id="nombre" name="nombre" required>
+                    <input type="text" class="form-control" id="nombre" name="nombre" required
+                        placeholder="Ingrese su nombre completo">
                 </div>
                 <div class="mb-3">
                     <label for="celular" class="form-label">Celular</label>
-                    <input type="tel" class="form-control" id="celular" name="celular" pattern="09\d{8}" required>
-                    <small class="form-text text-muted">Ingrese un número de celular válido en Ecuador (ej.
-                        0987654321).</small>
+                    <input type="tel" class="form-control" id="celular" name="celular" pattern="09\d{8}" required
+                        placeholder="Ingrese un número de celular válido en Ecuador (ej. 0987654321)">
                 </div>
                 <div class="mb-3">
                     <label for="ciudad" class="form-label">Ciudad</label>
-                    <input type="text" class="form-control" id="ciudad" name="ciudad" required>
+                    <select class="form-select" id="ciudad" name="ciudad" required>
+                        <option value="Machala">Machala</option>
+                    </select>
                 </div>
                 <div class="mb-3">
                     <label for="direccion" class="form-label">Dirección</label>
-                    <input type="text" class="form-control" id="direccion" name="direccion" required>
+                    <input type="text" class="form-control" id="direccion" name="direccion" required
+                        placeholder="Ingrese la dirreccion del lugar donde recibirá el pedido">
                 </div>
                 <div class="mb-3">
-                    <label for="Referencia" class="form-label">Referencia (opcional)</label>
-                    <input type="text" class="form-control" id="Referencia" name="Referencia">
+                    <label for="Referencia" class="form-label">Referencia </label>
+                    <input type="text" class="form-control" id="Referencia" name="Referencia"
+                        placeholder="Ingrese la referencia de la direccion del lugar donde recibira el pedido (opcional)">
                 </div>
 
                 <!-- Método de pago -->
@@ -463,7 +525,7 @@
                             <div class="card metodo-pago-option" id="pago-efectivo-card" data-value="efectivo">
                                 <div class="card-body d-flex align-items-center">
                                     <div class="me-3">
-                                        <i class="bi bi-cash-coin fs-2 text-primary"></i> <!-- Ícono de efectivo -->
+                                        <i class="bi bi-cash-coin fs-2 text-primary"></i>
                                     </div>
                                     <div>
                                         <h6 class="card-title mb-1">Pago en efectivo</h6>
@@ -478,7 +540,7 @@
                             <div class="card metodo-pago-option" id="pago-boton-card" data-value="payphone">
                                 <div class="card-body d-flex align-items-center">
                                     <div class="me-3">
-                                        <i class="bi bi-credit-card fs-2 text-secondary"></i> <!-- Ícono de tarjeta -->
+                                        <i class="bi bi-credit-card fs-2 text-secondary"></i>
                                     </div>
                                     <div>
                                         <h6 class="card-title mb-1">Botón de pago</h6>
@@ -509,20 +571,46 @@
             <div id="waiting-message" class="waiting-message" style="display: none;">
                 <h3>Esperando confirmación</h3>
                 <p>Tu pedido ha sido procesado. Por favor, espera a que el administrador confirme tu pedido.</p>
+                <div class="spinner-border text-danger" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
             </div>
 
-            <!-- Mensaje de confirmación -->
+            <!-- Mensaje de confirmación con opción de cancelación -->
             <div id="confirmation-message" class="confirmation-message" style="display: none;">
-                <h3>Pedido Confirmado</h3>
-                <p>¡Tu pedido ha sido confirmado! Pronto recibirás más detalles.</p>
-                <a href="/" class="btn btn-primary">Volver al inicio</a>
+                <h3>¡Pedido Confirmado!</h3>
+                <p>Tu pedido ha sido confirmado y está en proceso de preparación.</p>
+                <p><strong>Tiempo estimado de entrega:</strong> <span id="tiempo-estimado"></span>.</p>
+                <p>Gracias por tu compra. ¡Esperamos que disfrutes tu pedido!</p>
+
+                <!-- Contenedor de cancelación mejorado -->
+                <div id="cancel-container" class="cancel-container">
+                    <h5>¿Necesitas cancelar tu pedido?</h5>
+                    <p>Tienes <span id="cancel-timer" class="countdown-timer">10s</span> para cancelar tu pedido.</p>
+                    <div class="progress-container">
+                        <div id="progress-bar" class="progress-bar"></div>
+                    </div>
+                    <button id="cancel-button" class="btn btn-danger cancel-btn">
+                        <span class="btn-text">Cancelar Pedido</span>
+                        <span class="btn-bg"></span>
+                    </button>
+                    <p id="time-expired-message" class="time-expired-message" style="display: none;">
+                        El tiempo para cancelar ha expirado. Si necesitas ayuda, por favor contáctanos.
+                    </p>
+                </div>
+
+                <a href="/" class="btn btn-primary mt-3">Volver al inicio</a>
             </div>
 
             <!-- Mensaje de cancelación -->
             <div id="cancellation-message" class="cancellation-message" style="display: none;">
-                <h3>Pedido Cancelado</h3>
-                <p>Tu pedido ha sido cancelado. Si tienes alguna duda, contáctanos.</p>
-                <a href="/" class="btn btn-primary">Volver al inicio</a>
+                <div class="text-center">
+                    <i class="bi bi-x-circle-fill text-danger" style="font-size: 3rem;"></i>
+                    <h3>Pedido Cancelado</h3>
+                    <p>Tu pedido ha sido cancelado exitosamente.</p>
+                    <p>Si tienes alguna duda o necesitas realizar un nuevo pedido, no dudes en contactarnos.</p>
+                    <a href="/" class="btn btn-primary">Volver al inicio</a>
+                </div>
             </div>
         </div>
     </div>
@@ -546,7 +634,6 @@
 
         if (paymentId && clientTransactionId) {
             console.log("Detectados parámetros de PayPhone en la URL:", paymentId, clientTransactionId);
-            // Redirigir a la página de confirmación
             window.location.href = '/payphone_return?id=' + paymentId + '&clientTransactionId=' + clientTransactionId;
         }
 
@@ -574,48 +661,33 @@
                 cancelButtonText: 'No, continuar con mi pedido'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Obtener el ID de reserva del localStorage
                     const reservaId = localStorage.getItem('reserva_id');
-
                     if (reservaId) {
-                        // Cancelar la reserva
-                        fetch(`/cancelar_reserva/${reservaId}`, {
-                            method: 'POST'
-                        })
+                        fetch(`/cancelar_reserva/${reservaId}`, { method: 'POST' })
                             .then(response => response.json())
                             .then(data => {
                                 console.log('Reserva cancelada:', data);
-                                // Eliminar el ID de reserva del localStorage
                                 localStorage.removeItem('reserva_id');
-                                // Limpiar el carrito
                                 localStorage.removeItem('cart');
-                                // Limpiar datos del formulario guardados
                                 localStorage.removeItem('checkout_nombre');
                                 localStorage.removeItem('checkout_celular');
                                 localStorage.removeItem('checkout_ciudad');
                                 localStorage.removeItem('checkout_direccion');
                                 localStorage.removeItem('checkout_referencia');
-                                // Redirigir al menú
                                 window.location.href = '/';
                             })
                             .catch(error => {
                                 console.error('Error al cancelar la reserva:', error);
-                                // Limpiar el carrito de todas formas
                                 localStorage.removeItem('cart');
-                                // Limpiar datos del formulario guardados
                                 localStorage.removeItem('checkout_nombre');
                                 localStorage.removeItem('checkout_celular');
                                 localStorage.removeItem('checkout_ciudad');
                                 localStorage.removeItem('checkout_direccion');
                                 localStorage.removeItem('checkout_referencia');
-                                // Redirigir al menú
                                 window.location.href = '/';
                             });
                     } else {
-                        // Si no hay ID de reserva, simplemente redirigir
-                        // Limpiar el carrito
                         localStorage.removeItem('cart');
-                        // Limpiar datos del formulario guardados
                         localStorage.removeItem('checkout_nombre');
                         localStorage.removeItem('checkout_celular');
                         localStorage.removeItem('checkout_ciudad');
@@ -631,8 +703,6 @@
         window.addEventListener('beforeunload', function (e) {
             const reservaId = localStorage.getItem('reserva_id');
             if (reservaId) {
-                // No podemos hacer una petición fetch aquí porque beforeunload no lo permite
-                // Solo mostramos un mensaje de confirmación
                 const message = '¿Estás seguro de que quieres salir? Tu pedido será cancelado.';
                 e.returnValue = message;
                 return message;
@@ -643,7 +713,6 @@
         window.addEventListener('unload', function () {
             const reservaId = localStorage.getItem('reserva_id');
             if (reservaId) {
-                // Usar sendBeacon para enviar la solicitud de cancelación
                 navigator.sendBeacon(`/cancelar_reserva/${reservaId}`);
                 localStorage.removeItem('reserva_id');
             }
@@ -711,24 +780,14 @@
 
         metodoPagoCards.forEach(card => {
             card.addEventListener('click', function () {
-                // Remover la clase "selected" de todas las tarjetas
                 metodoPagoCards.forEach(c => c.classList.remove('selected'));
-
-                // Agregar la clase "selected" a la tarjeta clickeada
                 this.classList.add('selected');
-
-                // Obtener el valor del método de pago desde el atributo data-value
                 const metodoPago = this.getAttribute('data-value');
-
-                // Actualizar el campo oculto con el valor seleccionado
                 metodoPagoInput.value = metodoPago;
 
-                // Mostrar u ocultar el botón de PayPhone
                 if (metodoPago === 'payphone') {
                     ppButtonContainer.style.display = 'block';
-                    procesarPedidoBtn.style.display = 'none'; // Ocultar el botón de procesar pedido
-
-                    // Mostrar mensaje informativo sobre el diálogo de PayPhone
+                    procesarPedidoBtn.style.display = 'none';
                     Swal.fire({
                         title: 'Información importante',
                         html: 'Cuando hagas clic en el botón de pago, aparecerá un diálogo preguntando si deseas salir del sitio.<br><br><strong>Debes hacer clic en "Salir" para continuar con el pago.</strong>',
@@ -737,10 +796,8 @@
                     });
                 } else {
                     ppButtonContainer.style.display = 'none';
-                    procesarPedidoBtn.style.display = 'block'; // Mostrar el botón de procesar pedido
+                    procesarPedidoBtn.style.display = 'block';
                 }
-
-                // Habilitar el botón de procesar pedido si se selecciona un método de pago
                 validarCampos();
             });
         });
@@ -753,14 +810,7 @@
         const purchaseNumber = Math.floor(100000 + Math.random() * 900000);
         document.getElementById('purchase-number').textContent = purchaseNumber;
 
-        // Inicializar el botón de PayPhone
         const initPayPhoneButton = function () {
-            console.log("Inicializando botón de PayPhone...");
-            console.log("Amount:", amount);
-            console.log("Tax:", tax);
-            console.log("AmountWithTax:", amountWithTax);
-            console.log("PurchaseNumber:", purchaseNumber);
-
             try {
                 const ppb = new PPaymentButtonBox({
                     token: "{{payphone.token}}",
@@ -771,28 +821,19 @@
                     currency: "USD",
                     storeId: "{{payphone.storeid}}",
                     reference: "Pago por venta " + purchaseNumber,
-                    callbackUrl: window.location.origin + "/payphone_return", // URL de retorno específica
+                    callbackUrl: window.location.origin + "/payphone_return",
                     onPaymentCompleted: function (response) {
                         console.log("PayPhone payment completed:", response);
-
-                        // Store the payment details in localStorage for reference
                         localStorage.setItem('payphone_response', JSON.stringify(response));
 
                         if (response.transactionStatus === 'Approved') {
-                            // Eliminar el ID de reserva ya que el pago fue exitoso
                             localStorage.removeItem('reserva_id');
-
-                            // Limpiar el carrito
                             localStorage.removeItem('cart');
-
-                            // Limpiar datos del formulario guardados
                             localStorage.removeItem('checkout_nombre');
                             localStorage.removeItem('checkout_celular');
                             localStorage.removeItem('checkout_ciudad');
                             localStorage.removeItem('checkout_direccion');
                             localStorage.removeItem('checkout_referencia');
-
-                            // Redirigir a la página de payphone_return con los parámetros de la transacción
                             window.location.href = '/payphone_return?id=' + response.id + '&clientTransactionId=' + response.clientTransactionId;
                         } else {
                             alert('El pago no fue aprobado. Intenta nuevamente.');
@@ -809,19 +850,16 @@
             }
         };
 
-        // Llamar a la función de inicialización después de que el DOM esté cargado
         setTimeout(initPayPhoneButton, 1000);
 
         // Procesar el pedido
         checkoutForm.addEventListener('submit', function (e) {
             e.preventDefault();
-
             if (!metodoPagoInput.value) {
                 alert('Por favor, selecciona un método de pago.');
                 return;
             }
 
-            // Guardar los datos del formulario en localStorage antes de enviar
             inputs.forEach(input => {
                 localStorage.setItem('checkout_' + input.id, input.value);
             });
@@ -833,22 +871,14 @@
             procesarPedido();
         });
 
-
         function procesarPedido() {
             console.log("Procesando pedido...");
             console.log("Método de pago:", metodoPagoInput.value);
 
-            // Verificar si existen campos de PayPhone
             const payphone_id = document.querySelector('input[name="payphone_id"]')?.value;
             const payphone_client_id = document.querySelector('input[name="payphone_client_id"]')?.value;
-
-            console.log("PayPhone ID:", payphone_id);
-            console.log("PayPhone Client ID:", payphone_client_id);
-
-            // Obtener el ID de reserva
             const reservaId = localStorage.getItem('reserva_id');
 
-            // Crear el objeto de datos para enviar
             const requestData = {
                 purchaseNumber: purchaseNumber,
                 cart: cart,
@@ -859,25 +889,17 @@
                 referencia: document.getElementById('Referencia').value,
                 metodo_pago: metodoPagoInput.value,
                 total: total,
-                reserva_id: reservaId // Incluir el ID de reserva
+                reserva_id: reservaId
             };
 
-            // Agregar campos de PayPhone si existen
-            if (payphone_id) {
-                requestData.payphone_id = payphone_id;
-            }
-
-            if (payphone_client_id) {
-                requestData.payphone_client_id = payphone_client_id;
-            }
+            if (payphone_id) requestData.payphone_id = payphone_id;
+            if (payphone_client_id) requestData.payphone_client_id = payphone_client_id;
 
             console.log("Datos a enviar:", JSON.stringify(requestData));
 
             fetch('/procesar_pedido', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestData)
             })
                 .then(response => {
@@ -888,21 +910,14 @@
                     console.log("Datos de respuesta:", data);
 
                     if (data.success) {
-                        // Eliminar el ID de reserva ya que el pedido fue procesado
                         localStorage.removeItem('reserva_id');
-
-                        // Ocultar el formulario y mostrar el mensaje de espera
                         checkoutForm.style.display = 'none';
 
-                        // Si es un pago con PayPhone, ya mostramos el mensaje de confirmación
                         if (metodoPagoInput.value === 'payphone') {
-                            // El mensaje ya se muestra en el callback de PayPhone
                             console.log("Pago con PayPhone procesado correctamente");
                         } else {
-                            // Para pagos en efectivo, mostrar el mensaje de espera y ocultar el botón
                             waitingMessage.style.display = 'block';
-                            backButton.style.display = 'none'; // Ocultar el botón de volver
-                            // Verificar el estado del pedido cada 5 segundos
+                            backButton.style.display = 'none';
                             verificarEstadoPedido(data.order_id);
                         }
                     } else {
@@ -915,105 +930,193 @@
                 });
         }
 
-        function cancelarPedidoCliente(pedidoId) {
-            fetch(`/cancelar_pedido/${pedidoId}`, {
-                method: 'POST'
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('Pedido cancelado con éxito');
-                        // Limpiar el carrito
-                        localStorage.removeItem('cart');
-                        // Limpiar datos del formulario guardados
-                        localStorage.removeItem('checkout_nombre');
-                        localStorage.removeItem('checkout_celular');
-                        localStorage.removeItem('checkout_ciudad');
-                        localStorage.removeItem('checkout_direccion');
-                        localStorage.removeItem('checkout_referencia');
-                        window.location.href = '/';
-                    } else {
-                        alert('Error al cancelar el pedido: ' + data.message);
+        // Función mejorada para manejar la cancelación de pedido con temporizador
+        function setupCancelButton(pedidoId, tiempoEstimado) {
+            const cancelButton = document.getElementById("cancel-button");
+            const cancelTimer = document.getElementById("cancel-timer");
+            const cancelContainer = document.getElementById("cancel-container");
+            const progressBar = document.getElementById("progress-bar");
+            const timeExpiredMessage = document.getElementById("time-expired-message");
+
+            if (!cancelButton || !cancelTimer || !cancelContainer) return;
+
+            let secondsLeft = 10;
+            let countdownInterval;
+
+            // Función para actualizar el temporizador y la barra de progreso
+            function updateTimer() {
+                cancelTimer.textContent = `${secondsLeft}s`;
+                progressBar.style.width = `${(secondsLeft / 10) * 100}%`;
+
+                // Cambiar color cuando quedan pocos segundos
+                if (secondsLeft <= 3) {
+                    cancelTimer.classList.add('text-danger');
+                    progressBar.style.backgroundColor = '#dc3545';
+                } else {
+                    cancelTimer.classList.remove('text-danger');
+                    progressBar.style.backgroundColor = '#28a745';
+                }
+
+                secondsLeft--;
+
+                if (secondsLeft < 0) {
+                    clearInterval(countdownInterval);
+                    cancelButton.disabled = true;
+                    cancelTimer.textContent = "0s";
+                    cancelTimer.classList.remove('countdown-timer');
+                    cancelTimer.classList.add('countdown-expired');
+                    progressBar.style.width = '0%';
+                    timeExpiredMessage.style.display = 'block';
+
+                    // Animación de tiempo agotado
+                    cancelTimer.classList.add('time-expired');
+                    setTimeout(() => {
+                        cancelTimer.classList.remove('time-expired');
+                    }, 1000);
+                }
+            }
+
+            // Iniciar el temporizador
+            updateTimer();
+            countdownInterval = setInterval(updateTimer, 1000);
+
+            // Configurar el evento de clic para el botón de cancelación
+            cancelButton.addEventListener("click", () => {
+                if (secondsLeft < 0) return;
+
+                Swal.fire({
+                    title: "¿Estás seguro?",
+                    html: `<p>Esta acción cancelará tu pedido y no se puede deshacer.</p>
+                          <p class="text-muted small">Tiempo restante: <strong>${secondsLeft}s</strong></p>`,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#dc3545",
+                    cancelButtonColor: "#6c757d",
+                    confirmButtonText: "Sí, cancelar pedido",
+                    cancelButtonText: "No, mantener pedido",
+                    allowOutsideClick: false,
+                    allowEscapeKey: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Detener el temporizador inmediatamente
+                        clearInterval(countdownInterval);
+
+                        // Mostrar feedback visual
+                        cancelButton.disabled = true;
+                        cancelButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Cancelando...';
+                        cancelTimer.textContent = "Procesando...";
+                        progressBar.style.width = '0%';
+
+                        // Enviar solicitud para cancelar el pedido
+                        fetch(`/cancelar_pedido_cliente/${pedidoId}`, {
+                            method: "POST"
+                        })
+                            .then((response) => response.json())
+                            .then((data) => {
+                                if (data.success) {
+                                    // Ocultar el mensaje de confirmación
+                                    confirmationMessage.style.display = "none";
+
+                                    // Mostrar mensaje de cancelación con animación
+                                    cancellationMessage.style.display = "block";
+                                    cancellationMessage.style.animation = "fadeIn 0.5s ease-in-out";
+
+                                    // Limpiar localStorage
+                                    localStorage.removeItem("cart");
+                                    localStorage.removeItem("checkout_nombre");
+                                    localStorage.removeItem("checkout_celular");
+                                    localStorage.removeItem("checkout_ciudad");
+                                    localStorage.removeItem("checkout_direccion");
+                                    localStorage.removeItem("checkout_referencia");
+                                } else {
+                                    // Mostrar mensaje de error
+                                    Swal.fire("Error", data.message || "No se pudo cancelar el pedido", "error");
+                                    // Reactivar el botón si falló
+                                    if (secondsLeft > 0) {
+                                        cancelButton.disabled = false;
+                                        cancelButton.innerHTML = '<span class="btn-text">Cancelar Pedido</span><span class="btn-bg"></span>';
+                                    }
+                                }
+                            })
+                            .catch((error) => {
+                                console.error("Error:", error);
+                                Swal.fire("Error", "Ocurrió un error al procesar tu solicitud", "error");
+                                // Reactivar el botón si falló
+                                if (secondsLeft > 0) {
+                                    cancelButton.disabled = false;
+                                    cancelButton.innerHTML = '<span class="btn-text">Cancelar Pedido</span><span class="btn-bg"></span>';
+                                }
+                            });
                     }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Hubo un error al cancelar el pedido');
                 });
+            });
         }
 
+        // Función verificarEstadoPedido
         function verificarEstadoPedido(orderId) {
             const interval = setInterval(() => {
                 fetch(`/estado_pedido/${orderId}`)
-                    .then(response => response.json())
-                    .then(data => {
+                    .then((response) => response.json())
+                    .then((data) => {
                         if (!data.success) {
                             console.error("Error al verificar el estado del pedido:", data.message);
                             return;
                         }
 
-                        // Manejar los diferentes estados del pedido
-                        if (data.estado === 'en transcurso') {
+                        if (data.estado === "en transcurso") {
                             clearInterval(interval);
-                            waitingMessage.style.display = 'none';
-                            confirmationMessage.style.display = 'block';
-                            backButton.style.display = 'none'; // Mantener oculto el botón de volver
+                            waitingMessage.style.display = "none";
+                            confirmationMessage.style.display = "block";
+                            backButton.style.display = "none";
 
                             const tiempoEstimado = data.tiempo_estimado || "No especificado";
                             const tiempoUnidad = tiempoEstimado >= 60 ? "horas" : "minutos";
                             const tiempoFormateado = tiempoEstimado >= 60 ? (tiempoEstimado / 60).toFixed(1) : tiempoEstimado;
 
-                            confirmationMessage.innerHTML = `
-                                <h3>¡Pedido Confirmado!</h3>
-                                <p>Tu pedido ha sido confirmado y está en proceso de preparación.</p>
-                                <p><strong>Tiempo estimado de entrega:</strong> ${tiempoFormateado} ${tiempoUnidad}.</p>
-                                <p>Gracias por tu compra. ¡Esperamos que disfrutes tu pedido!</p>
-                                <a href="/" class="btn btn-primary">Volver al inicio</a>
-                            `;
+                            document.getElementById("tiempo-estimado").textContent = `${tiempoFormateado} ${tiempoUnidad}`;
 
-                            localStorage.removeItem('cart');
-                            // Limpiar datos del formulario guardados
-                            localStorage.removeItem('checkout_nombre');
-                            localStorage.removeItem('checkout_celular');
-                            localStorage.removeItem('checkout_ciudad');
-                            localStorage.removeItem('checkout_direccion');
-                            localStorage.removeItem('checkout_referencia');
-                        } else if (data.estado === 'cancelado') {
+                            // Configurar el botón de cancelación con temporizador mejorado
+                            setupCancelButton(orderId, tiempoEstimado);
+
+                            localStorage.removeItem("cart");
+                            localStorage.removeItem("checkout_nombre");
+                            localStorage.removeItem("checkout_celular");
+                            localStorage.removeItem("checkout_ciudad");
+                            localStorage.removeItem("checkout_direccion");
+                            localStorage.removeItem("checkout_referencia");
+                        } else if (data.estado === "cancelado") {
                             clearInterval(interval);
-                            waitingMessage.style.display = 'none';
-                            cancellationMessage.style.display = 'block';
-                            backButton.style.display = 'none'; // Mantener oculto el botón de volver
+                            waitingMessage.style.display = "none";
+                            cancellationMessage.style.display = "block";
+                            backButton.style.display = "none";
 
-                            // Obtener información de quién canceló
                             const rolCancelado = data.rol_cancelado || "administración";
 
                             cancellationMessage.innerHTML = `
-        <h3>Pedido Cancelado</h3>
-        <p>Lamentamos informarte que tu pedido ha sido cancelado por nuestro equipo de ${rolCancelado} debido a problemas de disponibilidad o stock.</p>
-        <p>Si tienes alguna duda o necesitas más información, no dudes en contactarnos.</p>
-        <a href="/" class="btn btn-primary">Volver al inicio</a>
-    `;
+                                <div class="text-center">
+                                    <i class="bi bi-x-circle-fill text-danger" style="font-size: 3rem;"></i>
+                                    <h3>Pedido Cancelado</h3>
+                                    <p>Lamentamos informarte que tu pedido ha sido cancelado por nuestro equipo de ${rolCancelado}.</p>
+                                    <p>Si tienes alguna duda o necesitas más información, no dudes en contactarnos.</p>
+                                    <a href="/" class="btn btn-primary">Volver al inicio</a>
+                                </div>
+                            `;
 
-                            localStorage.removeItem('cart');
-                            // Limpiar datos del formulario guardados
-                            localStorage.removeItem('checkout_nombre');
-                            localStorage.removeItem('checkout_celular');
-                            localStorage.removeItem('checkout_ciudad');
-                            localStorage.removeItem('checkout_direccion');
-                            localStorage.removeItem('checkout_referencia');
-
-                        } else if (data.estado === 'pendiente') {
+                            localStorage.removeItem("cart");
+                            localStorage.removeItem("checkout_nombre");
+                            localStorage.removeItem("checkout_celular");
+                            localStorage.removeItem("checkout_ciudad");
+                            localStorage.removeItem("checkout_direccion");
+                            localStorage.removeItem("checkout_referencia");
+                        } else if (data.estado === "pendiente") {
                             console.log("El pedido sigue pendiente de confirmación.");
                         }
                     })
-                    .catch(error => {
-                        console.error('Error:', error);
+                    .catch((error) => {
+                        console.error("Error:", error);
                     });
             }, 5000);
         }
-
-        // Exponer la función cancelarPedidoCliente al ámbito global
-        window.cancelarPedidoCliente = cancelarPedidoCliente;
 
         // Validar campos al cargar la página
         validarCampos();
