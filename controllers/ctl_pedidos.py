@@ -360,22 +360,75 @@ def cancelar_pedido_admin(pedido_id):
 
 def cancelar_pedido_cliente(pedido_id):
     try:
+        # Obtener la hora actual con zona horaria
+        ecuador_time = get_ecuador_time()
+        
         # Buscar el pedido en la colección de pedidos
         pedido = db.pedidos.find_one({"_id": ObjectId(pedido_id)})
 
         if not pedido:
             return jsonify({"success": False, "message": "Pedido no encontrado"}), 404
 
+        # Verificar si el pedido está en estado "en transcurso"
+        if pedido.get('estado') != "en transcurso":
+            return jsonify({
+                "success": False, 
+                "message": "Solo se pueden cancelar pedidos en transcurso"
+            }), 400
+
+        # Verificar que no hayan pasado más de 10 segundos desde la confirmación
+        if 'fecha_confirmacion' in pedido:
+            fecha_confirmacion = pedido['fecha_confirmacion']
+            if fecha_confirmacion.tzinfo is None:
+                fecha_confirmacion = fecha_confirmacion.replace(tzinfo=pytz.UTC)
+            
+            tiempo_transcurrido = (ecuador_time - fecha_confirmacion).total_seconds()
+            if tiempo_transcurrido > 10:
+                return jsonify({
+                    "success": False,
+                    "message": "El tiempo para cancelar ha expirado (máximo 10 segundos)"
+                }), 400
+
         # Cambiar el estado a "cancelado" y guardar quién lo canceló
         db.pedidos.update_one(
             {"_id": ObjectId(pedido_id)},
-            {"$set": {"estado": "cancelado", "cancelado_por": "cliente"}}
+            {"$set": {
+                "estado": "cancelado", 
+                "cancelado_por": "cliente",
+                "rol_cancelado": "cliente",
+                "fecha_cancelacion": ecuador_time,
+                "notificado": False  # Marcamos como no notificado para la alerta
+            }}
         )
 
-        return jsonify({"success": True, "message": "Pedido cancelado por el cliente"}), 200
+        # Restaurar el stock de los productos
+        with db.client.start_session() as db_session:
+            with db_session.start_transaction():
+                for item in pedido['productos']:
+                    db.productos.update_one(
+                        {"_id": ObjectId(item['id'])},
+                        {"$inc": {"cantidad": item['quantity']}},
+                        session=db_session
+                    )
+
+        return jsonify({
+            "success": True, 
+            "message": "Pedido cancelado por el cliente",
+            "pedido_id": str(pedido_id),
+            "numero_pedido": pedido.get('numero_pedido'),
+            "nombre_cliente": pedido.get('nombre'),  # Asegúrate de usar 'nombre' aquí
+            "total": pedido.get('total'),
+            "fecha_cancelacion": ecuador_time.isoformat()
+        }), 200
 
     except Exception as e:
+        print(f"Error en cancelar_pedido_cliente: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"success": False, "message": str(e)}), 500
+    
+
+
     
 def confirmar_pedido_cliente(pedido_id):
     try:
@@ -819,4 +872,3 @@ def limpiar_pedidos_expirados():
         return jsonify({"success": True, "message": "Pedidos expirados limpiados con éxito"}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
-
