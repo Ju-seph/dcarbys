@@ -699,15 +699,7 @@
             });
         });
 
-        // Manejar la salida de la página
-        window.addEventListener('beforeunload', function (e) {
-            const reservaId = localStorage.getItem('reserva_id');
-            if (reservaId) {
-                const message = '¿Estás seguro de que quieres salir? Tu pedido será cancelado.';
-                e.returnValue = message;
-                return message;
-            }
-        });
+        
 
         // Cuando la página se cierra o se navega a otra página
         window.addEventListener('unload', function () {
