@@ -780,12 +780,6 @@
                 if (metodoPago === 'payphone') {
                     ppButtonContainer.style.display = 'block';
                     procesarPedidoBtn.style.display = 'none';
-                    Swal.fire({
-                        title: 'Información importante',
-                        html: 'Cuando hagas clic en el botón de pago, aparecerá un diálogo preguntando si deseas salir del sitio.<br><br><strong>Debes hacer clic en "Salir" para continuar con el pago.</strong>',
-                        icon: 'info',
-                        confirmButtonText: 'Entendido'
-                    });
                 } else {
                     ppButtonContainer.style.display = 'none';
                     procesarPedidoBtn.style.display = 'block';
