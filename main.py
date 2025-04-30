@@ -183,35 +183,22 @@ def obtener_pedidos_finalizados():
         return jsonify({"data": lista_pedidos}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+    
 
 @app.route('/obtener_pedidos_cancelados', methods=['GET'])
 def obtener_pedidos_cancelados():
     try:
-        # Buscar los pedidos cancelados en la colección de pedidos
         pedidos = db.pedidos.find({"estado": "cancelado"})
         lista_pedidos = []
         for pedido in pedidos:
-            # Convertir ObjectId a string
             pedido["_id"] = str(pedido["_id"])
-            
-            # Asegurarse de que los campos opcionales tengan valores por defecto
-            pedido["cancelado_por"] = pedido.get("cancelado_por", "Sistema")
-            pedido["rol_cancelado"] = pedido.get("rol_cancelado", "Desconocido")
-            pedido["fecha_cancelacion"] = pedido.get("fecha_cancelacion", "Fecha no disponible")
-            
-            # Verificar el formato de la fecha
-            if isinstance(pedido["fecha_cancelacion"], datetime):
-                pedido["fecha_cancelacion"] = pedido["fecha_cancelacion"].isoformat()  # Convertir a ISO 8601
-            
             lista_pedidos.append(pedido)
-        
         return jsonify({"data": lista_pedidos}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
-    
 
 
-@app.route('/finalizar_pedido/<pedido_id>', methods=['POST'])  # Cambia GET a POST
+@app.route('/finalizar_pedido/<pedido_id>', methods=['POST']) 
 def finalizar_pedido(pedido_id):
     return ped.finalizar_pedido(pedido_id)
 
