@@ -119,6 +119,34 @@
             </div>
         </div>
 
+        <!-- Agregar después de la sección de Productos más/menos vendidos -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Productos Más Vendidos por Período</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped" id="tablaProductosPeriodo">
+                                <thead>
+                                    <tr>
+                                        <th>Período</th>
+                                        <th>Producto Más Vendido</th>
+                                        <th>Cantidad</th>
+                                        <th>Monto Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Se llenará dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Gráfico de ventas -->
         <div class="card">
             <div class="card-header bg-primary text-white">
@@ -214,9 +242,23 @@
         background-color: #218838;
         border-color: #1e7e34;
     }
+
+    /* NUEVOS ESTILOS PARA LA TABLA DE PRODUCTOS POR PERÍODO */
+    .reportes-container .table-responsive {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .reportes-container .table thead th {
+        position: sticky;
+        top: 0;
+        background-color: rgb(219, 22, 22);
+        color: white;
+        z-index: 10;
+    }
 </style>
 
-<!-- Chart.js para gráficos (si no está ya incluido en principal.html) -->
+<!-- Chart.js para gráficos -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- jsPDF para generar PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -270,6 +312,7 @@
                         <div>
                             <h4>${data.productoMasVendido.nombre}</h4>
                             <p class="mb-0"><strong>Cantidad Vendida:</strong> ${data.productoMasVendido.cantidad}</p>
+                            <p class="mb-0"><strong>Monto Total:</strong> $${data.productoMasVendido.monto_total.toLocaleString()}</p>
                             <div class="progress mt-2">
                                 <div class="progress-bar bg-success" role="progressbar" style="width: 100%" 
                                     aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
@@ -282,6 +325,7 @@
                         <div>
                             <h4>${data.productoMenosVendido.nombre}</h4>
                             <p class="mb-0"><strong>Cantidad Vendida:</strong> ${data.productoMenosVendido.cantidad}</p>
+                            <p class="mb-0"><strong>Monto Total:</strong> $${data.productoMenosVendido.monto_total.toLocaleString()}</p>
                             <div class="progress mt-2">
                                 <div class="progress-bar bg-warning" role="progressbar" 
                                     style="width: ${Math.max(10, (data.productoMenosVendido.cantidad / data.productoMasVendido.cantidad) * 100)}%" 
@@ -291,13 +335,32 @@
                         </div>
                     `;
 
+                    // Llenar tabla de productos más vendidos por período
+                    const tablaBody = document.querySelector('#tablaProductosPeriodo tbody');
+                    tablaBody.innerHTML = ''; // Limpiar tabla
+
+                    if (data.productosMasVendidosPorPeriodo && data.productosMasVendidosPorPeriodo.length > 0) {
+                        data.productosMasVendidosPorPeriodo.forEach(item => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${item._id}</td>
+                                <td>${item.producto_mas_vendido.nombre}</td>
+                                <td>${item.producto_mas_vendido.cantidad}</td>
+                                <td>$${item.producto_mas_vendido.monto_total.toLocaleString()}</td>
+                            `;
+                            tablaBody.appendChild(row);
+                        });
+                    } else {
+                        const row = document.createElement('tr');
+                        row.innerHTML = '<td colspan="4" class="text-center">No hay datos disponibles</td>';
+                        tablaBody.appendChild(row);
+                    }
+
                     // Actualizar métricas de resumen
-                    // Usar los datos reales de la API si están disponibles
-                    const totalVentas = data.totalVentas || calcularTotalVentas(data.graficoVentas.data);
-                    document.getElementById('ventasTotales').textContent = `$${totalVentas.toLocaleString()}`;
-                    document.getElementById('productosVendidos').textContent = data.totalProductos || data.productoMasVendido.cantidad + data.productoMenosVendido.cantidad;
-                    document.getElementById('totalClientes').textContent = data.totalClientes || Math.round(totalVentas / 50);
-                    document.getElementById('ticketPromedio').textContent = `$${data.ticketPromedio || Math.round(totalVentas / (data.totalClientes || 10)).toLocaleString()}`;
+                    document.getElementById('ventasTotales').textContent = `$${data.totalVentas.toLocaleString()}`;
+                    document.getElementById('productosVendidos').textContent = data.totalProductos;
+                    document.getElementById('totalClientes').textContent = data.totalClientes;
+                    document.getElementById('ticketPromedio').textContent = `$${data.ticketPromedio.toLocaleString()}`;
 
                     // Actualizar el gráfico de ventas
                     if (graficoVentas) {
@@ -344,12 +407,7 @@
             });
     }
 
-    // Función auxiliar para calcular el total de ventas
-    function calcularTotalVentas(datos) {
-        return datos.reduce((total, valor) => total + valor, 0) * 100; // Multiplicamos por un valor para simular montos
-    }
-
-    // Función para generar PDF del reporte
+    // Función para generar PDF del reporte (ACTUALIZADA)
     function generarPDF() {
         if (!reporteData) {
             alert('Primero debe generar un reporte');
@@ -380,38 +438,83 @@
         doc.setFontSize(16);
         doc.text('Productos Destacados', 14, 45);
 
-        // Tabla de productos
+        // Tabla de productos destacados (ACTUALIZADA con montos)
         doc.autoTable({
             startY: 50,
-            head: [['Producto', 'Cantidad Vendida']],
+            head: [['Producto', 'Cantidad', 'Monto Total']],
             body: [
-                [`Más vendido: ${reporteData.productoMasVendido.nombre}`, reporteData.productoMasVendido.cantidad],
-                [`Menos vendido: ${reporteData.productoMenosVendido.nombre}`, reporteData.productoMenosVendido.cantidad]
+                [
+                    `Más vendido: ${reporteData.productoMasVendido.nombre}`,
+                    reporteData.productoMasVendido.cantidad,
+                    `$${reporteData.productoMasVendido.monto_total.toLocaleString()}`
+                ],
+                [
+                    `Menos vendido: ${reporteData.productoMenosVendido.nombre}`,
+                    reporteData.productoMenosVendido.cantidad,
+                    `$${reporteData.productoMenosVendido.monto_total.toLocaleString()}`
+                ]
             ],
             theme: 'striped',
-            headStyles: { fillColor: [219, 22, 22] } // Color rojo del tema principal
+            headStyles: {
+                fillColor: [219, 22, 22], // Color rojo del tema principal
+                textColor: [255, 255, 255]
+            },
+            columnStyles: {
+                0: { cellWidth: 'auto' },
+                1: { cellWidth: 'auto' },
+                2: { cellWidth: 'auto' }
+            }
         });
 
         // Resumen de ventas
         doc.setFontSize(16);
         doc.text('Resumen de Ventas', 14, doc.lastAutoTable.finalY + 15);
 
-        const totalVentas = reporteData.totalVentas || calcularTotalVentas(reporteData.graficoVentas.data);
-        const totalProductos = reporteData.totalProductos || reporteData.productoMasVendido.cantidad + reporteData.productoMenosVendido.cantidad;
-        const totalClientes = reporteData.totalClientes || Math.round(totalVentas / 50);
-        const ticketPromedio = reporteData.ticketPromedio || Math.round(totalVentas / totalClientes);
-
         doc.autoTable({
             startY: doc.lastAutoTable.finalY + 20,
             head: [['Métrica', 'Valor']],
             body: [
-                ['Ventas Totales', `$${totalVentas.toLocaleString()}`],
-                ['Productos Vendidos', totalProductos],
-                ['Total Clientes', totalClientes],
-                ['Ticket Promedio', `$${ticketPromedio.toLocaleString()}`]
+                ['Ventas Totales', `$${reporteData.totalVentas.toLocaleString()}`],
+                ['Productos Vendidos', reporteData.totalProductos],
+                ['Total Clientes', reporteData.totalClientes],
+                ['Ticket Promedio', `$${reporteData.ticketPromedio.toLocaleString()}`]
             ],
             theme: 'grid',
-            headStyles: { fillColor: [219, 22, 22] } // Color rojo del tema principal
+            headStyles: {
+                fillColor: [219, 22, 22], // Color rojo del tema principal
+                textColor: [255, 255, 255]
+            }
+        });
+
+        // NUEVA SECCIÓN: Productos más vendidos por período
+        doc.setFontSize(16);
+        doc.text('Productos Más Vendidos por Período', 14, doc.lastAutoTable.finalY + 20);
+
+        // Preparar datos para la tabla
+        const productosPorPeriodoData = reporteData.productosMasVendidosPorPeriodo.map(item => [
+            item._id,
+            item.producto_mas_vendido.nombre,
+            item.producto_mas_vendido.cantidad,
+            `$${item.producto_mas_vendido.monto_total.toLocaleString()}`
+        ]);
+
+        doc.autoTable({
+            startY: doc.lastAutoTable.finalY + 30,
+            head: [['Período', 'Producto', 'Cantidad', 'Monto']],
+            body: productosPorPeriodoData,
+            theme: 'striped',
+            headStyles: {
+                fillColor: [219, 22, 22], // Color rojo del tema principal
+                textColor: [255, 255, 255]
+            },
+            columnStyles: {
+                0: { cellWidth: 'auto' },
+                1: { cellWidth: 'auto' },
+                2: { cellWidth: 'auto' },
+                3: { cellWidth: 'auto' }
+            },
+            margin: { top: 10 },
+            pageBreak: 'avoid'
         });
 
         // Capturar el gráfico como imagen
@@ -428,7 +531,7 @@
             const imgHeight = canvas.height * imgWidth / canvas.width;
             doc.addImage(imgData, 'PNG', 15, 25, imgWidth, imgHeight);
 
-            // Añadir pie de página
+            // Añadir pie de página en todas las páginas
             const pageCount = doc.internal.getNumberOfPages();
             for (let i = 1; i <= pageCount; i++) {
                 doc.setPage(i);
@@ -443,7 +546,7 @@
         });
     }
 
-    // Función para imprimir el reporte
+    // Función para imprimir el reporte (ACTUALIZADA)
     function imprimirReporte() {
         if (!reporteData) {
             alert('Primero debe generar un reporte');
@@ -453,7 +556,7 @@
         // Crear una ventana de impresión
         const ventanaImpresion = window.open('', '_blank');
 
-        // Contenido HTML para la impresión
+        // Contenido HTML para la impresión (ACTUALIZADO con nueva información)
         ventanaImpresion.document.write(`
             <!DOCTYPE html>
             <html>
@@ -467,11 +570,14 @@
                     .product-icon { font-size: 2rem; margin-right: 15px; color: rgb(219, 22, 22); }
                     .chart-container { height: 400px; margin-top: 30px; }
                     table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-                    th, td { padding: 10px; border: 1px solid #ddd; }
+                    th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
                     th { background-color: rgb(219, 22, 22); color: white; }
+                    .periodo-title { background-color: #f8f9fa; padding: 8px; margin-top: 20px; }
                     @media print {
                         .no-print { display: none; }
                         .page-break { page-break-before: always; }
+                        body { font-size: 12px; }
+                        table { font-size: 11px; }
                     }
                 </style>
             </head>
@@ -510,17 +616,46 @@
                 <table>
                     <tr>
                         <th>Producto</th>
-                        <th>Cantidad Vendida</th>
+                        <th>Cantidad</th>
+                        <th>Monto Total</th>
                     </tr>
                     <tr>
                         <td>Más vendido: ${reporteData.productoMasVendido.nombre}</td>
                         <td>${reporteData.productoMasVendido.cantidad}</td>
+                        <td>$${reporteData.productoMasVendido.monto_total.toLocaleString()}</td>
                     </tr>
                     <tr>
                         <td>Menos vendido: ${reporteData.productoMenosVendido.nombre}</td>
                         <td>${reporteData.productoMenosVendido.cantidad}</td>
+                        <td>$${reporteData.productoMenosVendido.monto_total.toLocaleString()}</td>
                     </tr>
                 </table>
+                
+                <h2>Productos Más Vendidos por Período</h2>
+                ${reporteData.productosMasVendidosPorPeriodo.map(periodo => `
+                    <div class="periodo-title">
+                        <strong>Período: ${periodo._id}</strong>
+                    </div>
+                    <table>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Monto Total</th>
+                        </tr>
+                        <tr>
+                            <td>${periodo.producto_mas_vendido.nombre}</td>
+                            <td>${periodo.producto_mas_vendido.cantidad}</td>
+                            <td>$${periodo.producto_mas_vendido.monto_total.toLocaleString()}</td>
+                        </tr>
+                        ${periodo.otros_productos.slice(0, 3).map(producto => `
+                            <tr>
+                                <td>${producto.nombre}</td>
+                                <td>${producto.cantidad}</td>
+                                <td>$${producto.monto_total.toLocaleString()}</td>
+                            </tr>
+                        `).join('')}
+                    </table>
+                `).join('')}
                 
                 <div class="page-break"></div>
                 

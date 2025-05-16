@@ -707,18 +707,18 @@ def obtener_pedidos_cancelados_recientes():
         # Obtener pedidos cancelados en los últimos 5 minutos y no notificados
         desde = datetime.now() - timedelta(minutes=5)
         
+        # Corregí el error de sintaxis aquí (había un db.pedidos.find duplicado)
         pedidos = list(db.pedidos.find({
             "estado": "cancelado",
             "fecha_cancelacion": {"$gte": desde},
             "notificado": False
         }).sort("fecha_cancelacion", -1).limit(5))
         
-        # Convertir ObjectId a string y formatear fechas
+        # Convertir ObjectId a string pero NO modificar la fecha
         for pedido in pedidos:
             pedido["_id"] = str(pedido["_id"])
-            if 'fecha_cancelacion' in pedido:
-                pedido["fecha_cancelacion"] = pedido["fecha_cancelacion"].isoformat()
-        
+            # No convertir fecha_cancelacion a ISO, dejarla como está
+            
         return jsonify({
             "success": True,
             "data": pedidos
