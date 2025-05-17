@@ -115,7 +115,17 @@
                 {
                     data: null,
                     render: function (data) {
-                        return `${data.cancelado_por} (${data.rol_cancelado})`;  // Mostrar nombre y rol
+                        // Mostrar nombre del cancelador y su rol
+                        const nombreCancelador = data.nombre_cancelador || data.cancelado_por;
+                        const rolCancelador = data.rol_cancelado || 'cliente';
+
+                        // Si fue cancelado por el cliente, mostrar "Cliente"
+                        if (rolCancelador === 'cliente') {
+                            return 'Cliente';
+                        }
+
+                        // Si fue cancelado por admin/asistente, mostrar nombre y rol
+                        return `${nombreCancelador} (${rolCancelador})`;
                     }
                 },
                 {
@@ -140,10 +150,10 @@
                     data: '_id',
                     render: function (data, type, row) {
                         return `
-                        <button class="btn btn-sm btn-info" onclick="mostrarTicket('${data}')">
-                            <i class="bi bi-receipt"></i> Ticket
-                        </button>
-                    `;
+            <button class="btn btn-sm btn-info" onclick="mostrarTicket('${data}')">
+                <i class="bi bi-receipt"></i> Ticket
+            </button>
+        `;
                     }
                 }
             ],

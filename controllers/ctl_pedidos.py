@@ -389,13 +389,25 @@ def cancelar_pedido_cliente(pedido_id):
                     "message": "El tiempo para cancelar ha expirado (máximo 10 segundos)"
                 }), 400
 
+        # Determinar quién está cancelando el pedido
+        cancelado_por = "cliente"
+        rol_cancelado = "cliente"
+        nombre_cancelador = pedido.get('nombre')  # Nombre del cliente por defecto
+
+        # Si hay un usuario en sesión (asistente o admin)
+        if 'nombreUsuario' in session:
+            cancelado_por = session['nombreUsuario']
+            rol_cancelado = session.get('rol', 'usuario')  # 'admin', 'asistente', etc.
+            nombre_cancelador = cancelado_por  # Usamos el nombre del usuario que canceló
+
         # Cambiar el estado a "cancelado" y guardar quién lo canceló
         db.pedidos.update_one(
             {"_id": ObjectId(pedido_id)},
             {"$set": {
                 "estado": "cancelado", 
-                "cancelado_por": "cliente",
-                "rol_cancelado": "cliente",
+                "cancelado_por": cancelado_por,
+                "rol_cancelado": rol_cancelado,
+                "nombre_cancelador": nombre_cancelador,  # Nuevo campo para mostrar nombre
                 "fecha_cancelacion": ecuador_time,
                 "notificado": False  # Marcamos como no notificado para la alerta
             }}
@@ -413,12 +425,15 @@ def cancelar_pedido_cliente(pedido_id):
 
         return jsonify({
             "success": True, 
-            "message": "Pedido cancelado por el cliente",
+            "message": f"Pedido cancelado por {nombre_cancelador} ({rol_cancelado})",
             "pedido_id": str(pedido_id),
             "numero_pedido": pedido.get('numero_pedido'),
-            "nombre_cliente": pedido.get('nombre'),  # Asegúrate de usar 'nombre' aquí
+            "nombre_cliente": pedido.get('nombre'),
             "total": pedido.get('total'),
-            "fecha_cancelacion": ecuador_time.isoformat()
+            "fecha_cancelacion": ecuador_time.isoformat(),
+            "cancelado_por": cancelado_por,
+            "rol_cancelado": rol_cancelado,
+            "nombre_cancelador": nombre_cancelador
         }), 200
 
     except Exception as e:
@@ -426,7 +441,6 @@ def cancelar_pedido_cliente(pedido_id):
         import traceback
         traceback.print_exc()
         return jsonify({"success": False, "message": str(e)}), 500
-    
 
 
     
