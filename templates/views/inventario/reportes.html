@@ -81,6 +81,31 @@
             </div>
         </div>
 
+        <!-- Sección de Detalle de Ventas por Día -->
+        <div class="card mt-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Detalle de Ventas por Día</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped" id="tablaDetalleVentas">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Productos Vendidos</th>
+                                <th>Cantidad Total</th>
+                                <th>Monto Total</th>
+                                <th>Detalle</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Se llenará dinámicamente -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <!-- Productos más y menos vendidos -->
         <div class="row">
             <div class="col-md-6 mb-3">
@@ -256,6 +281,31 @@
         color: white;
         z-index: 10;
     }
+
+    /* Estilos para la tabla de detalle */
+    .reportes-container #tablaDetalleVentas tbody tr {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .reportes-container #tablaDetalleVentas tbody tr:hover {
+        background-color: rgba(219, 22, 22, 0.1);
+    }
+
+    /* Estilos para el modal de detalle */
+    .swal2-popup .swal2-html-container {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+
+    /* Estilos para la tabla dentro del modal */
+    .swal2-popup table {
+        font-size: 0.9rem;
+    }
+
+    .swal2-popup table ul {
+        margin-bottom: 0;
+    }
 </style>
 
 <!-- Chart.js para gráficos -->
@@ -264,7 +314,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     let graficoVentas;
     let reporteData; // Variable global para almacenar los datos del reporte
@@ -356,6 +406,11 @@
                         tablaBody.appendChild(row);
                     }
 
+                    // Llenar tabla de detalle diario
+                    if (data.detalleVentasDiario) {
+                        llenarTablaDetalleVentas(data.detalleVentasDiario);
+                    }
+
                     // Actualizar métricas de resumen
                     document.getElementById('ventasTotales').textContent = `$${data.totalVentas.toLocaleString()}`;
                     document.getElementById('productosVendidos').textContent = data.totalProductos;
@@ -406,6 +461,84 @@
                 alert('Hubo un error al generar el reporte');
             });
     }
+
+    function llenarTablaDetalleVentas(detalleVentas) {
+        const tablaBody = document.querySelector('#tablaDetalleVentas tbody');
+        tablaBody.innerHTML = ''; // Limpiar tabla
+
+        if (detalleVentas && detalleVentas.length > 0) {
+            detalleVentas.forEach(dia => {
+                const row = document.createElement('tr');
+
+                // Contar productos únicos vendidos ese día
+                const productosUnicos = new Set();
+                let cantidadTotalProductos = 0;
+
+                dia.pedidos.forEach(pedido => {
+                    pedido.productos.forEach(producto => {
+                        productosUnicos.add(producto.name);
+                        cantidadTotalProductos += producto.quantity;
+                    });
+                });
+
+                row.innerHTML = `
+                    <td>${dia._id}</td>
+                    <td>${productosUnicos.size}</td>
+                    <td>${cantidadTotalProductos}</td>
+                    <td>$${dia.monto_total.toLocaleString()}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" 
+                                onclick="mostrarDetalleDia('${dia._id}')">
+                            <i class="fas fa-eye"></i> Ver
+                        </button>
+                    </td>
+                `;
+                tablaBody.appendChild(row);
+            });
+        } else {
+            const row = document.createElement('tr');
+            row.innerHTML = '<td colspan="5" class="text-center">No hay datos disponibles</td>';
+            tablaBody.appendChild(row);
+        }
+    }
+
+    function mostrarDetalleDia(fecha) {
+        const dia = reporteData.detalleVentasDiario.find(d => d._id === fecha);
+        if (!dia) return;
+
+        // Crear contenido para el modal
+        let contenido = `<h4>Detalle de ventas - ${fecha}</h4>`;
+        contenido += `<p><strong>Total del día:</strong> $${dia.monto_total.toLocaleString()}</p>`;
+        contenido += `<div class="table-responsive"><table class="table table-sm">`;
+        contenido += `<thead><tr><th>Pedido</th><th>Cliente</th><th>Productos</th><th>Total</th></tr></thead><tbody>`;
+
+        dia.pedidos.forEach(pedido => {
+            contenido += `<tr>
+                <td>${pedido.pedido_id}</td>
+                <td>${pedido.usuario || 'No especificado'}</td>
+                <td>
+                    <ul class="list-unstyled">`;
+
+            pedido.productos.forEach(producto => {
+                contenido += `<li>${producto.quantity} x ${producto.name} - $${producto.price.toLocaleString()}</li>`;
+            });
+
+            contenido += `</ul></td>
+                <td>$${pedido.total.toLocaleString()}</td>
+            </tr>`;
+        });
+
+        contenido += `</tbody></table></div>`;
+
+        // Mostrar modal con SweetAlert
+        Swal.fire({
+            title: `Detalle de ventas - ${fecha}`,
+            html: contenido,
+            width: '90%',
+            confirmButtonColor: 'rgb(219, 22, 22)'
+        });
+    }
+
 
     // Función para generar PDF del reporte (ACTUALIZADA)
     function generarPDF() {

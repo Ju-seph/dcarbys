@@ -15,6 +15,15 @@ import numpy as np
 import base64
 from database.mongodb import Mongodb
 
+
+db = Mongodb().db()
+
+from bson import ObjectId
+from flask import jsonify
+from datetime import datetime
+import pymongo
+from database.mongodb import Mongodb
+
 db = Mongodb().db()
 
 def generar_reporte_ventas():
@@ -62,7 +71,7 @@ def generar_reporte_ventas():
         producto_mas_vendido = productos[-1] if productos else None
         producto_menos_vendido = productos[0] if productos else None
 
-        # Consulta para productos más vendidos por período (corregida)
+        # Consulta para productos más vendidos por período
         pipeline_mas_vendidos = [
             {
                 "$match": {
@@ -103,7 +112,7 @@ def generar_reporte_ventas():
             {
                 "$project": {
                     "producto_mas_vendido": {"$arrayElemAt": ["$productos", 0]},
-                    "otros_productos": {"$slice": ["$productos", 1, 3]}  # Siguientes 3 productos más vendidos
+                    "otros_productos": {"$slice": ["$productos", 1, 3]}
                 }
             },
             {"$sort": {"_id": 1}}
@@ -137,6 +146,44 @@ def generar_reporte_ventas():
 
         ventas_agrupadas = list(db.pedidos.aggregate(pipeline_agrupacion))
 
+        # Consulta para detalle diario de ventas
+        pipeline_detalle_diario = [
+            {
+                "$match": {
+                    "estado": {"$in": ["finalizado", "en transcurso"]},
+                    "fecha_confirmacion": {"$gte": fecha_inicio_dt, "$lte": fecha_fin_dt}
+                }
+            },
+            {
+                "$sort": {"fecha_confirmacion": 1}
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "$dateToString": {
+                            "format": "%Y-%m-%d",
+                            "date": "$fecha_confirmacion"
+                        }
+                    },
+                    "pedidos": {
+                        "$push": {
+                            "pedido_id": "$_id",
+                            "usuario": "$usuario_nombre",
+                            "productos": "$productos",
+                            "total": "$total"
+                        }
+                    },
+                    "cantidad_total": {"$sum": {"$size": "$productos"}},
+                    "monto_total": {"$sum": "$total"}
+                }
+            },
+            {
+                "$sort": {"_id": 1}
+            }
+        ]
+
+        detalle_ventas_diario = list(db.pedidos.aggregate(pipeline_detalle_diario))
+
         # Preparar datos para el gráfico
         labels = [venta["_id"] for venta in ventas_agrupadas]
         data = [venta["total_ventas"] for venta in ventas_agrupadas]
@@ -164,11 +211,22 @@ def generar_reporte_ventas():
         # Calcular ticket promedio
         ticket_promedio = total_ventas / total_clientes if total_clientes > 0 else 0
 
-        return jsonify({
+        # Convertir ObjectId a strings para serialización JSON
+        def convert_object_ids(data):
+            if isinstance(data, dict):
+                return {k: str(v) if isinstance(v, ObjectId) else convert_object_ids(v) for k, v in data.items()}
+            elif isinstance(data, list):
+                return [convert_object_ids(item) for item in data]
+            else:
+                return str(data) if isinstance(data, ObjectId) else data
+
+        # Preparar los datos para la respuesta
+        response_data = {
             "success": True,
-            "productoMasVendido": producto_mas_vendido,
-            "productoMenosVendido": producto_menos_vendido,
-            "productosMasVendidosPorPeriodo": productos_mas_vendidos_por_periodo,
+            "productoMasVendido": convert_object_ids(producto_mas_vendido) if producto_mas_vendido else None,
+            "productoMenosVendido": convert_object_ids(producto_menos_vendido) if producto_menos_vendido else None,
+            "productosMasVendidosPorPeriodo": convert_object_ids(productos_mas_vendidos_por_periodo),
+            "detalleVentasDiario": convert_object_ids(detalle_ventas_diario),
             "graficoVentas": {
                 "labels": labels,
                 "data": data
@@ -177,13 +235,26 @@ def generar_reporte_ventas():
             "totalProductos": total_productos,
             "totalClientes": total_clientes,
             "ticketPromedio": ticket_promedio
-        }), 200
+        }
+
+        return jsonify(response_data), 200
 
     except Exception as e:
         print(f"Error al generar reporte: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({"success": False, "message": f"Error al generar el reporte: {str(e)}"}), 500
+
+def get_format_for_agrupacion(agrupacion):
+    """Devuelve el formato de fecha según la agrupación seleccionada."""
+    if agrupacion == "dia":
+        return "%Y-%m-%d"  # Agrupar por día
+    elif agrupacion == "semana":
+        return "%Y-%U"  # Agrupar por semana (año y número de semana)
+    elif agrupacion == "mes":
+        return "%Y-%m"  # Agrupar por mes
+    else:
+        return "%Y-%m-%d"  # Por defecto, agrupar por día
 
 def generar_pdf_reporte():
     try:

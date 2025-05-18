@@ -17,6 +17,7 @@ import atexit
 from models.Pedido import Pedido  # Importar la clase Pedido
 
 
+
 db = Mongodb().db()
 
 # Cargar variables de entorno
@@ -172,15 +173,41 @@ def obtener_pedidos_transcurso():
     
     
 
+
+
 @app.route('/obtener_pedidos_finalizados', methods=['GET'])
 def obtener_pedidos_finalizados():
     try:
-        pedidos = db.pedidos.find({"estado": "finalizado"})
+        # Obtener parámetros de búsqueda
+        fecha_desde = request.args.get('fecha_desde')
+        fecha_hasta = request.args.get('fecha_hasta')
+        tipo_fecha = request.args.get('tipo_fecha', 'finalizacion')  # 'confirmacion' o 'finalizacion'
+        
+        query = {"estado": "finalizado"}
+        
+        if fecha_desde and fecha_hasta:
+            try:
+                fecha_inicio = datetime.strptime(fecha_desde, '%Y-%m-%d')
+                fecha_fin = datetime.strptime(fecha_hasta + ' 23:59:59', '%Y-%m-%d %H:%M:%S')
+                
+                # Usar el campo de fecha correspondiente
+                campo_fecha = 'fecha_finalizacion' if tipo_fecha == 'finalizacion' else 'fecha_confirmacion'
+                query[campo_fecha] = {
+                    "$gte": fecha_inicio,
+                    "$lte": fecha_fin
+                }
+            except ValueError as e:
+                return jsonify({"success": False, "message": "Formato de fecha inválido. Use YYYY-MM-DD"}), 400
+        
+        pedidos = db.pedidos.find(query).sort("fecha_finalizacion", -1)
+        
         lista_pedidos = []
         for pedido in pedidos:
             pedido["_id"] = str(pedido["_id"])
             lista_pedidos.append(pedido)
+            
         return jsonify({"data": lista_pedidos}), 200
+        
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
     
