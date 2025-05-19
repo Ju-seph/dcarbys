@@ -168,7 +168,7 @@ def generar_reporte_ventas():
                     "pedidos": {
                         "$push": {
                             "pedido_id": "$_id",
-                            "usuario": "$usuario_nombre",
+                            "usuario": "$nombre",
                             "productos": "$productos",
                             "total": "$total"
                         }

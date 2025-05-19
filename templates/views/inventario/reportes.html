@@ -514,18 +514,18 @@
 
         dia.pedidos.forEach(pedido => {
             contenido += `<tr>
-                <td>${pedido.pedido_id}</td>
-                <td>${pedido.usuario || 'No especificado'}</td>
-                <td>
-                    <ul class="list-unstyled">`;
+            <td>${pedido.pedido_id}</td>
+            <td>${pedido.usuario || 'No especificado'}</td>  <!-- Ahora mostrará el nombre del usuario -->
+            <td>
+                <ul class="list-unstyled">`;
 
             pedido.productos.forEach(producto => {
                 contenido += `<li>${producto.quantity} x ${producto.name} - $${producto.price.toLocaleString()}</li>`;
             });
 
             contenido += `</ul></td>
-                <td>$${pedido.total.toLocaleString()}</td>
-            </tr>`;
+            <td>$${pedido.total.toLocaleString()}</td>
+        </tr>`;
         });
 
         contenido += `</tbody></table></div>`;
